@@ -1,5 +1,5 @@
 # Bluprint
-## (Telecom Billing Processor v2)
+- (AKA Telecom Billing Processor v2)
 
 ### Author: Jawad Azeem
 This is version 2 of the Telecom Billing Processor project.  
