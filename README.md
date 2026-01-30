@@ -2,7 +2,7 @@
 - (AKA Telecom Billing Processor v2)
 
 ### Author: Jawad Azeem
-This is version 2 of the Telecom Billing Processor project.  
+This is version 2 of Blueprint.
 It is a Spring Boot application that performs a full ETL (Extract, Transform, Load) workflow on telecom billing data stored in CSV format.
 It reads the data, processes it into structured records, computes various analytics, and exposes the results via REST API endpoints.
 A live version of the API is hosted on AWS.
@@ -43,6 +43,6 @@ Future versions will add:
 - Kubernetes deployment
 
 ## Future Directions
-- For V3 (Delivery by Jan 5, 2026), I'd like to turn this into a bank-grade data + risk + revenue system
+- For V3 (Delivery by Mar, 2026), I'd like to turn this into a bank-grade data + risk + revenue system
 
 Version: **v2** (Dec 2025)
