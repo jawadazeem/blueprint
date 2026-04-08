@@ -4,6 +4,7 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 
 import java.time.Instant;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -13,6 +14,7 @@ import java.util.UUID;
  */
 
 public record Alarm(UUID id,
+                    UUID businessKey,
                     @Enumerated(EnumType.STRING)
                     AlarmScope alarmScope,
                     String billingPeriod,
@@ -26,4 +28,19 @@ public record Alarm(UUID id,
                     @Enumerated(EnumType.STRING)
                     Department department // nullable
     ) {
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(
+                businessKey,
+                alarmScope,
+                billingPeriod,
+                alarmType,
+                alarmSeverity,
+                explanation,
+                employeeId,
+                phoneNumber,
+                department
+        );
+    }
 }

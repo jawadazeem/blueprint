@@ -10,6 +10,14 @@ public record BillingRecord(String accountName, String employeeId, String depart
 
     @Override
     public String toString() {
-        return accountName + ", " + employeeId + ", " + department + ", " + phoneNumber + ", " + billingPeriod + ", " + minutesUsed + ", " + dataGbUsed + ", " + smsCount + ", " + totalCharge;
+        return accountName + ", "
+                + employeeId + ", "
+                + department + ", "
+                + phoneNumber + ", "
+                + billingPeriod + ", "
+                + minutesUsed + ", "
+                + dataGbUsed + ", "
+                + smsCount + ", "
+                + totalCharge;
     }
 }

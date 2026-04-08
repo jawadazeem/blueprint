@@ -22,11 +22,18 @@ import java.util.UUID;
  */
 
 @Entity
-@Table(name = "alarms")
+@Table(
+        name = "alarms",
+        uniqueConstraints = @UniqueConstraint(
+                columnNames = "business_key")
+)
 public class AlarmEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
+
+    @Column(name = "business_key", nullable = false, unique = true)
+    private UUID businessKey;
 
     private AlarmScope alarmScope;
     private String billingPeriod;
@@ -119,5 +126,13 @@ public class AlarmEntity {
 
     public void setTimestamp(Instant timestamp) {
         this.timestamp = timestamp;
+    }
+
+    public UUID getBusinessKey() {
+        return businessKey;
+    }
+
+    public void setBusinessKey(UUID businessKey) {
+        this.businessKey = businessKey;
     }
 }

@@ -1,42 +1,71 @@
 package com.azeem.billing.service;
 
+import com.azeem.billing.entity.AlarmEntity;
 import com.azeem.billing.mapper.AlarmMapper;
 import com.azeem.billing.mapper.BillingRecordMapper;
 import com.azeem.billing.model.*;
 import com.azeem.billing.repository.AlarmRepository;
 import com.azeem.billing.repository.BillingRecordRepository;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
-import static com.azeem.billing.model.AlarmSeverity.*;
 
 @Service
 public class AlarmService {
 
     AlarmRepository alarmRepository;
     BillingRecordRepository billingRecordRepository;
-    AlarmMapper alarmMapper = new AlarmMapper();
-    BillingRecordMapper billingMapper = new BillingRecordMapper();
+    AlarmMapper alarmMapper;
+    BillingRecordMapper billingMapper;
     AlarmDetectionService alarmDetectionService;
 
     public AlarmService(AlarmRepository alarmRepository,
                         BillingRecordRepository billingRecordRepository,
-                        AlarmDetectionService alarmDetectionService) {
+                        AlarmDetectionService alarmDetectionService,
+                        AlarmMapper alarmMapper,
+                        BillingRecordMapper billingRecordMapper) {
         this.alarmRepository = alarmRepository;
         this.billingRecordRepository = billingRecordRepository;
         this.alarmDetectionService = alarmDetectionService;
+        this.billingMapper = billingRecordMapper;
+        this.alarmMapper = alarmMapper;
     }
 
+    @Transactional
     public void detectAndPersistAlarms(String billingPeriod) {
-        List<BillingRecord> records = billingRecordRepository.findByBillingPeriod(billingPeriod).stream().map(billingMapper::mapToDomain).toList();
-        List<Alarm> previouslyPersistedAlarms = alarmRepository.findByBillingPeriod(billingPeriod).stream().map(alarmMapper::mapToDomain).toList();
+        List<BillingRecord> records = billingRecordRepository
+                .findByBillingPeriod(billingPeriod, Pageable.unpaged())
+                .stream()
+                .map(billingMapper::mapToDomain)
+                .toList();
+
         List<Alarm> detectedAlarms = alarmDetectionService.detectAlarms(records, billingPeriod);
-        for (Alarm a : detectedAlarms) {
-            if (!(alarmRepository.existsById(a.id()))) {
-                alarmRepository.save(alarmMapper.mapToEntity(a));
-            }
-        }
+
+        if (detectedAlarms.isEmpty()) return;
+
+        List<UUID> existingAlarmKeys = alarmRepository
+                .findBusinessKeysByBillingPeriod(billingPeriod);
+
+        Set<UUID> existingKeys = new HashSet<>(existingAlarmKeys); // using set for o(m) lookups
+
+        List<Alarm> newAlarms = detectedAlarms
+                .stream()
+                .filter(a -> !existingKeys.contains(a.businessKey()))
+                .toList();
+
+        if (newAlarms.isEmpty()) return;
+
+        List<AlarmEntity> entities = newAlarms.stream()
+                .map(alarmMapper::mapToEntity)
+                .toList();
+
+        alarmRepository.saveAll(entities);
     }
 
     public List<Alarm> getAllAlarms(String billingPeriod) {

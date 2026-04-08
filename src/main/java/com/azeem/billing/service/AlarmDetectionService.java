@@ -33,146 +33,85 @@ public class AlarmDetectionService {
 
     private List<Alarm> getDepartmentsOverLimit(List<BillingRecord> records, String billingPeriod) {
         List<Alarm> alarms = new ArrayList<>();
+
+        Map<String, Department> departments = Map.of(
+                "Engineering", Department.ENGINEERING,
+                "Finance", Department.FINANCE,
+                "HR", Department.HR,
+                "IT", Department.IT,
+                "Legal", Department.LEGAL,
+                "Marketing", Department.MARKETING,
+                "Operations", Department.OPERATIONS,
+                "Sales", Department.SALES,
+                "Support", Department.SUPPORT
+        );
         Map<String, Double> totals = new HashMap<>();
 
         for (BillingRecord r : records) {
-            if (r.department().equals("Engineering")) {
-                totals.merge("Engineering", r.totalCharge(), Double::sum);
-            } else if (r.department().equals("Finance")) {
-                totals.merge("Finance", r.totalCharge(), Double::sum);
-            } else if (r.department().equals("HR")) {
-                totals.merge("HR", r.totalCharge(), Double::sum);
-            } else if (r.department().equals("IT")) {
-                totals.merge("IT", r.totalCharge(), Double::sum);
-            } else if (r.department().equals("Legal")) {
-                totals.merge("Legal", r.totalCharge(), Double::sum);
-            } else if (r.department().equals("Marketing")) {
-                totals.merge("Marketing", r.totalCharge(), Double::sum);
-            } else if (r.department().equals("Operations")) {
-                totals.merge("Operations", r.totalCharge(), Double::sum);
-            } else if (r.department().equals("Sales")) {
-                totals.merge("Sales", r.totalCharge(), Double::sum);
-            } else if (r.department().equals("Support")) {
-                totals.merge("Support", r.totalCharge(), Double::sum);
-            }
+            totals.merge(r.department(), r.totalCharge(), Double::sum);
         }
 
         double deptLimit = alarmConfig.getDepartment().getMonthlyLimit();
 
-        if (totals.getOrDefault("Engineering", 0.0) > deptLimit) {
-            Alarm alarm = new Alarm(UUID.randomUUID(),
-                    AlarmScope.DEPARTMENT,
-                    billingPeriod,
-                    "Department Charge Exceeded",
-                    LOW, "Engineering department Exceeds Charge Limit",
-                    Instant.now(), null, null, Department.ENGINEERING);
-            alarms.add(alarm);
+        for (String d : departments.keySet()) {
+            if (totals.getOrDefault(d, 0.0) > deptLimit) {
+                Alarm alarm = new Alarm(
+                        null, // DB generates ID
+                        UUID.randomUUID(),
+                        AlarmScope.DEPARTMENT,
+                        billingPeriod,
+                        "Department Charge Exceeded",
+                        LOW, d + " department Exceeds Charge Limit",
+                        Instant.now(), null, null, departments.get(d));
+                alarms.add(alarm);
+            }
         }
-        if (totals.getOrDefault("Finance", 0.0) > deptLimit) {
-            Alarm alarm = new Alarm(UUID.randomUUID(),
-                    AlarmScope.DEPARTMENT,
-                    billingPeriod,
-                    "Department Charge Exceeded",
-                    LOW, "Finance department Exceeds Charge Limit",
-                    Instant.now(), null, null, Department.FINANCE);
-            alarms.add(alarm);
-        }
-        if (totals.getOrDefault("HR", 0.0) > deptLimit) {
-            Alarm alarm = new Alarm(UUID.randomUUID(),
-                    AlarmScope.DEPARTMENT,
-                    billingPeriod,
-                    "Department Charge Exceeded",
-                    LOW, "HR department Exceeds Charge Limit",
-                    Instant.now(), null, null, Department.HR);
-            alarms.add(alarm);
-        }
-        if (totals.getOrDefault("IT", 0.0) > deptLimit) {
-            Alarm alarm = new Alarm(UUID.randomUUID(),
-                    AlarmScope.DEPARTMENT,
-                    billingPeriod,
-                    "Department Charge Exceeded",
-                    LOW, "IT department Exceeds Charge Limit",
-                    Instant.now(), null, null, Department.IT);
-            alarms.add(alarm);
-        }
-        if (totals.getOrDefault("Legal", 0.0) > deptLimit) {
-            Alarm alarm = new Alarm(UUID.randomUUID(),
-                    AlarmScope.DEPARTMENT,
-                    billingPeriod,
-                    "Department Charge Exceeded",
-                    LOW, "Legal department Exceeds Charge Limit",
-                    Instant.now(), null, null, Department.LEGAL);
-            alarms.add(alarm);
-        }
-        if (totals.getOrDefault("Marketing", 0.0) > deptLimit) {
-            Alarm alarm = new Alarm(UUID.randomUUID(),
-                    AlarmScope.DEPARTMENT,
-                    billingPeriod,
-                    "Department Charge Exceeded",
-                    LOW, "Marketing department Exceeds Charge Limit",
-                    Instant.now(), null, null, Department.MARKETING);
-            alarms.add(alarm);
-        }
-        if (totals.getOrDefault("Operations", 0.0) > deptLimit) {
-            Alarm alarm = new Alarm(UUID.randomUUID(),
-                    AlarmScope.DEPARTMENT,
-                    billingPeriod,
-                    "Department Charge Exceeded",
-                    LOW, "Operations department Exceeds Charge Limit",
-                    Instant.now(), null, null, Department.OPERATIONS);
-            alarms.add(alarm);
-        }
-        if (totals.getOrDefault("Sales", 0.0) > deptLimit) {
-            Alarm alarm = new Alarm(UUID.randomUUID(),
-                    AlarmScope.DEPARTMENT,
-                    billingPeriod,
-                    "Department Charge Exceeded",
-                    LOW, "Sales department Exceeds Charge Limit",
-                    Instant.now(), null, null, Department.SALES);
-            alarms.add(alarm);
-        }
-        if (totals.getOrDefault("Support", 0.0) > deptLimit) {
-            Alarm alarm = new Alarm(UUID.randomUUID(),
-                    AlarmScope.DEPARTMENT,
-                    billingPeriod,
-                    "Department Charge Exceeded",
-                    LOW, "Support department Exceeds Charge Limit",
-                    Instant.now(), null, null, Department.SUPPORT);
-            alarms.add(alarm);
-        }
+
         return alarms;
     }
 
     private List<Alarm> getIndividualChargesOverLimit(List<BillingRecord> records, String billingPeriod) {
         List<Alarm> alarms = new ArrayList<>();
+
         double low = alarmConfig.getIndividual().getLow();
         double medium = alarmConfig.getIndividual().getMedium();
         double high = alarmConfig.getIndividual().getHigh();
 
         for (BillingRecord r : records) {
-            if (r.totalCharge() >= low && r.totalCharge() < medium) {
-                Alarm alarm = new Alarm(UUID.randomUUID(), AlarmScope.INDIVIDUAL, billingPeriod,
-                        "Individual Charge Limit Exceeded",
-                        AlarmSeverity.LOW,
-                        "Exceeds Charge Limit: LOW", Instant.now(),
-                        r.employeeId(), r.phoneNumber(), null);
-                alarms.add(alarm);
-            } else if (r.totalCharge() >= medium && r.totalCharge() < high) {
-                Alarm alarm = new Alarm(UUID.randomUUID(), AlarmScope.INDIVIDUAL, billingPeriod,
-                        "Individual Charge Limit Exceeded",
-                        AlarmSeverity.MEDIUM,
-                        "Slightly exceeds Charge Limit: MEDIUM", Instant.now(),
-                        r.employeeId(), r.phoneNumber(), null);
-                alarms.add(alarm);
-            } else if (r.totalCharge() > high) {
-                Alarm alarm = new Alarm(UUID.randomUUID(), AlarmScope.INDIVIDUAL, billingPeriod,
-                        "Individual Charge Limit Exceeded",
-                        AlarmSeverity.HIGH,
-                        "Significantly exceeds Charge Limit (TAKE ACTION)", Instant.now(),
-                        r.employeeId(), r.phoneNumber(), null);
-                alarms.add(alarm);
+            double charge = r.totalCharge();
+            AlarmSeverity severity;
+            String message;
+
+            if (charge >= low && charge < medium) {
+                severity = AlarmSeverity.LOW;
+                message = "Exceeds Charge Limit: LOW";
+            } else if (charge >= medium && charge < high) {
+                severity = AlarmSeverity.MEDIUM;
+                message = "Slightly exceeds Charge Limit: MEDIUM";
+            } else if (charge >= high) {
+                severity = AlarmSeverity.HIGH;
+                message = "Significantly exceeds Charge Limit (TAKE ACTION)";
+            } else {
+                // No alarm
+                continue;
             }
+
+            Alarm alarm = new Alarm(
+                    null, // DB generates ID
+                    UUID.randomUUID(),
+                    AlarmScope.INDIVIDUAL,
+                    billingPeriod,
+                    "Individual Charge Limit Exceeded",
+                    severity,
+                    message,
+                    Instant.now(),
+                    r.employeeId(),
+                    r.phoneNumber(),
+                    null
+            );
+            alarms.add(alarm);
         }
+
         return alarms;
     }
 
@@ -186,7 +125,10 @@ public class AlarmDetectionService {
         }
 
         if (grandTotal > accountLow && grandTotal < accountHigh) {
-            Alarm alarm = new Alarm(UUID.randomUUID(), AlarmScope.ACCOUNT, billingPeriod,
+            Alarm alarm = new Alarm(UUID.randomUUID(),
+                    UUID.randomUUID(),
+                    AlarmScope.ACCOUNT,
+                    billingPeriod,
                     "Total Account Budget Exceeded: LOW",
                     AlarmSeverity.LOW,
                     "Your account's telecom bill has slightly exceeded its monthly budget.", Instant.now(),
@@ -195,13 +137,14 @@ public class AlarmDetectionService {
             alarms.add(alarm);
             return alarms;
         }
-        Alarm alarm = new Alarm(UUID.randomUUID(), AlarmScope.ACCOUNT, billingPeriod,
+        Alarm alarm = new Alarm(UUID.randomUUID(),
+                UUID.randomUUID(),
+                AlarmScope.ACCOUNT,
+                billingPeriod,
                 "Total Account Budget Exceeded: HIGH",
                 AlarmSeverity.HIGH,
                 "Your account's telecom bill has significantly exceeded its monthly budget.", Instant.now(),
                 null, null, null);
-        List<Alarm> alarms = new ArrayList<>();
-        alarms.add(alarm);
-        return alarms;
+        return List.of(alarm);
     }
 }

@@ -2,16 +2,20 @@ package com.azeem.billing.mapper;
 
 import com.azeem.billing.entity.AlarmEntity;
 import com.azeem.billing.model.Alarm;
+import org.springframework.stereotype.Component;
+
 import java.util.Optional;
 
 /**
  * Mapper class to convert between Alarm domain model and AlarmEntity database entity.
  */
 
+@Component
 public class AlarmMapper {
 
     public AlarmEntity mapToEntity(Alarm alarm) {
         AlarmEntity alarmEntity = new AlarmEntity();
+        alarmEntity.setBusinessKey(alarm.businessKey());
         alarmEntity.setAlarmScope(alarm.alarmScope());
         alarmEntity.setAlarmSeverity(alarm.alarmSeverity());
         alarmEntity.setAlarmType(alarm.alarmType());
@@ -27,6 +31,7 @@ public class AlarmMapper {
     public Alarm mapToDomain(AlarmEntity alarmEntity) {
         return new Alarm(
                 alarmEntity.getId(),
+                alarmEntity.getBusinessKey(),
                 alarmEntity.getAlarmScope(),
                 alarmEntity.getBillingPeriod(),
                 alarmEntity.getAlarmType(),

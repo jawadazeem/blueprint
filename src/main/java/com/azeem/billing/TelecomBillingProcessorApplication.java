@@ -6,6 +6,9 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 
+import java.io.File;
+import java.io.FileInputStream;
+
 @SpringBootApplication
 public class TelecomBillingProcessorApplication {
 
@@ -14,9 +17,15 @@ public class TelecomBillingProcessorApplication {
 
         app.addListeners(event -> {
             if (event instanceof ApplicationReadyEvent readyEvent) {
-                readyEvent.getApplicationContext()
-                        .getBean(BillingIngestionService.class)
-                        .ingestData("2025-01","src/main/resources/azeemcom_telecom_usage_2025_01.csv");
+                File file = new File("src/main/resources/azeemcom_telecom_usage_2025_01.csv");
+                // try-with-resources ensures the file is closed properly
+                try (FileInputStream fis = new FileInputStream(file)) {
+                    readyEvent.getApplicationContext()
+                            .getBean(BillingIngestionService.class)
+                            .ingestData("2025-01", fis);
+                } catch (Exception e) {
+                    System.err.println("Bootstrap ingestion failed");
+                }
             }
         });
 

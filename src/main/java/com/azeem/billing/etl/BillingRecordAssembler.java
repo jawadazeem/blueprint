@@ -28,13 +28,6 @@ import java.util.List;
  * <h3>Failure Behavior</h3>
  * <p>Malformed rows or conversion errors result in runtime exceptions,
  * terminating ingestion.</p>
- *
- * <h3>Non-responsibilities</h3>
- * <ul>
- *   <li>File I/O</li>
- *   <li>Delimiter handling</li>
- *   <li>Persistence</li>
- * </ul>
  */
 @Component
 public class BillingRecordAssembler {
@@ -46,8 +39,8 @@ public class BillingRecordAssembler {
         for (String[] entry : entries) {
             // Expect the exact 9 fields BillingRecord uses
             String accountName = entry[0];
-            String senatorId = entry[1];
-            String state = entry[2];
+            String employeeId = entry[1];
+            String department = entry[2];
             String phoneNumber = entry[3];
             String billingPeriod = entry[4];
 
@@ -58,8 +51,8 @@ public class BillingRecordAssembler {
 
             BillingRecord record = new BillingRecord(
                     accountName,
-                    senatorId,
-                    state,
+                    employeeId,
+                    department,
                     phoneNumber,
                     billingPeriod,
                     minutesUsed,

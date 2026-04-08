@@ -15,7 +15,10 @@ import jakarta.persistence.*;
  */
 
 @Entity
-@Table(name = "billing_records")
+@Table(name = "billing_records", indexes = {
+        @Index(name = "idx_billing_period", columnList = "billingPeriod"),
+        @Index(name = "idx_total_charge_desc", columnList = "totalCharge DESC")
+})
 public class BillingRecordEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

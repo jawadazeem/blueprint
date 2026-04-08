@@ -6,8 +6,10 @@ import com.opencsv.exceptions.CsvValidationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,34 +32,32 @@ import java.util.List;
  *   <li>Return raw tabular data</li>
  * </ul>
  *
- * <h3>Non-responsibilities</h3>
- * <ul>
- *   <li>Business validation</li>
- *   <li>Domain object creation</li>
- *   <li>Persistence</li>
- * </ul>
- *
  * <p>Failures during reading result in a runtime exception and halt ingestion.</p>
  */
-
 
 public class CsvBillingReader implements BillingFileReader {
     private static final Logger log = LoggerFactory.getLogger(CsvBillingReader.class);
 
-    private final String filePath;
+    private final InputStream inputStream;
     private final boolean hasHeader;
 
-    public CsvBillingReader(String filePath, boolean hasHeader) {
-        this.filePath = filePath;
+    public CsvBillingReader(InputStream inputStream,
+                            boolean hasHeader) {
+        this.inputStream = inputStream;
         this.hasHeader = hasHeader;
     }
 
     @Override
     public List<String[]> parse() {
 
-        log.info("Loading CSV from {}", filePath);
+        log.info("Loading CSV");
 
-        try (CSVReader csvReader = new CSVReader(new FileReader(filePath))) {
+        try (CSVReader csvReader = new CSVReader(
+                new InputStreamReader(
+                        inputStream,
+                        Charset.defaultCharset()
+                )
+        )) {
             if (hasHeader) {
                 // Skip header row
                 csvReader.readNext();

@@ -1,8 +1,6 @@
-# Bluprint
-- (AKA Telecom Billing Processor v2)
+# Telecom Billing Processor
 
 ### Author: Jawad Azeem
-This is version 2 of Blueprint.
 It is a Spring Boot application that performs a full ETL (Extract, Transform, Load) workflow on telecom billing data stored in CSV format.
 It reads the data, processes it into structured records, computes various analytics, and exposes the results via REST API endpoints.
 A live version of the API is hosted on AWS.
@@ -17,32 +15,17 @@ A live version of the API is hosted on AWS.
     - charges grouped by state
 - Exposes results through REST API endpoints
 
-## How to Run
-- Access the Live API at:
+## Access the Live API at:
    - https://telecom.jawadazeem.com
 
 ## Technologies Used
 - Java 21
 - Spring Boot (Web)
+- AWS (ECS, RDS, CloudWatch, SQS, SNS, S3)
 - Docker
-- Maven
 - JUnit 5 & Mockito
 - PostgreSQL
-- AWS (RDS, Elastic Beanstalk, S3)
 
 ## Architecture
-- ETL ingestion service
-- Stateless service layer
-- Repository-based persistence
-
-## Notes
-Future versions will add:
-- CSV upload endpoint
-- additional analytics
-- AI integration for anomaly detection
-- Kubernetes deployment
-
-## Future Directions
-- For V3 (Delivery by Mar, 2026), I'd like to turn this into a bank-grade data + risk + revenue system
-
+![Architectural Bluprint](images/application-cloud-architecture-diagram.png)
 Version: **v2** (Dec 2025)

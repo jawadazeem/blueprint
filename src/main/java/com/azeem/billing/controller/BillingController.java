@@ -5,11 +5,11 @@ import com.azeem.billing.model.BillingSummary;
 import com.azeem.billing.service.BillingService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-//TODO: Add pagination to endpoints returning lists of records to handle large datasets efficiently.
 /**
  * REST controller exposing endpoints for billing data retrieval and summary generation.
  * <p>
@@ -38,9 +38,11 @@ public class BillingController {
     }
 
     @GetMapping("/records")
-    public List<BillingRecord> getAllRecords() {
-        log.info("GET /records called to retrieve all billing records.");
-        return service.getAllRecords();
+    public Page<BillingRecord> getAllRecords(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        log.info("GET /records called to retrieve all billing records, page: {}, size: {}.", page, size);
+        return service.getAllRecords(page, size);
     }
 
     @GetMapping("/summary")
@@ -50,13 +52,15 @@ public class BillingController {
     }
 
     @GetMapping("/records/department/{department}")
-    public List<BillingRecord> getRecordsByDepartment(@PathVariable String department) {
-        log.info("GET /records/department/{} called to retrieve records for department.", department);
-        return service.getRecordsByDepartment(department);
+    public Page<BillingRecord> getRecordsByDepartment(@PathVariable String department,
+                                                      @RequestParam(defaultValue = "0") int page,
+                                                      @RequestParam(defaultValue = "20") int size) {
+        log.info("GET /records/department/{} called to retrieve records for department. page: {}, size: {}", department, page, size);
+        return service.getRecordsByDepartment(department, page, size);
     }
 
     @GetMapping("/top/{n}")
-    public List<BillingRecord> getTopN(@PathVariable int n) {
+    public Page<BillingRecord> getTopN(@PathVariable int n) {
         log.info("GET /top/{} called to retrieve top N billing records by total charge.", n);
         return service.getTopNRecords(n);
     }
@@ -64,23 +68,22 @@ public class BillingController {
     @GetMapping("/departments")
     public List<String> getDepartments() {
         log.info("GET /departments called.");
-        return service.getAllRecords().stream()
-                .map(BillingRecord::department)
-                .distinct()
-                .sorted()
-                .toList();
+        return service.getDistinctDepartments();
     }
 
     @GetMapping("/periods")
     public List<String> getBillingPeriods() {
         log.info("GET /periods called.");
-        return service.getAvailableBillingPeriods();
+        return service.getDistinctBillingPeriods();
     }
 
     @GetMapping("/records/period/{billingPeriod}")
-    public List<BillingRecord> getRecordsByPeriod(@PathVariable String billingPeriod) {
-        log.info("GET /records/period/{} called.", billingPeriod);
-        return service.getRecordsByPeriod(billingPeriod);
+    public Page<BillingRecord> getRecordsByPeriod(
+            @PathVariable String billingPeriod,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam (defaultValue = "20") int size) {
+        log.info("GET /records/period/{} called with page {}, size {}", billingPeriod, page, size);
+        return service.getRecordsByPeriod(billingPeriod, page, size);
     }
 
     @GetMapping("/summary/period/{billingPeriod}")

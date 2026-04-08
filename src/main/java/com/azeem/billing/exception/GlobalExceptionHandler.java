@@ -15,10 +15,21 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class GlobalExceptionHandler {
     private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
-    // Handle StateNotFoundException
+    // Handle DepartmentNotFoundException
     @ExceptionHandler(DepartmentNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleStateNotFoundException(DepartmentNotFoundException ex) {
-        logger.warn("State not found: {}", ex.getMessage());
+    public ResponseEntity<ErrorResponse> handleDepartmentNotFoundException(DepartmentNotFoundException ex) {
+        logger.warn("Department not found: {}", ex.getMessage());
+        ErrorResponse response = new ErrorResponse(
+                HttpStatus.NOT_FOUND.value(),
+                ex.getMessage()
+        );
+        return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+    }
+
+    // Handle BillingDataNotFoundException
+    @ExceptionHandler(BillingDataNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleBillingDataNotFoundException(BillingDataNotFoundException ex) {
+        logger.warn("Billing data not found: {}", ex.getMessage());
         ErrorResponse response = new ErrorResponse(
                 HttpStatus.NOT_FOUND.value(),
                 ex.getMessage()

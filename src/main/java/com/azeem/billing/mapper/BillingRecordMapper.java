@@ -1,11 +1,13 @@
 package com.azeem.billing.mapper;
 import com.azeem.billing.entity.BillingRecordEntity;
 import com.azeem.billing.model.BillingRecord;
+import org.springframework.stereotype.Component;
 
 /**
  * Mapper class to convert between BillingRecord domain model and BillingRecordEntity database entity.
  */
 
+@Component
 public class BillingRecordMapper {
 
     public BillingRecordMapper() {}

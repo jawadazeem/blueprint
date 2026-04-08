@@ -1,6 +1,9 @@
 package com.azeem.billing.repository;
 
 import com.azeem.billing.entity.BillingRecordEntity;
+import com.azeem.billing.model.BillingRecord;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import org.springframework.data.jpa.repository.Query;
@@ -12,11 +15,18 @@ import java.util.List;
 public interface BillingRecordRepository extends JpaRepository<BillingRecordEntity, Long> {
 
     @Query("SELECT DISTINCT b.billingPeriod FROM BillingRecordEntity b ORDER BY b.billingPeriod")
-    List<String> findAllBillingPeriods();
+    Page<String> findAllBillingPeriods(Pageable pageable);
 
-    // Purpose: To find billing records by billing period.
+    // DB-level distinct departments
+    @Query("SELECT DISTINCT b.department FROM BillingRecordEntity b ORDER BY b.department")
+    List<String> findDistinctDepartments();
+
+    // DB-level distinct billing periods (non-paged)
+    @Query("SELECT DISTINCT b.billingPeriod FROM BillingRecordEntity b ORDER BY b.billingPeriod")
+    List<String> findAllDistinctBillingPeriods();
+
+    Page<BillingRecordEntity> findAll(Pageable pageable);
+    Page<BillingRecordEntity> findByBillingPeriod(String billingPeriod, Pageable pageable);
     List<BillingRecordEntity> findByBillingPeriod(String billingPeriod);
-
-    List<BillingRecordEntity> findByDepartment(String department);
+    Page<BillingRecordEntity> findByDepartmentIgnoreCase(String department, Pageable pageable);
 }
-

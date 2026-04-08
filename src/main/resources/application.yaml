@@ -17,6 +17,8 @@ alarm:
   account:
     low: 15000
     high: 20000
+billing-reader:
+  has-header: true
 
 ---
 # Configuration for the 'dev' profile only
@@ -39,7 +41,13 @@ spring:
   billing:
     ingest:
       default-file: classpath:resources/azeemcom_telecom_usage_2025_01.csv
-
+  cloud:
+    aws:
+      region:
+        static: us-east-1
+      credentials:
+        access-key: ${AWS_ACCESS_KEY_ID}
+        secret-key: ${AWS_SECRET_ACCESS_KEY}
 ---
 # Configuration for the 'test' profile only
 spring:
