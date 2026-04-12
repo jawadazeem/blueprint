@@ -6,5 +6,5 @@ import java.util.List;
  * Interface for reading and parsing billing files.
  */
 public interface BillingFileReader {
-    List<String[]> parse();
+    String[] parseNextRow();
 }

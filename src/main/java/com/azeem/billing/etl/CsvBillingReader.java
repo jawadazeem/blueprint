@@ -10,7 +10,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
+import java.sql.Array;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -35,47 +37,45 @@ import java.util.List;
  * <p>Failures during reading result in a runtime exception and halt ingestion.</p>
  */
 
-public class CsvBillingReader implements BillingFileReader {
+public class CsvBillingReader implements BillingFileReader, AutoCloseable {
     private static final Logger log = LoggerFactory.getLogger(CsvBillingReader.class);
 
     private final InputStream inputStream;
+    private final CSVReader csvReader;
     private final boolean hasHeader;
+    private boolean headerSkipped = false;
 
     public CsvBillingReader(InputStream inputStream,
                             boolean hasHeader) {
+        this.csvReader = new CSVReader(new InputStreamReader(inputStream, Charset.defaultCharset()));
         this.inputStream = inputStream;
         this.hasHeader = hasHeader;
     }
 
     @Override
-    public List<String[]> parse() {
-
-        log.info("Loading CSV");
-
-        try (CSVReader csvReader = new CSVReader(
-                new InputStreamReader(
-                        inputStream,
-                        Charset.defaultCharset()
-                )
-        )) {
-            if (hasHeader) {
+    public String[] parseNextRow() {
+        try {
+            if (hasHeader && !headerSkipped) {
                 // Skip header row
                 csvReader.readNext();
+                headerSkipped = true;
             }
 
-            String[] tokens;
-            List<String[]> entries = new ArrayList<>();
-
-            while ((tokens = csvReader.readNext()) != null) {
-                entries.add(tokens);
-            }
-
-            log.info("Successfully loaded from CSV. {} records were parsed.", entries.size());
-            return entries;
+            return csvReader.readNext();
 
         } catch (IOException | CsvValidationException e) {
             log.error("Error loading CSV file", e);
             throw new IllegalStateException("Failed to load CSV file", e);
+        }
+    }
+
+    @Override
+    public void close() throws Exception {
+        log.info("Closing CSV reader");
+        try {
+            csvReader.close();
+        } catch (IOException e) {
+            log.warn("Failed to close reader cleanly", e);
         }
     }
 }

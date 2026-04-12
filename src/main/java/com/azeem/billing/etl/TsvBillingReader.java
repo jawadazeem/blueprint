@@ -1,18 +1,16 @@
 package com.azeem.billing.etl;
 
 import com.azeem.billing.util.BillingFileReader;
-import com.opencsv.CSVParser;
-import com.opencsv.CSVParserBuilder;
 import com.opencsv.CSVReader;
 import com.opencsv.CSVReaderBuilder;
 import com.opencsv.exceptions.CsvValidationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.FileReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Reads billing data from a tab-separated values (TSV) file and returns
@@ -34,47 +32,52 @@ import java.util.List;
  *   <li>Fail-fast on malformed input</li>
  * </ul>
  */
-
-public class TsvBillingReader implements BillingFileReader {
+public class TsvBillingReader implements BillingFileReader, AutoCloseable {
     private static final Logger log = LoggerFactory.getLogger(TsvBillingReader.class);
 
-    private final String filePath;
+    private final CSVReader reader;
     private final boolean hasHeader;
+    private boolean headerSkipped = false;
 
-    public TsvBillingReader(String filePath, boolean hasHeader) {
-        this.filePath = filePath;
+    public TsvBillingReader(InputStream inputStream, boolean hasHeader) {
+
+        this.reader = new CSVReaderBuilder(
+                new InputStreamReader(inputStream, StandardCharsets.UTF_8)
+        )
+                .withSkipLines(0)
+                .withCSVParser(
+                        new com.opencsv.CSVParserBuilder()
+                                .withSeparator('\t')
+                                .build()
+                )
+                .build();
+
         this.hasHeader = hasHeader;
     }
 
     @Override
-    public List<String[]> parse() {
-
-        log.info("Loading TSV from {}", filePath);
-
-        // Modify parser for tab delimitation
-        CSVParser parser = new CSVParserBuilder().withSeparator('\t').build();
-
-        try (CSVReader csvReader = new CSVReaderBuilder(new FileReader(filePath))
-                .withCSVParser(parser)
-                .build()) {
-            if (hasHeader) {
-                // Skip header row
-                csvReader.readNext();
+    public String[] parseNextRow() {
+        try {
+            if (hasHeader && !headerSkipped) {
+                reader.readNext(); // skip header
+                headerSkipped = true;
             }
 
-            String[] tokens;
-            List<String[]> entries = new ArrayList<>();
-
-            while ((tokens = csvReader.readNext()) != null) {
-                entries.add(tokens);
-            }
-
-            log.info("Successfully loaded from TSV. {} records were parsed.", entries.size());
-            return entries;
+            return reader.readNext();
 
         } catch (IOException | CsvValidationException e) {
-            log.error("Error loading TSV file", e);
-            throw new IllegalStateException("Failed to load TSV file", e);
+            log.error("Error reading TSV file", e);
+            throw new IllegalStateException("Failed to read TSV file", e);
+        }
+    }
+
+    @Override
+    public void close() {
+        log.info("Closing TSV reader");
+        try {
+            reader.close();
+        } catch (IOException e) {
+            log.warn("Failed to close reader cleanly", e);
         }
     }
 }

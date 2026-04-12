@@ -14,6 +14,9 @@ import jakarta.persistence.*;
  * BillingRecordMapper.
  */
 
+// TODO: Normalize the database schema by splitting into separate tables for accountName
+//  and departments, and using foreign keys instead of denormalized strings. Departments
+//  table also needs to store its budget.
 @Entity
 @Table(name = "billing_records", indexes = {
         @Index(name = "idx_billing_period", columnList = "billingPeriod"),
@@ -23,10 +26,11 @@ public class BillingRecordEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id; // Auto-generated primary key by DB
+    
+    private String department;
 
     private String accountName;
     private String employeeId;
-    private String department;
     private String phoneNumber;
     private String billingPeriod;
     private int minutesUsed;

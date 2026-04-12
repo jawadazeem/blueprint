@@ -31,11 +31,11 @@ import java.util.List;
  */
 @Component
 public class BillingRecordAssembler {
+    Logger log = LoggerFactory.getLogger(BillingRecordAssembler.class);
     public BillingRecordAssembler() {}
 
-    public List<BillingRecord> assembleRecord(List<String[]> entries) {
-        Logger log = LoggerFactory.getLogger(BillingRecordAssembler.class);
-        final List<BillingRecord> records = new ArrayList<>();
+    public List<BillingRecord> assembleRecords(List<String[]> entries) {
+        List<BillingRecord> records = new ArrayList<>();
         for (String[] entry : entries) {
             // Expect the exact 9 fields BillingRecord uses
             String accountName = entry[0];
@@ -65,5 +65,30 @@ public class BillingRecordAssembler {
         }
         log.info("Assembled {} BillingRecord instances from raw data.", records.size());
         return records;
+    }
+
+    public BillingRecord assembleRecord(String[] entry) {
+        String accountName = entry[0];
+        String employeeId = entry[1];
+        String department = entry[2];
+        String phoneNumber = entry[3];
+        String billingPeriod = entry[4];
+
+        int minutesUsed = Integer.parseInt(entry[5]);
+        double dataGbUsed = Double.parseDouble(entry[6]);
+        int smsCount = Integer.parseInt(entry[7]);
+        double totalCharge = Double.parseDouble(entry[8]);
+
+        return new BillingRecord(
+                accountName,
+                employeeId,
+                department,
+                phoneNumber,
+                billingPeriod,
+                minutesUsed,
+                dataGbUsed,
+                smsCount,
+                totalCharge
+        );
     }
 }

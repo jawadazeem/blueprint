@@ -10,7 +10,7 @@
     <!-- Bootstrap (same as dashboard) -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
 
-    <link rel="icon" href="/favicon.png" />
+    <link rel="icon" href="./favicon.png" />
 
     <style>
         body {
@@ -67,46 +67,41 @@
 <div class="info-card">
     <div class="section-title">Overview</div>
     <p>
-        This dashboard is a demonstration project for exploring how telecom billing data
-        can be displayed, summarized, and analyzed in a clean, modern interface. It shows
-        how records can be loaded, filtered, and ranked, and how overall charge patterns
-        can be highlighted for insight.
+        The Billing Dashboard is a focused, production-oriented interface for exploring
+        large telecom billing datasets. It provides fast, paginated access to records,
+        real-time filtering and ranking, and pre-built analytics that surface charge
+        concentrations, outliers, and trends across accounts and departments.
+        Built with scalability in mind, the dashboard demonstrates how ETL-driven data
+        can be transformed into actionable operational insights for finance and
+        operations teams.
     </p>
 </div>
 
 <div class="info-card">
     <div class="section-title">What You Can Do Here</div>
     <ul>
-        <li>Load a real-time summary of all billing data</li>
-        <li>Browse individual telecom records in a sortable table</li>
-        <li>Filter records by state for targeted review</li>
-        <li>View the highest-charging accounts with Top-N queries</li>
-        <li>Explore charge patterns and data usage across all senators</li>
+        <li>Load a paginated summary of billing records with on-demand filters</li>
+        <li>Browse individual telecom records in a sortable, searchable table</li>
+        <li>Filter and segment records by department, state, or billing period</li>
+        <li>Identify top-charging accounts with configurable Top‑N queries</li>
+        <li>Explore charge patterns and trends across accounts and departments</li>
     </ul>
 </div>
 
 <div class="info-card">
     <div class="section-title">Technologies Used</div>
     <ul>
-        <li><strong>Java 17</strong> – Core language used to implement the ETL pipeline, service layer, model layer, and backend logic.</li>
+        <li><strong>Java 21</strong> – Core language used to implement the ETL pipeline, service layer, model layer, and backend logic.</li>
 
-        <li><strong>Spring Boot</strong> – Framework for building the REST API, handling dependency injection, managing application lifecycle, and structuring the project using standard enterprise patterns.</li>
+        <li><strong>Spring Boot (Web)</strong> – Framework for building the REST API, handling dependency injection, and structuring the application.</li>
 
-        <li><strong>Spring Web (Spring MVC)</strong> – Exposes REST endpoints, handles HTTP routing, request/response serialization, and controller logic.</li>
+        <li><strong>AWS</strong> – Infrastructure and services used in production: ECS, RDS, CloudWatch, SQS, SNS, S3.</li>
 
-        <li><strong>SLF4J + Logback</strong> – Logging for observability, error tracking, and debugging across ETL, service, and controller layers.</li>
+        <li><strong>Docker</strong> – Containerization for consistent deployment environments.</li>
 
-        <li><strong>JUnit 5</strong> – Unit testing framework for validating ETL logic, service behavior, and controller endpoints.</li>
+        <li><strong>PostgreSQL</strong> – Production relational datastore used for billing records.</li>
 
-        <li><strong>Mockito</strong> – Mocking framework used to simulate service dependencies in controller tests and isolate components under test.</li>
-
-        <li><strong>MockMvc</strong> – Spring MVC test framework used to send simulated HTTP requests and validate controller responses without running a full server.</li>
-
-        <li><strong>OpenCSV</strong> – Library for parsing CSV input files as part of the ETL (Extract, Transform, Load) process.</li>
-
-        <li><strong>AWS Elastic Beanstalk</strong> – Platform used to deploy and host the live Spring Boot application in a scalable and managed environment.</li>
-
-        <li><strong>AWS S3</strong> – Used for CSV uploads via pre-signed URLs, allowing users to securely upload billing files directly to cloud storage.</li>
+        <li><strong>JUnit 5 &amp; Mockito</strong> – Testing frameworks for unit and integration tests.</li>
 
         <li><strong>Maven</strong> – Build and dependency management tool used to manage libraries, run tests, and package the application.</li>
 
