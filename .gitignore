@@ -32,3 +32,7 @@ build/
 ### VS Code ###
 .vscode/
 .env
+
+### logs ###
+app.log
+*.gz

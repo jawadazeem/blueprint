@@ -1,13 +1,16 @@
+/*
+ * (C) Copyright 2026 Jawad Azeem
+ * Apache 2.0 License
+ */
+
 package com.azeem.billing.controller;
 
 import com.azeem.billing.model.Alarm;
-import com.azeem.billing.model.BillingRecord;
 import com.azeem.billing.service.AlarmService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;

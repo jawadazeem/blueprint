@@ -1,3 +1,8 @@
+/*
+ * (C) Copyright 2026 Jawad Azeem
+ * Apache 2.0 License
+ */
+
 package com.azeem.billing.mapper;
 import com.azeem.billing.entity.BillingRecordEntity;
 import com.azeem.billing.model.BillingRecord;

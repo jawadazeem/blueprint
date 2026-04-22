@@ -1,7 +1,11 @@
+/*
+ * (C) Copyright 2026 Jawad Azeem
+ * Apache 2.0 License
+ */
+
 package com.azeem.billing.repository;
 
 import com.azeem.billing.entity.BillingRecordEntity;
-import com.azeem.billing.model.BillingRecord;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

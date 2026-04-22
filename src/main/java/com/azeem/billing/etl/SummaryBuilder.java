@@ -1,3 +1,8 @@
+/*
+ * (C) Copyright 2026 Jawad Azeem
+ * Apache 2.0 License
+ */
+
 package com.azeem.billing.etl;
 
 import com.azeem.billing.model.BillingRecord;
@@ -64,7 +69,7 @@ public class SummaryBuilder {
     }
 
     private BillingRecord findHighestChargeRecord() {
-        BillingRecord currHighestChargeRecord = records.get(0);
+        BillingRecord currHighestChargeRecord = records.getFirst();
 
         for (BillingRecord record: records) {
             if (currHighestChargeRecord.totalCharge() < record.totalCharge()) {

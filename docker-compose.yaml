@@ -1,0 +1,76 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: billing-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: billingdb
+      POSTGRES_USER: billing_app
+      POSTGRES_PASSWORD: 875869
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"   # for local psql access
+
+  localstack:
+    image: localstack/localstack:3.0.0
+    container_name: billing-s3-mock
+    ports:
+      - "127.0.0.1:4566:4566"
+    environment:
+      - SERVICES=s3
+    volumes:
+      - "./localstack_data:/var/lib/localstack"
+      - "/var/run/docker.sock:/var/run/docker.sock"
+
+  app:
+    build: .
+    container_name: billing-app
+    volumes:
+      - ~/.m2:/root/.m2
+    depends_on:
+      postgres:
+        condition: service_started
+      localstack:
+        condition: service_started
+      aws-cli-setup:
+        condition: service_completed_successfully
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      # Match the variable names in your application.yaml 'prod' section
+      PROD_DB_URL: jdbc:postgresql://billing-postgres:5432/billingdb
+      PROD_DB_USERNAME: billing_app
+      PROD_DB_PASSWORD: 875869
+      # Override the default localhost for S3 to use the localstack service name
+      AWS_S3_ENDPOINT: http://localstack:4566
+      AWS_REGION: us-east-1
+
+  aws-cli-setup:
+    image: amazon/aws-cli
+    depends_on:
+      - localstack
+    environment:
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - AWS_DEFAULT_REGION=us-east-1
+    entrypoint: /bin/sh -c
+    command: >
+      "
+      # Simple sleep is more reliable than curl in this specific image
+      sleep 10;
+      
+      aws --endpoint-url=http://localstack:4566 s3 mb s3://telecom-billing;
+      
+      # Using put-object to bypass the header issues you saw in the logs
+      aws --endpoint-url=http://localstack:4566 s3api put-object \
+        --bucket telecom-billing \
+        --key usage.csv \
+        --body /data/usage.csv;
+      "
+    volumes:
+      - ./data:/data
+
+volumes:
+  postgres_data:

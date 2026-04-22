@@ -2,23 +2,36 @@
 spring:
   application:
     name: telecom-billing-processor
+  cloud:
+    aws:
+      s3:
+        # Defaults to localstack for Docker, but can be overridden
+        endpoint: ${AWS_S3_ENDPOINT:http://localhost:4566}
+        path-style-access-enabled: true
+      region:
+        static: ${AWS_REGION:us-east-1}
+      credentials:
+        access-key: ${AWS_ACCESS_KEY:test}
+        secret-key: ${AWS_SECRET_KEY:test}
 server:
   port: 8080
 logging:
   file:
     name: app.log
+# Business-specific configuration
 alarm:
   department:
-    monthlyLimit: 2500
+    monthlyLimit: 7500
   individual:
-    low: 200
-    medium: 350
+    low: 250
+    medium: 370
     high: 500
   account:
-    low: 15000
-    high: 20000
+    low: 45000
+    high: 60000
 billing-reader:
   has-header: true
+  batch-size: 100
 
 ---
 # Configuration for the 'dev' profile only
@@ -38,16 +51,6 @@ spring:
     hibernate:
       ddl-auto: update
     show-sql: true
-  billing:
-    ingest:
-      default-file: classpath:resources/azeemcom_telecom_usage_2025_01.csv
-  cloud:
-    aws:
-      region:
-        static: us-east-1
-      credentials:
-        access-key: ${AWS_ACCESS_KEY_ID}
-        secret-key: ${AWS_SECRET_ACCESS_KEY}
 ---
 # Configuration for the 'test' profile only
 spring:
@@ -69,9 +72,9 @@ spring:
     activate:
       on-profile: prod
   datasource:
-    url: ${PROD_DB_URL}
-    username: ${PROD_DB_USERNAME}
-    password: ${PROD_DB_PASSWORD}
+    url: ${PROD_DB_URL:jdbc:postgresql://localhost:5432/billingdb}
+    username: billing_app
+    password: 875869
   jpa:
     hibernate:
       ddl-auto: update
