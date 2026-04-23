@@ -6,10 +6,12 @@
 package com.azeem.billing.service;
 
 import com.azeem.billing.exception.BillingDataNotFoundException;
+import io.awspring.cloud.s3.S3Operations;
 import io.awspring.cloud.s3.S3Resource;
 import io.awspring.cloud.s3.S3Template;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -23,9 +25,11 @@ import java.nio.charset.StandardCharsets;
 public class BillingS3Service {
     private static final Logger log = LoggerFactory.getLogger(BillingS3Service.class);
     private final S3Template s3Template;
+    private final S3Operations s3Operations;
 
-    public BillingS3Service(S3Template s3Template) {
+    public BillingS3Service(S3Template s3Template, S3Operations s3Operations) {
         this.s3Template = s3Template;
+        this.s3Operations = s3Operations;
     }
 
     public InputStream getBillingDataStream(String bucketName, String key) {
@@ -48,6 +52,14 @@ public class BillingS3Service {
     public void uploadUserFile(String bucketName, MultipartFile file) {
         try {
             String key = file.getOriginalFilename();
+
+            if (s3Operations.objectExists(bucketName, key)) {
+                log.warn("File {} already exists in bucket {}, "
+                        + "the file cannot be uploaded.", key, bucketName
+                );
+
+                return;
+            }
 
             log.info("Uploading user file {} to bucket {}", key, bucketName);
 

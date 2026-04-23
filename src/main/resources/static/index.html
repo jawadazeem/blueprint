@@ -195,15 +195,25 @@
 <nav class="navbar navbar-light bg-white shadow-sm mb-4" style="border-radius: 10px;">
     <div class="container-fluid">
         <span class="navbar-brand mb-0 h1" style="font-weight:600;">Billing Portal</span>
-        <button class="btn-modern alarms" id="alarms-btn" type="button">
-            Alarms (0)
-        </button>
+        
+        <div class="d-flex align-items-center gap-3">
+            <div class="d-flex align-items-center bg-light p-1 rounded-3 border">
+                <input type="file" id="fileInput" class="form-control form-control-sm" style="width: 200px;" accept=".csv">
+                <button class="btn btn-sm btn-primary ms-2" onclick="uploadFile()" id="uploadBtn">Upload</button>
+            </div>
+
+            <button class="btn-modern alarms" id="alarms-btn" type="button">
+                Alarms (0)
+            </button>
+
+            <select id="periodSelect" class="form-select w-auto" onchange="changePeriod()"></select>
+        </div>
 
         <div class="modal-overlay" id="alarms-overlay" style="display:none;">
             <div class="alarm-modal">
                 <div class="modal-header">
                     <h3 id="alarms-title">Alarms</h3>
-                    <button class="modal-close" id="alarms-close" type="button">✕</button>
+                    <button class="modal-close" id="alarms-close" type="button" onclick="closeAlarmsModal()">✕</button>
                 </div>
 
                 <div class="modal-body">
@@ -212,7 +222,6 @@
                 </div>
             </div>
         </div>
-        <select id="periodSelect" class="form-select w-auto" onchange="changePeriod()"></select>
     </div>
 </nav>
 
@@ -711,6 +720,52 @@
 
         } catch (e) {
             console.error("Failed to load alarms", e);
+        }
+    }
+
+    async function uploadFile() {
+        const fileInput = document.getElementById('fileInput');
+        const uploadBtn = document.getElementById('uploadBtn');
+        
+        if (fileInput.files.length === 0) {
+            alert("Please select a CSV file first.");
+            return;
+        }
+
+        const file = fileInput.files[0];
+        const formData = new FormData();
+        formData.append("file", file);
+
+        uploadBtn.disabled = true;
+        uploadBtn.textContent = "Uploading...";
+
+        try {
+            const response = await fetch('/upload', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (response.ok) {
+                // 1. Clear the input so it's ready for the next one
+                fileInput.value = ""; 
+                
+                // 2. Give the SQS listener a moment to breathe (2 seconds)
+                // Then refresh the dashboard components
+                setTimeout(async () => {
+                    await loadPeriods();      // Get the new period in the dropdown
+                    await loadDepartments();  // Update department list
+                    changePeriod();           // Refresh summary, records, and charts
+                }, 2000);
+
+            } else {
+                const errorText = await response.text();
+                alert("Upload failed: " + errorText);
+            }
+        } catch (error) {
+            console.error("Upload error:", error);
+        } finally {
+            uploadBtn.disabled = false;
+            uploadBtn.textContent = "Upload";
         }
     }
 

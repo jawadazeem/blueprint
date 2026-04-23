@@ -7,10 +7,8 @@ package com.azeem.billing.controller;
 
 import com.azeem.billing.model.BillingRecord;
 import com.azeem.billing.model.BillingSummary;
-import com.azeem.billing.service.BillingIngestionService;
 import com.azeem.billing.service.BillingS3Service;
 import com.azeem.billing.service.BillingService;
-import org.apache.coyote.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -25,6 +23,7 @@ import java.util.List;
  * <p>
  * Endpoints:
  * <ul>
+*    <li>POST /upload - Upload a csv file that contains billing records to the application</li>
  *   <li>GET /records - Retrieve all billing records.</li>
  *   <li>GET /summary - Get aggregated billing summary.</li>
  *   <li>GET /records/department/{department} - Get billing records filtered by department.</li>
