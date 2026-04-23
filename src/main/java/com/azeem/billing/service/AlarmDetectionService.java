@@ -141,15 +141,17 @@ public class AlarmDetectionService {
             List<Alarm> alarms = new ArrayList<>();
             alarms.add(alarm);
             return alarms;
+        } else if (grandTotal >= accountLow) {
+            Alarm alarm = new Alarm(UUID.randomUUID(),
+                    UUID.randomUUID(),
+                    AlarmScope.ACCOUNT,
+                    billingPeriod,
+                    "Total Account Budget Exceeded: HIGH",
+                    AlarmSeverity.HIGH,
+                    "Your account's telecom bill has significantly exceeded its monthly budget.", Instant.now(),
+                    null, null, null);
+            return List.of(alarm);
         }
-        Alarm alarm = new Alarm(UUID.randomUUID(),
-                UUID.randomUUID(),
-                AlarmScope.ACCOUNT,
-                billingPeriod,
-                "Total Account Budget Exceeded: HIGH",
-                AlarmSeverity.HIGH,
-                "Your account's telecom bill has significantly exceeded its monthly budget.", Instant.now(),
-                null, null, null);
-        return List.of(alarm);
+        return new ArrayList<>();
     }
 }

@@ -5,6 +5,7 @@
 
 package com.azeem.billing.listener;
 
+import com.azeem.billing.service.AlarmService;
 import com.azeem.billing.service.BillingIngestionService;
 import com.azeem.billing.service.BillingS3Service;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -26,6 +27,7 @@ public class BillingEventListener {
 
     public BillingEventListener(BillingS3Service s3Service,
                                 BillingIngestionService ingestionService,
+                                AlarmService alarmService,
                                 ObjectMapper objectMapper) {
         this.s3Service = s3Service;
         this.ingestionService = ingestionService;
@@ -50,7 +52,7 @@ public class BillingEventListener {
             log.info("Triggering Ingestion for S3 Object: s3://{}/{}", bucket, key);
 
             try (InputStream s3Stream = s3Service.getBillingDataStream(bucket, key)) {
-                ingestionService.ingestData(key, s3Stream);
+                ingestionService.ingestData(s3Stream);
 
                 log.info("Event-driven ingestion successful for {}", key);
             }

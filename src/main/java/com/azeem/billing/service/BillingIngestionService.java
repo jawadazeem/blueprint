@@ -10,7 +10,6 @@ import com.azeem.billing.entity.BillingRecordEntity;
 import com.azeem.billing.exception.BillingDataIngestionException;
 import com.azeem.billing.model.BillingRecord;
 import com.azeem.billing.repository.BillingRecordRepository;
-import com.azeem.billing.util.BillingFileReader;
 import jakarta.validation.constraints.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,9 +62,11 @@ public class BillingIngestionService {
         this.alarmService = alarmService;
     }
 
-    public void ingestData(@NotNull String billingPeriod, @NotNull InputStream inputStream) {
+    public String ingestData(@NotNull InputStream inputStream) {
         int successCount = 0;
         int failureCount = 0;
+        boolean firstRow = true;
+        String billingPeriod = "unknown";
 
         try (CsvBillingReader reader = new CsvBillingReader(inputStream, billingReaderConfig.hasHeader())) {
             List<BillingRecordEntity> batch = new ArrayList<>();
@@ -75,6 +76,11 @@ public class BillingIngestionService {
                 try {
                     BillingRecord domain = billingRecordAssembler.assembleRecord(row);
                     batch.add(mapper.mapToEntity(domain));
+
+                    if (firstRow) {
+                        billingPeriod = domain.billingPeriod();
+                        firstRow = false;
+                    }
 
                     if (batch.size() >= billingReaderConfig.getBatchSize()) {
                         repository.saveAll(batch);
@@ -112,7 +118,8 @@ public class BillingIngestionService {
 
         } catch (Exception e) {
             log.error("System-Level Failure: The S3 stream or Reader encountered a fatal error.", e);
-            // This is the only place where throwing makes sense, as the whole process is dead.
         }
+
+        return billingPeriod;
     }
 }
