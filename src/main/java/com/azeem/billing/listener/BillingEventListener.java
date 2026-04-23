@@ -5,6 +5,7 @@
 
 package com.azeem.billing.listener;
 
+import com.azeem.billing.model.IngestionResult;
 import com.azeem.billing.service.AlarmService;
 import com.azeem.billing.service.BillingIngestionService;
 import com.azeem.billing.service.BillingS3Service;
@@ -52,7 +53,11 @@ public class BillingEventListener {
             log.info("Triggering Ingestion for S3 Object: s3://{}/{}", bucket, key);
 
             try (InputStream s3Stream = s3Service.getBillingDataStream(bucket, key)) {
-                ingestionService.ingestData(s3Stream);
+                IngestionResult result = ingestionService.ingestData(s3Stream);
+
+                if (result.failureCount() > 0) {
+                    s3Service.uploadErrorLog(bucket, result.billingPeriod(), result.errorLog());
+                }
 
                 log.info("Event-driven ingestion successful for {}", key);
             }

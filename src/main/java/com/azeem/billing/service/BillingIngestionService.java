@@ -9,6 +9,7 @@ import com.azeem.billing.config.BillingReaderConfig;
 import com.azeem.billing.entity.BillingRecordEntity;
 import com.azeem.billing.exception.BillingDataIngestionException;
 import com.azeem.billing.model.BillingRecord;
+import com.azeem.billing.model.IngestionResult;
 import com.azeem.billing.repository.BillingRecordRepository;
 import jakarta.validation.constraints.NotNull;
 import org.slf4j.Logger;
@@ -62,9 +63,11 @@ public class BillingIngestionService {
         this.alarmService = alarmService;
     }
 
-    public String ingestData(@NotNull InputStream inputStream) {
+    public IngestionResult ingestData(@NotNull InputStream inputStream) {
         int successCount = 0;
         int failureCount = 0;
+        StringBuilder errorBuffer = new StringBuilder();
+        errorBuffer.append("Raw Row,Error Message\n");
         boolean firstRow = true;
         String billingPeriod = "unknown";
 
@@ -94,12 +97,14 @@ public class BillingIngestionService {
                             "Resilience Triggered: Skipping corrupted row in period {}. Error: {}"
                             , billingPeriod, e.getMessage()
                     );
-                    /*
-                     * TODO: Save bad rows in a path in the S3 bucket for later analysis.
-                     *  This would be a separate service that the ingestion service calls
-                     *  when it encounters a bad row. The bad row would be saved with a
-                     *  timestamp and the error message for later analysis.
-                     */
+
+                    // Capture the exact line that failed
+                    String rawRow = String.join(",", row);
+                    errorBuffer.append(rawRow)
+                            .append(",")
+                            .append(e.getMessage())
+                            .append("\n");
+
                 }
             }
 
@@ -120,6 +125,11 @@ public class BillingIngestionService {
             log.error("System-Level Failure: The S3 stream or Reader encountered a fatal error.", e);
         }
 
-        return billingPeriod;
+        return new IngestionResult(
+                billingPeriod,
+                successCount,
+                failureCount,
+                errorBuffer.toString()
+        );
     }
 }

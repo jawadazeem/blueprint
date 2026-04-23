@@ -190,7 +190,7 @@
 </head>
 
 <body>
-<h1>Telecom Billing Intelligence Platform</h1>
+<h1>Blueprint Telecom Billing Intelligence Platform</h1>
 
 <nav class="navbar navbar-light bg-white shadow-sm mb-4" style="border-radius: 10px;">
     <div class="container-fluid">
@@ -286,19 +286,28 @@
 
 <!-- All Records -->
 <div class="card mb-4">
-    <div class="card-header">All Records</div>
-    <div class="card-body">
-        <div class="table-container">
-            <table class="table" id="recordsTable">
-                <thead>
-                <tr>
-                    <th>Phone</th>
-                    <th>Department</th>
-                    <th>Charge</th>
-                </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <span>All Records</span>
+            <div id="paginationControls" class="d-flex align-items-center gap-2">
+                <button class="btn btn-sm btn-outline-secondary" onclick="changePage(-1)" id="prevBtn">Previous</button>
+                <span id="pageInfo" class="small fw-bold" style="min-width: 100px; text-align: center;">Page 1</span>
+                <button class="btn btn-sm btn-outline-secondary" onclick="changePage(1)" id="nextBtn">Next</button>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-container">
+                <table class="table" id="recordsTable">
+                    <thead>
+                    <tr>
+                        <th>Phone</th>
+                        <th>Department</th>
+                        <th>Charge</th>
+                    </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>
@@ -346,7 +355,7 @@
 <!-- Footer -->
 <footer class="app-footer mt-5">
     <div class="container text-center py-3">
-        <span class="footer-title">Billing Portal</span>
+        <span class="footer-title">Blueprint Billing Portal</span>
         <span class="footer-separator">•</span>
         <span class="footer-sub">© 2026 Jawad Azeem</span>
         <span class="footer-separator">•</span>
@@ -384,6 +393,8 @@
 
 <script>
     let currentPeriod = null;
+    let currentPage = 0;
+    const pageSize = 20;
 
     async function loadSummary() {
         const res = await fetch(`/summary/period/${currentPeriod}`);
@@ -454,12 +465,14 @@
       }
     }
 
-
     async function loadRecords() {
-        const res = await fetch(`/records/period/${currentPeriod}`);
+        // Fetches with pagination parameters
+        const res = await fetch(`/records/period/${currentPeriod}?page=${currentPage}&size=${pageSize}`);
         const data = await res.json();
 
-        const records = Array.isArray(data) ? data : (data.content || []);
+        // Spring Data Page wraps list in 'content'
+        const records = data.content || [];
+        const totalPages = data.totalPages || 1;
 
         const tbody = document.querySelector('#recordsTable tbody');
         tbody.innerHTML = '';
@@ -473,6 +486,25 @@
             `;
             tbody.appendChild(row);
         });
+
+        // Update the UI labels and buttons
+        document.getElementById("pageInfo").textContent = `Page ${currentPage + 1} of ${totalPages}`;
+        document.getElementById("prevBtn").disabled = (currentPage <= 0);
+        document.getElementById("nextBtn").disabled = (currentPage >= totalPages - 1);
+    }
+
+    function changePage(step) {
+        currentPage += step;
+        loadRecords();
+    }
+
+    function changePeriod() {
+        currentPeriod = document.getElementById('periodSelect').value;
+        currentPage = 0; // Reset to page 1 whenever the period changes
+        loadSummary();
+        loadRecords();
+        loadAlarmsCount();
+        loadAlarmsChart();
     }
 
     async function loadByDepartment() {
@@ -556,14 +588,6 @@
             opt.textContent = d;
             select.appendChild(opt);
         });
-    }
-
-    function changePeriod() {
-        currentPeriod = document.getElementById('periodSelect').value;
-        loadSummary();
-        loadRecords();
-        loadAlarmsCount();
-        loadAlarmsChart();
     }
 
     // Open info popup

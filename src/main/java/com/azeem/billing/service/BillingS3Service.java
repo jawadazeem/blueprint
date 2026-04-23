@@ -13,8 +13,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 
 @Service
 public class BillingS3Service {
@@ -39,6 +41,20 @@ public class BillingS3Service {
         } catch (IOException e) {
             log.error("Failed to open InputStream for S3 object: {}", key, e);
             throw new RuntimeException("Error accessing S3 stream", e);
+        }
+    }
+
+    public void uploadErrorLog(String bucketName, String billingPeriod, String errorLogContent) {
+        String errorKey = String.format("error-logs/%s-errors.log", billingPeriod);
+
+        try {
+            InputStream inputStream = new ByteArrayInputStream(
+                    errorLogContent.getBytes(StandardCharsets.UTF_8));
+            s3Template.upload(bucketName, errorKey, inputStream);
+            log.info("Successfully uploaded error log for billing period: {}", billingPeriod);
+        } catch (Exception e) {
+            log.error("Failed to upload error log to S3 for billing period: {}", billingPeriod, e);
+            throw new RuntimeException("Error uploading error log to S3", e);
         }
     }
 
