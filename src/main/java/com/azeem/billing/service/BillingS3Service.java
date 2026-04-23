@@ -5,6 +5,7 @@
 
 package com.azeem.billing.service;
 
+import com.azeem.billing.exception.BillingDataNotFoundException;
 import io.awspring.cloud.s3.S3Resource;
 import io.awspring.cloud.s3.S3Template;
 import org.slf4j.Logger;
@@ -27,15 +28,13 @@ public class BillingS3Service {
     public InputStream getBillingDataStream(String bucketName, String key) {
         log.info("Fetching billing data from S3 bucket: {} with key: {}", bucketName, key);
 
-        // S3Resource represents the object in the cloud
         S3Resource resource = s3Template.download(bucketName, key);
 
         if (!resource.exists()) {
-            throw new RuntimeException("Billing file not found in S3: " + key);
+            throw new BillingDataNotFoundException("Billing file not found in S3: " + key);
         }
 
         try {
-            // This opens the network pipe directly to the S3 object
             return resource.getInputStream();
         } catch (IOException e) {
             log.error("Failed to open InputStream for S3 object: {}", key, e);

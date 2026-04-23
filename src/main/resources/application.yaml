@@ -5,9 +5,10 @@ spring:
   cloud:
     aws:
       s3:
-        # Defaults to localstack for Docker, but can be overridden
-        endpoint: ${AWS_S3_ENDPOINT:http://localhost:4566}
+        endpoint: ${AWS_S3_ENDPOINT:http://billing-s3-mock:4566}
         path-style-access-enabled: true
+      sqs:
+        endpoint: ${AWS_SQS_ENDPOINT:http://billing-s3-mock:4566}
       region:
         static: ${AWS_REGION:us-east-1}
       credentials:
@@ -40,17 +41,12 @@ spring:
     activate:
       on-profile: dev
   datasource:
-    url: jdbc:h2:mem:devdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
-    username: sa
-    password:
-  h2:
-    console:
-      enabled: true
-      path: /h2-console
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
   jpa:
     hibernate:
-      ddl-auto: update
-    show-sql: true
+      ddl-auto: create-drop
 ---
 # Configuration for the 'test' profile only
 spring:
@@ -58,9 +54,9 @@ spring:
     activate:
       on-profile: test
   datasource:
-    url: jdbc:postgresql://localhost:5432/billingdb
-    username: billing_app
-    password: 875869
+    url: ${TEST_DB_URL}
+    username: ${TEST_DB_USERNAME}
+    password: ${TEST_DB_PASSWORD}
   jpa:
     hibernate:
       ddl-auto: create-drop
@@ -72,9 +68,9 @@ spring:
     activate:
       on-profile: prod
   datasource:
-    url: ${PROD_DB_URL:jdbc:postgresql://localhost:5432/billingdb}
-    username: billing_app
-    password: 875869
+    url: ${PROD_DB_URL}
+    username: ${PROD_DB_USERNAME}
+    password: ${PROD_DB_PASSWORD}
   jpa:
     hibernate:
       ddl-auto: update

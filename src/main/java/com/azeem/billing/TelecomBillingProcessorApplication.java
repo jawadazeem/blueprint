@@ -17,22 +17,6 @@ import java.io.FileInputStream;
 public class TelecomBillingProcessorApplication {
 
     public static void main(String[] args) {
-        SpringApplication app = new SpringApplication(TelecomBillingProcessorApplication.class);
-
-        app.addListeners(event -> {
-            if (event instanceof ApplicationReadyEvent readyEvent) {
-                File file = new File("src/main/resources/azeemcom_telecom_usage_2025_01.csv");
-                // try-with-resources ensures the file is closed properly
-                try (FileInputStream fis = new FileInputStream(file)) {
-                    readyEvent.getApplicationContext()
-                            .getBean(BillingIngestionService.class)
-                            .ingestData("2025-01", fis);
-                } catch (Exception e) {
-                    System.err.println("Bootstrap ingestion failed");
-                }
-            }
-        });
-
-        app.run(args);
+        SpringApplication.run(TelecomBillingProcessorApplication.class, args);
     }
 }
