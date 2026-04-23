@@ -7,11 +7,16 @@ package com.azeem.billing.controller;
 
 import com.azeem.billing.model.BillingRecord;
 import com.azeem.billing.model.BillingSummary;
+import com.azeem.billing.service.BillingIngestionService;
+import com.azeem.billing.service.BillingS3Service;
 import com.azeem.billing.service.BillingService;
+import org.apache.coyote.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -37,9 +42,24 @@ import java.util.List;
 public class BillingController {
     private static final Logger log = LoggerFactory.getLogger(BillingController.class);
     private final BillingService service;
+    private final BillingS3Service s3Service;
 
-    public BillingController(BillingService service) {
+    public BillingController(BillingService service, BillingS3Service s3Service) {
         this.service = service;
+        this.s3Service = s3Service;
+    }
+
+    @PostMapping("/upload")
+    public ResponseEntity<String> handleFileUpload(
+            @RequestParam("file") MultipartFile file) {
+
+        if (!file.getOriginalFilename().endsWith(".csv")) {
+            return ResponseEntity.badRequest().body("CSV only, please.");
+        }
+
+        s3Service.uploadUserFile("telecom-billing", file);
+
+        return ResponseEntity.ok("File received. Processing has started in the background.");
     }
 
     @GetMapping("/records")

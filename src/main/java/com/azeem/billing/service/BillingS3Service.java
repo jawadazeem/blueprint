@@ -11,6 +11,7 @@ import io.awspring.cloud.s3.S3Template;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 
 import java.io.ByteArrayInputStream;
@@ -41,6 +42,21 @@ public class BillingS3Service {
         } catch (IOException e) {
             log.error("Failed to open InputStream for S3 object: {}", key, e);
             throw new RuntimeException("Error accessing S3 stream", e);
+        }
+    }
+
+    public void uploadUserFile(String bucketName, MultipartFile file) {
+        try {
+            String key = file.getOriginalFilename();
+
+            log.info("Uploading user file {} to bucket {}", key, bucketName);
+
+            // Streaming directly from the Multipart request to S3
+            s3Template.upload(bucketName, key, file.getInputStream());
+
+        } catch (IOException e) {
+            log.error("Failed to stream upload to S3", e);
+            throw new RuntimeException("S3 Upload Failed");
         }
     }
 
