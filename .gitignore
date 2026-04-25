@@ -36,3 +36,7 @@ build/
 ### logs ###
 app.log
 *.gz
+
+### Container related ###
+localstack_data
+data

@@ -195,7 +195,7 @@
 <nav class="navbar navbar-light bg-white shadow-sm mb-4" style="border-radius: 10px;">
     <div class="container-fluid">
         <span class="navbar-brand mb-0 h1" style="font-weight:600;">Billing Portal</span>
-        
+
         <div class="d-flex align-items-center gap-3">
             <div class="d-flex align-items-center bg-light p-1 rounded-3 border">
                 <input type="file" id="fileInput" class="form-control form-control-sm" style="width: 200px;" accept=".csv">
@@ -512,6 +512,7 @@
         currentPage = 0; // Reset to page 1 whenever the period changes
         loadSummary();
         loadRecords();
+        loadDeptChart()
         loadAlarmsCount();
         loadAlarmsChart();
     }
@@ -752,6 +753,7 @@
                 // 2. Give the SQS listener a moment to breathe (2 seconds)
                 // Then refresh the dashboard components
                 setTimeout(async () => {
+                    await waitForDataReady();
                     await loadPeriods();      // Get the new period in the dropdown
                     await loadDepartments();  // Update department list
                     changePeriod();           // Refresh summary, records, and charts
@@ -766,6 +768,17 @@
         } finally {
             uploadBtn.disabled = false;
             uploadBtn.textContent = "Upload";
+        }
+    }
+
+    async function waitForDataReady() {
+        for (let i = 0; i < 10; i++) {
+            const res = await fetch('/periods');
+            const data = await res.json();
+
+            if (data.length > 0) return;
+
+            await new Promise(r => setTimeout(r, 1000));
         }
     }
 
