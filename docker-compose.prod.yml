@@ -5,4 +5,5 @@ services:
     restart: unless-stopped
     command: tunnel --no-autoupdate run --token ${CF_TUNNEL_TOKEN}
     depends_on:
-      - app
+      app:
+        condition: service_started

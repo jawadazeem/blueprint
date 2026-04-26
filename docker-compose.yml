@@ -6,7 +6,7 @@ services:
     environment:
       POSTGRES_DB: billingdb
       POSTGRES_USER: billing_app
-      POSTGRES_PASSWORD: 875869
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
@@ -24,13 +24,14 @@ services:
       - "./localstack_data:/var/lib/localstack"
 
   app:
-    build: .
+    image: ghcr.io/jawadazeem/blueprint/billing-app:latest
     container_name: billing-app
+    restart: always
     depends_on:
       postgres:
-        condition: service_started
+        condition: service_healthy
       localstack:
-        condition: service_started
+        condition: service_healthy
       aws-cli-setup:
         condition: service_completed_successfully
     ports:
