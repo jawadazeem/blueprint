@@ -69,9 +69,13 @@ public class SummaryBuilder {
     }
 
     private BillingRecord findHighestChargeRecord() {
-        BillingRecord currHighestChargeRecord = records.getFirst();
+        // Defensive: when no records are present, return null rather than throwing
+        if (records == null || records.isEmpty()) {
+            return null;
+        }
 
-        for (BillingRecord record: records) {
+        BillingRecord currHighestChargeRecord = records.get(0);
+        for (BillingRecord record : records) {
             if (currHighestChargeRecord.totalCharge() < record.totalCharge()) {
                 currHighestChargeRecord = record;
             }
