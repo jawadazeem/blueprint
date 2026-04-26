@@ -36,7 +36,7 @@ services:
       start_period: 15s
 
   app:
-    image: ghcr.io/jawadazeem/blueprint/billing-app:latest
+    build: .
     container_name: billing-app
     restart: always
     depends_on:

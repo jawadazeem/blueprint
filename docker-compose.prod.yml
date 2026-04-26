@@ -1,3 +1,16 @@
+# docker-compose.prod.yml
+#
+# NOTE:
+# This is NOT real production infrastructure.
+# It is a production-like setup that runs entirely on a single server.
+#
+# AWS services are simulated using LocalStack to avoid cloud costs.
+# In a real production environment, LocalStack would be replaced with:
+# - AWS S3
+# - AWS SQS
+#
+# This setup is used for cost-free deployment
+
 services:
   tunnel:
     image: cloudflare/cloudflared:latest
@@ -7,3 +20,63 @@ services:
     depends_on:
       app:
         condition: service_started
+
+  app:
+    image: ghcr.io/jawadazeem/blueprint/billing-app:latest
+    container_name: billing-app
+    restart: always
+    depends_on:
+      postgres:
+        condition: service_healthy
+      localstack:
+        condition: service_healthy
+      aws-cli-setup:
+        condition: service_completed_successfully
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/billingdb
+      - SPRING_DATASOURCE_USERNAME=${DB_USERNAME}
+      - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
+      - AWS_S3_ENDPOINT=http://localstack:4566
+      - AWS_SQS_ENDPOINT=http://localstack:4566
+      - AWS_REGION=us-east-1
+      - AWS_ACCESS_KEY=${AWS_ACCESS_KEY}
+      - AWS_SECRET_KEY=${AWS_SECRET_KEY}
+
+  postgres:
+    image: postgres:16
+    container_name: billing-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: billingdb
+      POSTGRES_USER: billing_app
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U billing_app -d billingdb" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  localstack:
+    image: localstack/localstack:3.0.0
+    container_name: billing-s3-mock
+    ports:
+      - "4566:4566"
+    environment:
+      - SERVICES=s3,sqs
+      - DEFAULT_REGION=us-east-1
+    volumes:
+      - "./localstack_data:/var/lib/localstack"
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:4566/_localstack/health" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
