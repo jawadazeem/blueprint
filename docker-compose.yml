@@ -11,6 +11,12 @@ services:
       - postgres_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U billing_app -d billingdb" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
   localstack:
     image: localstack/localstack:3.0.0
@@ -22,9 +28,16 @@ services:
       - DEFAULT_REGION=us-east-1
     volumes:
       - "./localstack_data:/var/lib/localstack"
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:4566/_localstack/health" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
 
   app:
-    image: ghcr.io/jawadazeem/blueprint/billing-app:latest
+    #ghcr.io/jawadazeem/blueprint/billing-app:latest
+    build: .
     container_name: billing-app
     restart: always
     depends_on:
@@ -39,8 +52,8 @@ services:
     environment:
       - SPRING_PROFILES_ACTIVE=dev
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/billingdb
-      - SPRING_DATASOURCE_USERNAME=billing_app
-      - SPRING_DATASOURCE_PASSWORD=875869
+      - SPRING_DATASOURCE_USERNAME=${DB_USERNAME}
+      - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
       - AWS_S3_ENDPOINT=http://localstack:4566
       - AWS_SQS_ENDPOINT=http://localstack:4566
       - AWS_REGION=us-east-1
@@ -59,8 +72,15 @@ services:
     entrypoint: [ "/bin/sh", "-c" ]
     command: >
       "
-      echo 'Waiting for Localstack...';
-      until curl -s http://billing-s3-mock:4566/_localstack/health | grep -q '\"s3\": \"running\"'; do sleep 2; done;
+      echo 'Waiting for Localstack S3...';
+      until aws --endpoint-url=http://billing-s3-mock:4566 s3 ls > /dev/null 2>&1; do
+        sleep 2;
+      done;
+
+      echo 'Waiting for SQS...';
+      until aws --endpoint-url=http://billing-s3-mock:4566 sqs list-queues > /dev/null 2>&1; do
+        sleep 2;
+      done;
       
       echo 'Configuring SQS...';
       aws --endpoint-url=http://billing-s3-mock:4566 sqs create-queue --queue-name billing-event-queue;

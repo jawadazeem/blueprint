@@ -44,6 +44,9 @@ spring:
     url: ${SPRING_DATASOURCE_URL}
     username: ${SPRING_DATASOURCE_USERNAME}
     password: ${SPRING_DATASOURCE_PASSWORD}
+    hikari:
+      initialization-fail-timeout: 0
+      connection-timeout: 30000
   jpa:
     hibernate:
       ddl-auto: create-drop

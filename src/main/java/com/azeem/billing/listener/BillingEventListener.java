@@ -40,7 +40,13 @@ public class BillingEventListener {
         try {
             JsonNode root = objectMapper.readTree(message);
 
-            JsonNode s3Node = root.path("Records").get(0).path("s3");
+            JsonNode records = root.path("Records");
+
+            if (!records.isArray() || records.isEmpty()) {
+                return;
+            }
+
+            JsonNode s3Node = records.get(0).path("s3");
 
             String bucket = s3Node.path("bucket").path("name").asText();
             String key = s3Node.path("object").path("key").asText();
