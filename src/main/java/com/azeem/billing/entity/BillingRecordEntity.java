@@ -14,9 +14,6 @@ import jakarta.persistence.*;
  * BillingRecordMapper.
  */
 
-// TODO: Normalize the database schema by splitting into separate tables for accountName
-//  and departments, and using foreign keys instead of denormalized strings. Departments
-//  table also needs to store its budget.
 @Entity
 @Table(name = "billing_records", indexes = {
         @Index(name = "idx_billing_period", columnList = "billingPeriod"),

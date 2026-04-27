@@ -89,7 +89,8 @@ public class BillingService {
                 size,
                 Sort.by("department").descending()
         );
-        Page<BillingRecord> records = repository.findByDepartmentIgnoreCase(department, recordsByDepartmentRequest)
+        Page<BillingRecord> records = repository
+                .findByDepartmentIgnoreCase(department, recordsByDepartmentRequest)
                 .map(mapper::mapToDomain);
         log.info("Retrieved {}'s records, page: {}, count: {}.", department, page, size);
         return records;
@@ -116,7 +117,9 @@ public class BillingService {
                 .toList();
 
         if (records.isEmpty()) {
-            throw new BillingDataNotFoundException("No billing data was found for period " + billingPeriod);
+            throw new BillingDataNotFoundException(
+                    "No billing data was found for period " + billingPeriod
+            );
         }
 
         return new SummaryBuilder(records).build();
@@ -139,7 +142,9 @@ public class BillingService {
         }
 
         if (all.isEmpty()) {
-            throw new BillingDataNotFoundException("No billing data was found for summary generation");
+            throw new BillingDataNotFoundException(
+                    "No billing data was found for summary generation"
+            );
         }
 
         SummaryBuilder builder = new SummaryBuilder(all);
