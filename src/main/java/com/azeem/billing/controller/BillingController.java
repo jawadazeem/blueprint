@@ -5,6 +5,7 @@
 
 package com.azeem.billing.controller;
 
+import com.azeem.billing.demo.LoadDummyDataService;
 import com.azeem.billing.model.BillingRecord;
 import com.azeem.billing.model.BillingSummary;
 import com.azeem.billing.service.BillingS3Service;
@@ -42,10 +43,15 @@ public class BillingController {
     private static final Logger log = LoggerFactory.getLogger(BillingController.class);
     private final BillingService service;
     private final BillingS3Service s3Service;
+    private final LoadDummyDataService dummyDataService;
 
-    public BillingController(BillingService service, BillingS3Service s3Service) {
+    public BillingController(BillingService service,
+                             BillingS3Service s3Service,
+                             LoadDummyDataService dummyDataService
+    ) {
         this.service = service;
         this.s3Service = s3Service;
+        this.dummyDataService = dummyDataService;
     }
 
     @PostMapping("/upload")
@@ -59,6 +65,17 @@ public class BillingController {
         s3Service.uploadUserFile("telecom-billing", file);
 
         return ResponseEntity.ok("File received. Processing has started in the background.");
+    }
+
+    /**
+     * Trigger ingestion of the built-in demonstration dataset.
+     * This allows users to test the ETL pipeline and analytics without providing their own CSV.
+     */
+    @PostMapping("/demo-load")
+    public ResponseEntity<String> loadDemoData() {
+        log.info("POST /demo-load called. Triggering dummy data ingestion.");
+        dummyDataService.loadDummyData();
+        return ResponseEntity.ok("Demo data loaded. You can now use the analytics endpoints.");
     }
 
     @GetMapping("/records")

@@ -5,10 +5,15 @@
 
 package com.azeem.billing.demo;
 
+import com.azeem.billing.etl.BillingRecordAssembler;
 import com.azeem.billing.service.BillingIngestionService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
-import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * Class used for loading dummy data for demonstration purposes. Used by those who may not
@@ -16,14 +21,27 @@ import java.io.File;
  */
 @Service
 public class LoadDummyDataService {
+    Logger log = LoggerFactory.getLogger(LoadDummyDataService.class);
     private final BillingIngestionService billingIngestionService;
+    private boolean loaded = false;
 
     public LoadDummyDataService(BillingIngestionService billingIngestionService) {
         this.billingIngestionService = billingIngestionService;
     }
 
     public void loadDummyData() {
-        File dummyData = new File("path/to/your/file.csv");
-        billingIngestionService.ingestData();
+        if (loaded) {
+            log.info("Dummy data already loaded, cannot load again.");
+            return;
+        }
+
+        ClassPathResource resource = new ClassPathResource("dummy-data.csv");
+        try (InputStream is = resource.getInputStream()) {
+            log.info("Loading dummy data from: {}", resource.getFilename());
+            billingIngestionService.ingestData(is);
+            loaded = true;
+        } catch (IOException e) {
+            log.error("Dummy data ingestion failed: {}", e.getMessage());
+        }
     }
 }

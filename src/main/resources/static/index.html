@@ -838,7 +838,7 @@
           btn.textContent = 'Loading...';
 
           try {
-            const res = await fetch('/load-dummy', { method: 'POST' });
+            const res = await fetch('/demo-load', { method: 'POST' });
             if (!res.ok) {
               const txt = await res.text();
               alert('Failed to load dummy data: ' + (txt || res.status));
