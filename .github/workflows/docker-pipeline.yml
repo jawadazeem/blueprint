@@ -13,6 +13,6 @@ jobs:
 
       - name: Build and Deploy
         run: |
-          docker compose -f docker-compose.prod.yml down
-          docker compose -f docker-compose.prod.yml up --build -d
+          docker compose --env-file .env -f docker-compose.prod.yml down
+          docker compose --env-file .env -f docker-compose.prod.yml up -d
           docker system prune -f
