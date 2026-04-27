@@ -54,7 +54,7 @@ services:
       POSTGRES_USER: billing_app
       POSTGRES_PASSWORD: ${DB_PASSWORD}
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - "/home/jawadazeem/postgres_persistence:/var/lib/postgresql/data"
     ports:
       - "5432:5432"
     healthcheck:
@@ -73,7 +73,7 @@ services:
       - SERVICES=s3,sqs
       - DEFAULT_REGION=us-east-1
     volumes:
-      - "./localstack_data:/var/lib/localstack"
+      - "/home/jawadazeem/localstack_persistence:/var/lib/localstack"
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:4566/_localstack/health" ]
       interval: 10s
