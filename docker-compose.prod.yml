@@ -39,6 +39,7 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/billingdb
       - SPRING_DATASOURCE_USERNAME=${DB_USERNAME}
       - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
+      - SERVER_ADDRESS=0.0.0.0
       - AWS_S3_ENDPOINT=http://localstack:4566
       - AWS_SQS_ENDPOINT=http://localstack:4566
       - AWS_REGION=us-east-1
