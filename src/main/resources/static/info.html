@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
-    <title>About the Billing Dashboard</title>
+    <title>About Blueprint</title>
 
     <!-- Google Font -->
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet">
@@ -13,108 +13,132 @@
     <link rel="icon" href="./favicon.png" />
 
     <style>
+        :root{ --bg:#f5f6fa; --card:#fff; --muted:#6c757d; --accent:#0d6efd; }
         body {
-            padding: 30px;
+            padding: 28px;
             font-family: "Montserrat", sans-serif;
-            background-color: #f5f6fa;
+            background: linear-gradient(180deg, #f7f8fb 0%, var(--bg) 100%);
+            color: #222;
         }
 
-        h1 {
-            font-weight: 600;
+        .hero{
+            display:flex;
+            gap:24px;
+            align-items:center;
+            justify-content:space-between;
+            background: linear-gradient(90deg, rgba(13,110,253,0.10), rgba(13,110,253,0.03));
+            border-radius: 12px;
+            padding: 28px;
+            box-shadow: 0 8px 30px rgba(10,20,50,0.04);
             margin-bottom: 20px;
         }
 
+        .hero h1{ font-size:48px; margin:0; font-weight:800; letter-spacing:-1px; }
+        .hero p{ margin:6px 0 0 0; color:var(--muted); font-size:16px; }
+
+        .info-grid{ display:grid; grid-template-columns: 1fr 380px; gap:24px; align-items:start; }
+
         .info-card {
-            background: #ffffff;
+            background: var(--card);
             border-radius: 12px;
-            padding: 25px;
+            padding: 20px;
             border: 1px solid #eee;
-            box-shadow: 0 4px 14px rgba(0,0,0,0.05);
-            margin-bottom: 25px;
+            box-shadow: 0 6px 20px rgba(20,30,60,0.03);
+            margin-bottom: 16px;
         }
 
-        .section-title {
-            font-weight: 600;
-            margin-bottom: 12px;
-        }
+        .section-title { font-weight:700; font-size:18px; margin-bottom:12px; }
 
-        .btn-close-modern {
-            background: rgba(0,0,0,0.05);
-            border: none;
-            padding: 10px 20px;
-            border-radius: 8px;
-            font-weight: 500;
-            transition: 0.25s ease;
-        }
+        .tech-list { display:flex; flex-wrap:wrap; gap:10px; }
+        .tech-badge{ background:#f1f5ff; color:#0b57d0; padding:8px 12px; border-radius:999px; font-weight:600; font-size:13px; border:1px solid rgba(13,110,253,0.08); }
 
-        .btn-close-modern:hover {
-            background: rgba(0,0,0,0.15);
-            transform: translateY(-2px);
-        }
+        .feature-list{ list-style:none; padding:0; margin:0; display:grid; gap:10px; }
+        .feature-item{ display:flex; gap:12px; align-items:flex-start; }
+        .feature-item b{ display:block; font-weight:700; }
 
-        .footer-text {
-            text-align: center;
-            opacity: 0.7;
-            margin-top: 40px;
-            font-size: 14px;
-        }
+        pre.sample{ background:#0f1724; color:#dbeafe; padding:12px; border-radius:8px; overflow:auto; }
+
+        .cta { display:flex; gap:10px; align-items:center; }
+        .btn-primary-lg{ padding:12px 18px; font-size:16px; border-radius:10px; }
+
+        footer.app-footer { border-top: 1px solid #e9ecef; margin-top: 28px; padding-top: 18px; }
+
+        @media (max-width:900px){ .info-grid{ grid-template-columns: 1fr; } .hero{ flex-direction:column; align-items:flex-start; } }
     </style>
 </head>
 
 <body>
-<h1>About Blueprint</h1>
 
-<div class="info-card">
-    <div class="section-title">Overview</div>
-    <p>
-        The Billing Dashboard is a focused, production-oriented interface for exploring
-        large telecom billing datasets. It provides fast, paginated access to records,
-        real-time filtering and ranking, and pre-built analytics that surface charge
-        concentrations, outliers, and trends across accounts and departments.
-        Built with scalability in mind, the dashboard demonstrates how ETL-driven data
-        can be transformed into actionable operational insights for finance and
-        operations teams.
-    </p>
+<div class="hero">
+    <div>
+        <h1>Blueprint</h1>
+        <p>Telecom Billing Intelligence Platform: Fast, scalable analytics for enterprise billing.</p>
+    </div>
+
+    <div style="text-align:right">
+        <div style="font-size:12px;color:var(--muted);">Ready to explore?</div>
+        <div style="margin-top:8px" class="d-flex gap-2 justify-content-end">
+            <button class="btn btn-primary btn-primary-lg" onclick="window.open('/','_self')">Open Dashboard</button>
+        </div>
+    </div>
 </div>
 
-<div class="info-card">
-    <div class="section-title">What You Can Do Here</div>
-    <ul>
-        <li>Load a paginated summary of billing records with on-demand filters</li>
-        <li>Browse individual telecom records in a sortable, searchable table</li>
-        <li>Filter and segment records by department, state, or billing period</li>
-        <li>Identify top-charging accounts with configurable Top‑N queries</li>
-        <li>Explore charge patterns and trends across accounts and departments</li>
-    </ul>
+<div class="info-grid">
+    <div>
+        <div class="info-card">
+            <div class="section-title">Overview</div>
+            <p style="color:var(--muted)">Blueprint is a focused, production-minded UI for exploring large telecom billing datasets. It combines an ETL-driven backend with a lightweight, interactive dashboard so teams can find cost drivers and anomalies quickly.</p>
+
+            <hr/>
+            <div class="section-title">Key Features</div>
+            <ul class="feature-list">
+                <li class="feature-item"><div style="color:var(--accent); font-weight:900;">●</div><div><b>Paginated, memory-safe queries</b><div style="color:var(--muted)">All large queries use Spring Data paging to avoid loading the full dataset in memory.</div></div></li>
+                <li class="feature-item"><div style="color:#22c55e; font-weight:900;">●</div><div><b>Department & Period analytics</b><div style="color:var(--muted)">Pre-built visuals show charges by department and period-level summaries.</div></div></li>
+                <li class="feature-item"><div style="color:#f97316; font-weight:900;">●</div><div><b>Top‑N & Filtering</b><div style="color:var(--muted)">Quickly surface the largest charges and drill into departments.</div></div></li>
+                <li class="feature-item"><div style="color:#6b21a8; font-weight:900;">●</div><div><b>Chat-driven analytics</b><div style="color:var(--muted)">A conversational interface is available to ask analytics questions.</div></div></li>
+            </ul>
+        </div>
+
+        <div class="info-card">
+            <div class="section-title">Quickstart</div>
+            <ol style="color:var(--muted); margin-left:16px;">
+                <li>Open the <strong>Dashboard</strong> and select a billing period.</li>
+                <li>Use <strong>Filter by Department</strong> to focus on a segment.</li>
+                <li>Try <strong>Top N</strong> to find high-charge accounts.</li>
+                <li>Open <strong>Help</strong> in the top-left for guidance on using the dashboard.</li>
+            </ol>
+
+            <div style="margin-top:12px">
+                <div class="section-title">Try a quick API call</div>
+                <pre class="sample">GET /records/period/{period}?page=0&size=20</pre>
+            </div>
+        </div>
+
+    </div>
+
+    <aside>
+        <div class="info-card">
+            <div class="section-title">Technologies Used</div>
+            <div class="tech-list">
+                <div class="tech-badge">Java 21</div>
+                <div class="tech-badge">Spring Boot</div>
+                <div class="tech-badge">AWS (ECS, RDS, CloudWatch, SQS, SNS, S3)</div>
+                <div class="tech-badge">PostgreSQL</div>
+                <div class="tech-badge">Docker</div>
+                <div class="tech-badge">Maven</div>
+                <div class="tech-badge">JUnit 5 & Mockito</div>
+            </div>
+
+            <hr/>
+         </div>
+
+     </aside>
 </div>
 
-<div class="info-card">
-    <div class="section-title">Technologies Used</div>
-    <ul>
-        <li><strong>Java 21</strong> – Core language used to implement the ETL pipeline, service layer, model layer, and backend logic.</li>
-
-        <li><strong>Spring Boot (Web)</strong> – Framework for building the REST API, handling dependency injection, and structuring the application.</li>
-
-        <li><strong>AWS</strong> – Infrastructure and services used in production: ECS, RDS, CloudWatch, SQS, SNS, S3.</li>
-
-        <li><strong>Docker</strong> – Containerization for consistent deployment environments.</li>
-
-        <li><strong>PostgreSQL</strong> – Production relational datastore used for billing records.</li>
-
-        <li><strong>JUnit 5 &amp; Mockito</strong> – Testing frameworks for unit and integration tests.</li>
-
-        <li><strong>Maven</strong> – Build and dependency management tool used to manage libraries, run tests, and package the application.</li>
-
-        <li><strong>HTML5 + Bootstrap</strong> – Frontend UI for viewing analytics, summaries, and interactive filtering of billing records.</li>
-    </ul>
-</div>
-
-
-<button class="btn-close-modern" onclick="window.close()">Close</button>
 
 <footer class="app-footer mt-5">
     <div class="container text-center py-3">
-        <span class="footer-title">Billing Portal</span>
+        <span class="footer-title">Blueprint Billing Portal</span>
         <span class="footer-separator">•</span>
         <span class="footer-sub">© 2026 Jawad Azeem</span>
     </div>
