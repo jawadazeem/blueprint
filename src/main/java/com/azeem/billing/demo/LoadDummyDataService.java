@@ -5,9 +5,8 @@
 
 package com.azeem.billing.demo;
 
-import com.azeem.billing.etl.BillingRecordAssembler;
 import com.azeem.billing.repository.BillingRecordRepository;
-import com.azeem.billing.service.BillingIngestionService;
+import com.azeem.billing.service.billing.BillingIngestionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;

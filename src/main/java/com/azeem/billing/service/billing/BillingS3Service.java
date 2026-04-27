@@ -3,7 +3,7 @@
  * Apache 2.0 License
  */
 
-package com.azeem.billing.service;
+package com.azeem.billing.service.billing;
 
 import com.azeem.billing.exception.BillingDataNotFoundException;
 import io.awspring.cloud.s3.S3Operations;

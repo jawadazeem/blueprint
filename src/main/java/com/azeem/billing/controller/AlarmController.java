@@ -6,7 +6,7 @@
 package com.azeem.billing.controller;
 
 import com.azeem.billing.model.Alarm;
-import com.azeem.billing.service.AlarmService;
+import com.azeem.billing.service.alarm.AlarmService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.GetMapping;

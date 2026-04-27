@@ -6,9 +6,9 @@
 package com.azeem.billing.listener;
 
 import com.azeem.billing.model.IngestionResult;
-import com.azeem.billing.service.AlarmService;
-import com.azeem.billing.service.BillingIngestionService;
-import com.azeem.billing.service.BillingS3Service;
+import com.azeem.billing.service.alarm.AlarmService;
+import com.azeem.billing.service.billing.BillingIngestionService;
+import com.azeem.billing.service.billing.BillingS3Service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.awspring.cloud.sqs.annotation.SqsListener;
