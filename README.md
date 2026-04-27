@@ -1,7 +1,7 @@
-# Telecom Billing Processor
+# Blueprint: Telecom Billing Intelligence
 
 ### Author: Jawad Azeem
-It is a Spring Boot application that performs a full ETL (Extract, Transform, Load) workflow on telecom billing data stored in CSV format.
+This is a Spring Boot application that performs a full ETL (Extract, Transform, Load) workflow on telecom billing data stored in CSV format.
 It reads the data, processes it into structured records, computes various analytics, and exposes the results via REST API endpoints.
 A live version of the API is hosted on AWS.
 
@@ -28,4 +28,4 @@ A live version of the API is hosted on AWS.
 
 ## Architecture
 ![Architectural Bluprint](images/application-cloud-architecture-diagram.png)
-Version: **v2** (Dec 2025)
+Version: **v2**
