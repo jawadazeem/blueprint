@@ -40,6 +40,6 @@ build/
 app.log
 *.gz
 
-### Container related ###
-localstack_data
-data
+# Docker data volumes
+/data/
+/localstack_data/
