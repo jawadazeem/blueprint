@@ -6,6 +6,7 @@
 package com.azeem.billing.demo;
 
 import com.azeem.billing.etl.BillingRecordAssembler;
+import com.azeem.billing.repository.BillingRecordRepository;
 import com.azeem.billing.service.BillingIngestionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,14 +24,17 @@ import java.io.InputStream;
 public class LoadDummyDataService {
     Logger log = LoggerFactory.getLogger(LoadDummyDataService.class);
     private final BillingIngestionService billingIngestionService;
-    private boolean loaded = false;
+    private final BillingRecordRepository billingRecordRepository;
 
-    public LoadDummyDataService(BillingIngestionService billingIngestionService) {
+    public LoadDummyDataService(BillingIngestionService billingIngestionService,
+                                BillingRecordRepository billingRecordRepository
+    ) {
         this.billingIngestionService = billingIngestionService;
+        this.billingRecordRepository = billingRecordRepository;
     }
 
     public void loadDummyData() {
-        if (loaded) {
+        if (isLoaded()) {
             log.info("Dummy data already loaded, cannot load again.");
             return;
         }
@@ -39,9 +43,12 @@ public class LoadDummyDataService {
         try (InputStream is = resource.getInputStream()) {
             log.info("Loading dummy data from: {}", resource.getFilename());
             billingIngestionService.ingestData(is);
-            loaded = true;
         } catch (IOException e) {
             log.error("Dummy data ingestion failed: {}", e.getMessage());
         }
+    }
+
+    private boolean isLoaded() {
+        return billingRecordRepository.existsByBillingPeriod("dummy-data");
     }
 }
