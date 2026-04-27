@@ -27,6 +27,21 @@
             margin-bottom: 30px;
         }
 
+        /* Dashboard title styling */
+        .dashboard-title h1 {
+            font-size: 48px;
+            line-height: 1;
+            margin: 0 0 6px 0;
+            font-weight: 700;
+        }
+
+        .dashboard-title .subtitle {
+            font-size: 18px;
+            font-weight: 400;
+            color: #555;
+            margin: 0;
+        }
+
         .card {
             border-radius: 12px;
             border: none;
@@ -190,11 +205,16 @@
 </head>
 
 <body>
-<h1>Blueprint Telecom Billing Intelligence Platform</h1>
+<header class="dashboard-title mb-3" role="banner">
+    <h1>Blueprint</h1>
+    <p class="subtitle">Telecom Billing Intelligence Platform</p>
+</header>
 
 <nav class="navbar navbar-light bg-white shadow-sm mb-4" style="border-radius: 10px;">
     <div class="container-fluid">
-        <span class="navbar-brand mb-0 h1" style="font-weight:600;">Billing Portal</span>
+        <span class="navbar-brand mb-0 h1 d-flex align-items-center" style="font-weight:600; gap:8px;" aria-label="Application">
+            <button id="helpBtn" type="button" class="btn btn-sm btn-outline-primary ms-2" onclick="openHelpModal()">Help Me</button>
+        </span>
 
         <div class="d-flex align-items-center gap-3">
             <div class="d-flex align-items-center bg-light p-1 rounded-3 border">
@@ -219,6 +239,32 @@
                 <div class="modal-body">
                     <div id="alarms-empty" style="display:none;">No alarms found.</div>
                     <ul class="alarms-list" id="alarms-list"></ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Help modal (reuses modal styles) -->
+        <div class="modal-overlay" id="help-overlay" style="display:none;">
+            <div class="alarm-modal">
+                <div class="modal-header">
+                    <h3>Help</h3>
+                    <button class="modal-close" type="button" onclick="closeHelpModal()">✕</button>
+                </div>
+
+                <div class="modal-body">
+                    <p>Welcome to the Blueprint Billing Portal. Use the controls in the top-right to upload CSV files, select a billing period, and explore the analytics.</p>
+                    <ul>
+                      <li>Upload: choose a CSV and click Upload to ingest data.</li>
+                      <li>Periods: select a billing period to filter the dashboard.</li>
+                      <li>Filter by Department: view records for a particular department.</li>
+                      <li>Top N: load the top N largest charges.</li>
+                    </ul>
+                    <p>For more details, open the <a href="/info.html" target="_blank" rel="noopener">info page</a>.</p>
+
+                    <div class="mt-3 d-flex gap-2">
+                      <button id="loadDummyBtn" class="btn btn-lg btn-primary" onclick="loadDummyData()">Load Dummy Data</button>
+                      <button class="btn btn-outline-secondary" onclick="closeHelpModal()">Close</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -260,6 +306,28 @@
             </div>
         </div>
     </div>
+</div>
+
+<!-- ChatBot Analytics (matches length and style of Latest Period's Summary) -->
+<div class="card mb-4">
+  <div class="card-header">Blueprint Bot Analytics</div>
+  <div class="card-body">
+    <div id="chatbotModule" class="row g-3" style="display:flex;">
+      <div class="col-12">
+        <div class="card p-3" id="chatWindow" style="height:220px; overflow:auto; background:#fff; border:1px solid #eee;">
+          <!-- Messages will be appended here -->
+          <div id="chatEmpty" class="text-muted">Ask questions about billing data, e.g. "Sort the departments by highest charge in descending order"</div>
+        </div>
+      </div>
+
+      <div class="col-9">
+        <input id="chatInput" class="form-control" placeholder="Ask the Blueprint Bot..." aria-label="Chat input" />
+      </div>
+      <div class="col-3 d-flex align-items-start">
+        <button class="btn btn-primary w-100" id="chatSendBtn" onclick="sendChat()">Send</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <div class="row mb-4">
@@ -431,6 +499,76 @@
       }
       return counts;
     }
+
+    // ChatBot UI helpers
+    function appendChatMessage(sender, text) {
+      const chat = document.getElementById('chatWindow');
+      const empty = document.getElementById('chatEmpty');
+      if (empty) empty.style.display = 'none';
+
+      const wrapper = document.createElement('div');
+      wrapper.className = sender === 'user' ? 'text-end mb-2' : 'text-start mb-2';
+
+      const bubble = document.createElement('div');
+      bubble.className = 'd-inline-block p-2';
+      bubble.style.maxWidth = '80%';
+      bubble.style.borderRadius = '10px';
+      if (sender === 'user') {
+        bubble.style.background = '#0d6efd';
+        bubble.style.color = '#fff';
+      } else {
+        bubble.style.background = '#f1f3f5';
+        bubble.style.color = '#000';
+      }
+      bubble.textContent = text;
+
+      wrapper.appendChild(bubble);
+      chat.appendChild(wrapper);
+      chat.scrollTop = chat.scrollHeight;
+    }
+
+    async function sendChat() {
+      const input = document.getElementById('chatInput');
+      const text = input.value.trim();
+      if (!text) return;
+
+      appendChatMessage('user', text);
+      input.value = '';
+
+      try {
+        const res = await fetch('/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: text, period: currentPeriod })
+        });
+
+        if (!res.ok) {
+          appendChatMessage('bot', `Server error: ${res.status}`);
+          return;
+        }
+
+        const data = await res.json();
+        // backend expected to return { reply: '...' } or similar
+        appendChatMessage('bot', data.reply || JSON.stringify(data));
+
+      } catch (e) {
+        console.error('Chat send failed', e);
+        appendChatMessage('bot', 'Failed to send message — the chat service may be unavailable.');
+      }
+    }
+
+    // allow Enter to submit the chat
+    document.addEventListener('DOMContentLoaded', () => {
+      const chatInput = document.getElementById('chatInput');
+      if (chatInput) {
+        chatInput.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            sendChat();
+          }
+        });
+      }
+    });
 
     async function loadAlarmsChart() {
       if (!currentPeriod) return;
@@ -684,6 +822,44 @@
         function closeAlarmsModal() {
           document.getElementById('alarms-overlay').style.display = 'none';
         }
+
+        function closeHelpModal() {
+          document.getElementById('help-overlay').style.display = 'none';
+        }
++
++        function openHelpModal() {
++          document.getElementById('help-overlay').style.display = 'flex';
++        }
++
++        async function loadDummyData() {
++          const btn = document.getElementById('loadDummyBtn');
++          if (!btn) return;
++          btn.disabled = true;
++          btn.textContent = 'Loading...';
++
++          try {
++            const res = await fetch('/load-dummy', { method: 'POST' });
++            if (!res.ok) {
++              const txt = await res.text();
++              alert('Failed to load dummy data: ' + (txt || res.status));
++              return;
++            }
++
++            // Wait for backend to process and then refresh UI
++            await waitForDataReady();
++            await loadPeriods();
++            await loadDepartments();
++            changePeriod();
++            closeHelpModal();
++            alert('Dummy data loaded successfully.');
++          } catch (e) {
++            console.error('loadDummyData failed', e);
++            alert('Failed to load dummy data. See console for details.');
++          } finally {
++            btn.disabled = false;
++            btn.textContent = 'Load Dummy Data';
++          }
++        }
 
 
         async function onAlarmsClick() {
