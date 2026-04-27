@@ -22,7 +22,7 @@ services:
         condition: service_started
 
   app:
-    image: ghcr.io/jawadazeem/blueprint/billing-app:latest
+    build: .
     container_name: billing-app
     restart: always
     depends_on:
