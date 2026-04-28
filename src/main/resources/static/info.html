@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
-    <title>About Blueprint</title>
+    <title>About | Blueprint</title>
 
     <!-- Google Font -->
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet">
@@ -94,40 +94,39 @@
             <hr/>
             <div class="section-title">Key Features</div>
             <ul class="feature-list">
+                <li class="feature-item"><div style="color:#6b21a8; font-weight:900;">●</div><div><b>Chat-driven analytics</b><div style="color:var(--muted)">A conversational interface is available to ask analytics questions.</div></div></li>
                 <li class="feature-item"><div style="color:var(--accent); font-weight:900;">●</div><div><b>Paginated, memory-safe queries</b><div style="color:var(--muted)">All large queries use Spring Data paging to avoid loading the full dataset in memory.</div></div></li>
                 <li class="feature-item"><div style="color:#22c55e; font-weight:900;">●</div><div><b>Department & Period analytics</b><div style="color:var(--muted)">Pre-built visuals show charges by department and period-level summaries.</div></div></li>
                 <li class="feature-item"><div style="color:#f97316; font-weight:900;">●</div><div><b>Top‑N & Filtering</b><div style="color:var(--muted)">Quickly surface the largest charges and drill into departments.</div></div></li>
-                <li class="feature-item"><div style="color:#6b21a8; font-weight:900;">●</div><div><b>Chat-driven analytics</b><div style="color:var(--muted)">A conversational interface is available to ask analytics questions.</div></div></li>
             </ul>
         </div>
 
         <div class="info-card">
             <div class="section-title">Quickstart</div>
             <ol style="color:var(--muted); margin-left:16px;">
-                <li>Open the <strong>Dashboard</strong> and select a billing period.</li>
+                <li>
+                    Open the <strong>Dashboard</strong> and select <strong>help</strong> on the top left for guidance.
+                </li>
+                <li>Next, select <strong>Load Dummy Data</strong>. This loads a predefined telecom billing CSV dataset</li>
+                <li>Ask <strong>Martin</strong>, the Blueprint Bot, questions about the billing data.</li>
                 <li>Use <strong>Filter by Department</strong> to focus on a segment.</li>
                 <li>Try <strong>Top N</strong> to find high-charge accounts.</li>
-                <li>Open <strong>Help</strong> in the top-left for guidance on using the dashboard.</li>
             </ol>
-
-            <div style="margin-top:12px">
-                <div class="section-title">Try a quick API call</div>
-                <pre class="sample">GET /records/period/{period}?page=0&size=20</pre>
-            </div>
         </div>
 
     </div>
 
     <aside>
         <div class="info-card">
-            <div class="section-title">Technologies Used</div>
+            <div class="section-title">Technology Stack</div>
             <div class="tech-list">
                 <div class="tech-badge">Java 21</div>
                 <div class="tech-badge">Spring Boot</div>
-                <div class="tech-badge">AWS (ECS, RDS, CloudWatch, SQS, SNS, S3)</div>
-                <div class="tech-badge">PostgreSQL</div>
+                <div class="tech-badge">Google GenAI</div>
+                <div class="tech-badge">AWS (ECS, RDS, SQS, SNS, S3)</div>
                 <div class="tech-badge">Docker</div>
-                <div class="tech-badge">Maven</div>
+                <div class="tech-badge">GitHub Actions (CI/CD)</div>
+                <div class="tech-badge">PostgreSQL</div>
                 <div class="tech-badge">JUnit 5 & Mockito</div>
             </div>
             <hr/>

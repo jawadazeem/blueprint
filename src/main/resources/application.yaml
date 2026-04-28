@@ -1,7 +1,7 @@
 # Configuration applied to all profiles (default)
 spring:
   application:
-    name: telecom-billing-processor
+    name: blueprint
   cloud:
     aws:
       s3:

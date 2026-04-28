@@ -9,9 +9,9 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.azeem</groupId>
-	<artifactId>billing</artifactId>
+	<artifactId>blueprint</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>telecom-billing-processor</name>
+	<name>blueprint</name>
 	<description>
         This dashboard is a demonstration project for exploring how telecom billing data
         can be displayed, summarized, and analyzed in a clean, modern interface. It shows how records
