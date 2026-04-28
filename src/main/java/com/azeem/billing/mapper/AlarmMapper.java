@@ -6,10 +6,8 @@
 package com.azeem.billing.mapper;
 
 import com.azeem.billing.entity.AlarmEntity;
-import com.azeem.billing.model.Alarm;
+import com.azeem.billing.model.alarm.Alarm;
 import org.springframework.stereotype.Component;
-
-import java.util.Optional;
 
 /**
  * Mapper class to convert between Alarm domain model and AlarmEntity database entity.

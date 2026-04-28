@@ -5,8 +5,8 @@
 
 package com.azeem.billing.etl;
 
-import com.azeem.billing.model.BillingRecord;
-import com.azeem.billing.model.BillingSummary;
+import com.azeem.billing.model.billing.BillingRecord;
+import com.azeem.billing.model.billing.BillingSummary;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

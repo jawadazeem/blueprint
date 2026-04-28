@@ -7,8 +7,8 @@ package com.azeem.billing.service.billing;
 
 import com.azeem.billing.config.BillingReaderConfig;
 import com.azeem.billing.entity.BillingRecordEntity;
-import com.azeem.billing.model.BillingRecord;
-import com.azeem.billing.model.IngestionResult;
+import com.azeem.billing.model.billing.BillingRecord;
+import com.azeem.billing.model.billing.IngestionResult;
 import com.azeem.billing.repository.BillingRecordRepository;
 import com.azeem.billing.service.alarm.AlarmService;
 import jakarta.validation.constraints.NotNull;

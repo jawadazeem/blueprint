@@ -3,14 +3,14 @@
  * Apache 2.0 License
  */
 
-package com.azeem.billing.model;
+package com.azeem.billing.model.alarm;
 
+import com.azeem.billing.model.billing.Department;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 
 import java.time.Instant;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.UUID;
 
 /**

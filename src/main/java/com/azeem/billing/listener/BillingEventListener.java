@@ -5,7 +5,7 @@
 
 package com.azeem.billing.listener;
 
-import com.azeem.billing.model.IngestionResult;
+import com.azeem.billing.model.billing.IngestionResult;
 import com.azeem.billing.service.alarm.AlarmService;
 import com.azeem.billing.service.billing.BillingIngestionService;
 import com.azeem.billing.service.billing.BillingS3Service;

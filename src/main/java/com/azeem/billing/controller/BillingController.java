@@ -6,8 +6,8 @@
 package com.azeem.billing.controller;
 
 import com.azeem.billing.demo.LoadDummyDataService;
-import com.azeem.billing.model.BillingRecord;
-import com.azeem.billing.model.BillingSummary;
+import com.azeem.billing.model.billing.BillingRecord;
+import com.azeem.billing.model.billing.BillingSummary;
 import com.azeem.billing.service.billing.BillingS3Service;
 import com.azeem.billing.service.billing.BillingService;
 import org.slf4j.Logger;

@@ -5,7 +5,7 @@
 
 package com.azeem.billing.etl;
 
-import com.azeem.billing.model.BillingRecord;
+import com.azeem.billing.model.billing.BillingRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;

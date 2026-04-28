@@ -5,7 +5,7 @@
 
 package com.azeem.billing.etl;
 
-import com.azeem.billing.model.BillingRecord;
+import com.azeem.billing.model.billing.BillingRecord;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;

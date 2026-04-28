@@ -6,7 +6,7 @@
 package com.azeem.billing.repository;
 
 import com.azeem.billing.entity.AlarmEntity;
-import com.azeem.billing.model.AlarmScope;
+import com.azeem.billing.model.alarm.AlarmScope;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

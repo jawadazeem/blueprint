@@ -1,9 +1,9 @@
 package com.azeem.billing.entity;
 
 
-import com.azeem.billing.model.AlarmScope;
-import com.azeem.billing.model.AlarmSeverity;
-import com.azeem.billing.model.Department;
+import com.azeem.billing.model.alarm.AlarmScope;
+import com.azeem.billing.model.alarm.AlarmSeverity;
+import com.azeem.billing.model.billing.Department;
 import jakarta.persistence.*;
 
 import java.time.Instant;

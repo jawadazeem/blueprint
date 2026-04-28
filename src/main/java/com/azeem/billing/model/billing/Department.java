@@ -3,7 +3,7 @@
  * Apache 2.0 License
  */
 
-package com.azeem.billing.model;
+package com.azeem.billing.model.billing;
 
 public enum Department {
     ENGINEERING,

@@ -58,6 +58,8 @@ services:
       - AWS_REGION=us-east-1
       - AWS_ACCESS_KEY=test
       - AWS_SECRET_KEY=test
+      - SPRING_AI_GOOGLE_GENAI_API_KEY=${GEMINI_API_KEY}
+      - SPRING_AI_GOOGLE_GENAI_PROJECT_ID=${GOOGLE_PROJECT_ID}
 
   aws-cli-setup:
     image: amazon/aws-cli

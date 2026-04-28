@@ -8,8 +8,8 @@ package com.azeem.billing.service.billing;
 import com.azeem.billing.etl.SummaryBuilder;
 import com.azeem.billing.exception.BillingDataNotFoundException;
 import com.azeem.billing.mapper.BillingRecordMapper;
-import com.azeem.billing.model.BillingRecord;
-import com.azeem.billing.model.BillingSummary;
+import com.azeem.billing.model.billing.BillingRecord;
+import com.azeem.billing.model.billing.BillingSummary;
 import com.azeem.billing.repository.BillingRecordRepository;
 
 import org.slf4j.Logger;

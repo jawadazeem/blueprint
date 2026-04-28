@@ -6,13 +6,17 @@
 package com.azeem.billing.service.alarm;
 
 import com.azeem.billing.config.AlarmConfig;
-import com.azeem.billing.model.*;
+import com.azeem.billing.model.alarm.Alarm;
+import com.azeem.billing.model.alarm.AlarmScope;
+import com.azeem.billing.model.alarm.AlarmSeverity;
+import com.azeem.billing.model.billing.BillingRecord;
+import com.azeem.billing.model.billing.Department;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.*;
 
-import static com.azeem.billing.model.AlarmSeverity.LOW;
+import static com.azeem.billing.model.alarm.AlarmSeverity.LOW;
 
 /**
  * <p>Input: List<BillingRecord> (scoped by billingPeriod)</p>
