@@ -11,15 +11,10 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Verify Env
-        run: |
-          ls -la .env
-          grep "GOOGLE_PROJECT_ID" .env || echo "MISSING PROJECT ID"
-
       - name: Build and Deploy
         run: |
           ln -sf /home/jawadazeem/billing/.env .env
           
           docker compose --env-file .env -f docker-compose.prod.yml down
-          docker compose --env-file .env -f docker-compose.prod.yml up -d
+          docker compose --env-file .env -f docker-compose.prod.yml up --build -d
           docker system prune -f
