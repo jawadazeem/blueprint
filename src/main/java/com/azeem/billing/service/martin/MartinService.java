@@ -6,6 +6,7 @@
 package com.azeem.billing.service.martin;
 
 import com.azeem.billing.exception.MartinResponseNotValidException;
+import com.azeem.billing.model.martin.MartinResponse;
 import com.azeem.billing.model.martin.SqlResponse;
 import com.azeem.billing.service.billing.BillingIngestionService;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -27,33 +28,76 @@ public class MartinService {
     private static final Logger log = LoggerFactory.getLogger(MartinService.class);
     private final ChatModel chatModel;
     private final SchemaService schemaService;
+    private final QueryExecutionService queryExecutionService;
+    private final SqlValidationService sqlValidationService;
+    private final ObjectMapper objectMapper;
 
-    public MartinService(ChatModel chatModel, SchemaService schemaService) {
+    public MartinService(ChatModel chatModel,
+                         SchemaService schemaService,
+                         QueryExecutionService queryExecutionService,
+                         SqlValidationService sqlValidationService,
+                         ObjectMapper objectMapper
+    ) {
         this.chatModel = chatModel;
         this.schemaService = schemaService;
+        this.queryExecutionService = queryExecutionService;
+        this.sqlValidationService = sqlValidationService;
+        this.objectMapper = objectMapper;
+    }
+
+    public MartinResponse ask(String promptText, String currentPeriod) {
+
+        SqlResponse sqlResponse = generateResponse(promptText, currentPeriod);
+
+        if (!sqlValidationService.isValidSql(sqlResponse)) {
+            throw new MartinResponseNotValidException("Unsafe SQL detected");
+        }
+
+        List<Map<String, Object>> results =
+                queryExecutionService.executeQuery(sqlResponse);
+
+        Prompt explanationPrompt = new Prompt(List.of(
+                new SystemMessage("You are Martin, a billing analyst."),
+                new UserMessage("Question: " + promptText),
+                new UserMessage("SQL: " + sqlResponse.getSql()),
+                new UserMessage("Results: " + results)
+        ));
+
+        return new MartinResponse(
+            chatModel.call(explanationPrompt)
+                .getResult()
+                .getOutput()
+                .getText(),
+            sqlResponse.getSql(),
+            sqlResponse.getReasoning()
+        );
     }
 
     /**
      * @param promptText The prompt the user submits to Martin
      * @return SqlResponse object
      */
-    public SqlResponse generateResponse(String promptText) {
-        Prompt prompt = createPrompt(promptText);
+    private SqlResponse generateResponse(String promptText, String currentPeriod) {
+        Prompt prompt = createPrompt(promptText, currentPeriod);
 
         ChatResponse response = chatModel.call(prompt);
         String json = response.getResult().getOutput().getText();
 
-        ObjectMapper mapper = new ObjectMapper();
+        SqlResponse sqlResponse;
 
         try {
-            return mapper.readValue(json, SqlResponse.class);
+            sqlResponse = objectMapper.readValue(json, SqlResponse.class);
         } catch (JsonProcessingException e) {
-            log.error("There was a data format error with the Martin's response.");
+            log.error("There was a data format error with the Martin's response. Here was " +
+                    "Martin's response: {}", json);
             throw new MartinResponseNotValidException("There was a data format error with the Martin's response.");
         }
+
+        log.info("Martin generated: {}", sqlResponse);
+        return sqlResponse;
     }
 
-    private Prompt createPrompt(String promptText) {
+    private Prompt createPrompt(String promptText, String currentPeriod) {
         String schema = schemaService.getSchema();
 
         return new Prompt(List.of(
@@ -69,9 +113,11 @@ public class MartinService {
                       "reasoning": "<short explanation>"
                     }
                     Do not include markdown, comments, or extra text.
-                    """
+                    
+                    All queries MUST include WHERE billing_period = 
+                    """ + currentPeriod + "Schema:\n" + schema +
+                    " dummy-data is a valid billing_period, it is for demo purposes."
                 ),
-                new SystemMessage("Schema:\n" + schema),
                 new UserMessage(promptText)
         ));
     }

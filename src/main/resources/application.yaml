@@ -18,7 +18,13 @@ spring:
     google:
       genai:
         project-id: ${GOOGLE_PROJECT_ID}
-        api-key: ${GOOGLE_GENAI_API_KEY}
+        location: "us-central1"
+        credentials:
+          api-key: ${GOOGLE_GENAI_API_KEY}
+        chat:
+          options:
+            model: "gemini-2.5-flash"
+            temperature: 0.1
 server:
   port: 8080
 logging:

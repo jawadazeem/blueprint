@@ -11,17 +11,34 @@ import org.springframework.stereotype.Service;
 public class SchemaService {
     public String getSchema() {
         return """
-                Tables:
-                    1) billing_records:
-                        Columns: id (BIGINT), department, account_name, employee_id, phone_number, 
-                        billing_period, minutes_used, data_gb_used, sms_count, 
-                        total_charge (DOUBLE).
-                        
-                    2) alarms:
-                        Columns: id (UUID), business_key (UUID), alarm_scope (INT/STRING), 
-                        billing_period, alarm_type, alarm_severity (INT/STRING), 
-                        explanation (TEXT), timestamp (TIMESTAMPTZ), employee_id, phone_number, 
-                        department.
-                """;
+            DATABASE SCHEMA
+            
+            TABLE billing_records (
+                id BIGINT PRIMARY KEY,
+                department TEXT,
+                account_name TEXT,
+                employee_id TEXT,
+                phone_number TEXT,
+                billing_period TEXT,
+                minutes_used INT,
+                data_gb_used DOUBLE,
+                sms_count INT,
+                total_charge DOUBLE
+            );
+            
+            TABLE alarms (
+                id UUID PRIMARY KEY,
+                business_key UUID,
+                alarm_scope TEXT,
+                billing_period DATE,
+                alarm_type TEXT,
+                alarm_severity TEXT,
+                explanation TEXT,
+                timestamp TIMESTAMPTZ,
+                employee_id TEXT,
+                phone_number TEXT,
+                department TEXT
+            );
+            """;
     }
 }

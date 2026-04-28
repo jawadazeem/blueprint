@@ -6,6 +6,22 @@
 package com.azeem.billing.model.martin;
 
 public class SqlResponse {
-    public String sql;
-    public String reasoning;
+    private String sql;
+    private String reasoning;
+
+    public String getSql() {
+        return sql;
+    }
+
+    public void setSql(String sql) {
+        this.sql = sql;
+    }
+
+    public String getReasoning() {
+        return reasoning;
+    }
+
+    public void setReasoning(String reasoning) {
+        this.reasoning = reasoning;
+    }
 }

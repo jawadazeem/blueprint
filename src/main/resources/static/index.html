@@ -537,10 +537,13 @@
       input.value = '';
 
       try {
-        const res = await fetch('/chat', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message: text, period: currentPeriod })
+        const res = await fetch('/martin', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                prompt: text,
+                period: currentPeriod
+            })
         });
 
         if (!res.ok) {
@@ -549,8 +552,17 @@
         }
 
         const data = await res.json();
-        // backend expected to return { reply: '...' } or similar
-        appendChatMessage('bot', data.reply || JSON.stringify(data));
+        let msg = data.answer || data.reply || "No response returned.";
+
+        if (data.sql) {
+        msg += `\n\nSQL:\n${data.sql}`;
+        }
+
+        if (data.reasoning) {
+        msg += `\n\nWhy:\n${data.reasoning}`;
+        }
+
+        appendChatMessage('bot', msg);
 
       } catch (e) {
         console.error('Chat send failed', e);
