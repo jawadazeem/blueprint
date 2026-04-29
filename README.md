@@ -11,7 +11,7 @@ A live version of the API is hosted on AWS.
 - **REST API:** Secure exposure of both deterministic analytics and AI-generated insights.
 
 ## Access the Live API at:
-   - https://telecom.jawadazeem.com
+   - https://blueprint.jawadazeem.com
 
 ## Technologies Used
 - Java 21
