@@ -118,7 +118,7 @@
             <version>42.7.3</version>
         </dependency>
 
-        <!-- H2 Database for testing -->
+        <!-- H2 Database for Testing -->
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
@@ -136,7 +136,7 @@
             <artifactId>spring-cloud-aws-starter-sqs</artifactId>
         </dependency>
 
-        <!-- Jakarta Validation -->
+        <!-- Jakarta Bean Validation -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-validation</artifactId>
