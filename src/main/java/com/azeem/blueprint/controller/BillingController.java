@@ -102,7 +102,7 @@ public class BillingController {
   }
 
   @GetMapping("/top/{n}")
-  public Page<BillingRecord> getTopN(@PathVariable int n) {
+  public Page<BillingRecord> getTopN(@PathVariable @Min(1) @Max(100) int n) {
     log.info("GET /top/{} called to retrieve top N billing records by total charge.", n);
     return service.getTopNRecords(n);
   }

@@ -27,6 +27,9 @@ spring:
             temperature: 0.1
 server:
   port: 8080
+  error:
+    whitelabel:
+      enabled: false
 logging:
   file:
     name: app.log
