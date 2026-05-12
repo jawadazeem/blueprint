@@ -41,8 +41,6 @@ class BillingRecordRepositoryTest {
     entityManager.flush();
   }
 
-
-
   private void persistRecord(
       String dept,
       String name,

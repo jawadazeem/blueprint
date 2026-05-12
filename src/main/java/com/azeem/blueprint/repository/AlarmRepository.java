@@ -10,6 +10,8 @@ import com.azeem.blueprint.model.alarm.AlarmScope;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -18,7 +20,8 @@ public interface AlarmRepository extends JpaRepository<AlarmEntity, UUID> {
 
   List<AlarmEntity> findByBillingPeriodAndAlarmScope(String billingPeriod, AlarmScope scope);
 
-  List<UUID> findBusinessKeysByBillingPeriod(String billingPeriod);
-
   boolean existsById(UUID id);
+
+  @Query("select a.businessKey from AlarmEntity a where a.billingPeriod = :billingPeriod")
+  List<UUID> findBusinessKeysByBillingPeriod(@Param("billingPeriod") String billingPeriod);
 }
