@@ -6,22 +6,22 @@
 package com.azeem.blueprint.model.martin;
 
 public class SqlResponse {
-    private String sql;
-    private String reasoning;
+  private String sql;
+  private String reasoning;
 
-    public String getSql() {
-        return sql;
-    }
+  public String getSql() {
+    return sql;
+  }
 
-    public void setSql(String sql) {
-        this.sql = sql;
-    }
+  public void setSql(String sql) {
+    this.sql = sql;
+  }
 
-    public String getReasoning() {
-        return reasoning;
-    }
+  public String getReasoning() {
+    return reasoning;
+  }
 
-    public void setReasoning(String reasoning) {
-        this.reasoning = reasoning;
-    }
+  public void setReasoning(String reasoning) {
+    this.reasoning = reasoning;
+  }
 }

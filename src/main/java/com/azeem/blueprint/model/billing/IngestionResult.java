@@ -6,8 +6,4 @@
 package com.azeem.blueprint.model.billing;
 
 public record IngestionResult(
-        String billingPeriod,
-        int successCount,
-        int failureCount,
-        String errorLog
-) {}
+    String billingPeriod, int successCount, int failureCount, String errorLog) {}

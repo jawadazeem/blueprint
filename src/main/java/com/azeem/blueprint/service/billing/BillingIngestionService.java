@@ -7,129 +7,122 @@ package com.azeem.blueprint.service.billing;
 
 import com.azeem.blueprint.config.BillingReaderConfig;
 import com.azeem.blueprint.entity.BillingRecordEntity;
+import com.azeem.blueprint.etl.BillingRecordAssembler;
+import com.azeem.blueprint.etl.CsvBillingReader;
+import com.azeem.blueprint.mapper.BillingRecordMapper;
 import com.azeem.blueprint.model.billing.BillingRecord;
 import com.azeem.blueprint.model.billing.IngestionResult;
 import com.azeem.blueprint.repository.BillingRecordRepository;
 import com.azeem.blueprint.service.alarm.AlarmService;
 import jakarta.validation.constraints.NotNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
-import com.azeem.blueprint.etl.CsvBillingReader;
-import com.azeem.blueprint.etl.BillingRecordAssembler;
-import com.azeem.blueprint.mapper.BillingRecordMapper;
-import org.springframework.validation.annotation.Validated;
-
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+import org.springframework.validation.annotation.Validated;
 
 /**
  * Service responsible for ingesting billing files into the database.
  *
- * <p>
- * Orchestrates the write path of the ETL pipeline:
+ * <p>Orchestrates the write path of the ETL pipeline:
+ *
  * <ul>
- *   <li>Reads raw billing data from a CSV file</li>
- *   <li>Assembles domain {@link BillingRecord} objects</li>
- *   <li>Persists data as {@link BillingRecordEntity}</li>
+ *   <li>Reads raw billing data from a CSV file
+ *   <li>Assembles domain {@link BillingRecord} objects
+ *   <li>Persists data as {@link BillingRecordEntity}
  * </ul>
  *
- * <p>
- * This service is stateless and write-focused. After ingestion,
- * the database is the single source of truth.
- * </p>
+ * <p>This service is stateless and write-focused. After ingestion, the database is the single
+ * source of truth.
  */
-
 @Service
 @Validated
 public class BillingIngestionService {
-    private static final Logger log = LoggerFactory.getLogger(BillingIngestionService.class);
-    private final BillingRecordMapper mapper;
-    private final BillingRecordRepository repository;
-    private final BillingRecordAssembler billingRecordAssembler;
-    private final BillingReaderConfig billingReaderConfig;
-    private final AlarmService alarmService;
+  private static final Logger log = LoggerFactory.getLogger(BillingIngestionService.class);
+  private final BillingRecordMapper mapper;
+  private final BillingRecordRepository repository;
+  private final BillingRecordAssembler billingRecordAssembler;
+  private final BillingReaderConfig billingReaderConfig;
+  private final AlarmService alarmService;
 
-    public BillingIngestionService(BillingRecordAssembler billingRecordAssembler,
-                                   BillingRecordRepository repository,
-                                   BillingRecordMapper mapper,
-                                   BillingReaderConfig billingReaderConfig,
-                                   AlarmService alarmService) {
-        this.repository = repository;
-        this.billingRecordAssembler = billingRecordAssembler;
-        this.billingReaderConfig = billingReaderConfig;
-        this.mapper = mapper;
-        this.alarmService = alarmService;
-    }
+  public BillingIngestionService(
+      BillingRecordAssembler billingRecordAssembler,
+      BillingRecordRepository repository,
+      BillingRecordMapper mapper,
+      BillingReaderConfig billingReaderConfig,
+      AlarmService alarmService) {
+    this.repository = repository;
+    this.billingRecordAssembler = billingRecordAssembler;
+    this.billingReaderConfig = billingReaderConfig;
+    this.mapper = mapper;
+    this.alarmService = alarmService;
+  }
 
-    public IngestionResult ingestData(@NotNull InputStream inputStream) {
-        int successCount = 0;
-        int failureCount = 0;
-        StringBuilder errorBuffer = new StringBuilder();
-        errorBuffer.append("Raw Row,Error Message\n");
-        boolean firstRow = true;
-        String billingPeriod = "unknown";
+  public IngestionResult ingestData(@NotNull InputStream inputStream) {
+    int successCount = 0;
+    int failureCount = 0;
+    StringBuilder errorBuffer = new StringBuilder();
+    errorBuffer.append("Raw Row,Error Message\n");
+    boolean firstRow = true;
+    String billingPeriod = "unknown";
 
-        try (CsvBillingReader reader = new CsvBillingReader(inputStream, billingReaderConfig.hasHeader())) {
-            List<BillingRecordEntity> batch = new ArrayList<>();
-            String[] row;
+    try (CsvBillingReader reader =
+        new CsvBillingReader(inputStream, billingReaderConfig.hasHeader())) {
+      List<BillingRecordEntity> batch = new ArrayList<>();
+      String[] row;
 
-            while ((row = reader.parseNextRow()) != null) {
-                try {
-                    BillingRecord domain = billingRecordAssembler.assembleRecord(row);
-                    batch.add(mapper.mapToEntity(domain));
+      while ((row = reader.parseNextRow()) != null) {
+        try {
+          BillingRecord domain = billingRecordAssembler.assembleRecord(row);
+          batch.add(mapper.mapToEntity(domain));
 
-                    if (firstRow) {
-                        billingPeriod = domain.billingPeriod();
-                        firstRow = false;
-                    }
+          if (firstRow) {
+            billingPeriod = domain.billingPeriod();
+            firstRow = false;
+          }
 
-                    if (batch.size() >= billingReaderConfig.getBatchSize()) {
-                        repository.saveAll(batch);
-                        repository.flush();
-                        successCount += batch.size();
-                        batch.clear();
-                    }
-                } catch (Exception e) {
-                    failureCount++;
-                    log.error(
-                            "Resilience Triggered: Skipping corrupted row in period {}. Error: {}"
-                            , billingPeriod, e.getMessage()
-                    );
-
-                    // Capture the exact line that failed
-                    String rawRow = String.join(",", row);
-                    errorBuffer.append(rawRow)
-                            .append(",")
-                            .append(e.getMessage())
-                            .append("\n");
-
-                }
-            }
-
-            if (!batch.isEmpty()) {
-                try {
-                    repository.saveAll(batch);
-                    successCount += batch.size();
-                } catch (Exception e) {
-                    failureCount += batch.size();
-                    log.error("Final batch failed at database level.");
-                }
-            }
-
-            alarmService.detectAndPersistAlarms(billingPeriod);
-            log.info("Ingestion Complete for {}: {} Success, {} Failures", billingPeriod, successCount, failureCount);
-
+          if (batch.size() >= billingReaderConfig.getBatchSize()) {
+            repository.saveAll(batch);
+            repository.flush();
+            successCount += batch.size();
+            batch.clear();
+          }
         } catch (Exception e) {
-            log.error("System-Level Failure: The S3 stream or Reader encountered a fatal error.", e);
-        }
+          failureCount++;
+          log.error(
+              "Resilience Triggered: Skipping corrupted row in period {}. Error: {}",
+              billingPeriod,
+              e.getMessage());
 
-        return new IngestionResult(
-                billingPeriod,
-                successCount,
-                failureCount,
-                errorBuffer.toString()
-        );
+          // Capture the exact line that failed
+          String rawRow = String.join(",", row);
+          errorBuffer.append(rawRow).append(",").append(e.getMessage()).append("\n");
+        }
+      }
+
+      if (!batch.isEmpty()) {
+        try {
+          repository.saveAll(batch);
+          successCount += batch.size();
+        } catch (Exception e) {
+          failureCount += batch.size();
+          log.error("Final batch failed at database level.");
+        }
+      }
+
+      alarmService.detectAndPersistAlarms(billingPeriod);
+      log.info(
+          "Ingestion Complete for {}: {} Success, {} Failures",
+          billingPeriod,
+          successCount,
+          failureCount);
+
+    } catch (Exception e) {
+      log.error("System-Level Failure: The S3 stream or Reader encountered a fatal error.", e);
     }
+
+    return new IngestionResult(billingPeriod, successCount, failureCount, errorBuffer.toString());
+  }
 }

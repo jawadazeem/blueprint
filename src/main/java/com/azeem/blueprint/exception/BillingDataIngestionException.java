@@ -6,7 +6,7 @@
 package com.azeem.blueprint.exception;
 
 public class BillingDataIngestionException extends RuntimeException {
-    public BillingDataIngestionException(String message, Throwable cause) {
-        super(message, cause);
-    }
+  public BillingDataIngestionException(String message, Throwable cause) {
+    super(message, cause);
+  }
 }

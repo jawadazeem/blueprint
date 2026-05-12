@@ -5,13 +5,10 @@
 
 package com.azeem.blueprint.exception;
 
-/**
- * Exception thrown when there is a general error loading billing data.
- */
-
+/** Exception thrown when there is a general error loading billing data. */
 public class BillingDataLoadException extends RuntimeException {
 
-    public BillingDataLoadException(String message, Throwable cause) {
-        super(message, cause);
-    }
+  public BillingDataLoadException(String message, Throwable cause) {
+    super(message, cause);
+  }
 }

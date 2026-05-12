@@ -6,29 +6,29 @@
 package com.azeem.blueprint.model.martin;
 
 public class MartinRequest {
-    private String prompt;
-    private String period;
+  private String prompt;
+  private String period;
 
-    public MartinRequest() {}
+  public MartinRequest() {}
 
-    public MartinRequest(String prompt, String period) {
-        this.prompt = prompt;
-        this.period = period;
-    }
+  public MartinRequest(String prompt, String period) {
+    this.prompt = prompt;
+    this.period = period;
+  }
 
-    public String getPrompt() {
-        return prompt;
-    }
+  public String getPrompt() {
+    return prompt;
+  }
 
-    public void setPrompt(String prompt) {
-        this.prompt = prompt;
-    }
+  public void setPrompt(String prompt) {
+    this.prompt = prompt;
+  }
 
-    public String getPeriod() {
-        return period;
-    }
+  public String getPeriod() {
+    return period;
+  }
 
-    public void setPeriod(String period) {
-        this.period = period;
-    }
+  public void setPeriod(String period) {
+    this.period = period;
+  }
 }

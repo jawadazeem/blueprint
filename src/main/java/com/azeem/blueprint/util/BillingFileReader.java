@@ -5,10 +5,7 @@
 
 package com.azeem.blueprint.util;
 
-
-/**
- * Interface for reading and parsing billing files.
- */
+/** Interface for reading and parsing billing files. */
 public interface BillingFileReader {
-    String[] parseNextRow();
+  String[] parseNextRow();
 }

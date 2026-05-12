@@ -6,7 +6,7 @@
 package com.azeem.blueprint.exception;
 
 public class MartinResponseNotValidException extends RuntimeException {
-    public MartinResponseNotValidException(String message) {
-        super(message);
-    }
+  public MartinResponseNotValidException(String message) {
+    super(message);
+  }
 }

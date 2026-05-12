@@ -17,19 +17,16 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class MartinController {
-    private static final Logger log = LoggerFactory.getLogger(MartinController.class);
-    private final MartinService martinService;
+  private static final Logger log = LoggerFactory.getLogger(MartinController.class);
+  private final MartinService martinService;
 
-    public MartinController(MartinService martinService) {
-        this.martinService = martinService;
-    }
+  public MartinController(MartinService martinService) {
+    this.martinService = martinService;
+  }
 
-    @PostMapping("/martin")
-    public ResponseEntity<MartinResponse> chat(
-            @RequestBody MartinRequest request
-    ) {
-        MartinResponse response = martinService.ask(request.getPrompt(), request.getPeriod());
-        return ResponseEntity.ok(response);
-    }
-
+  @PostMapping("/martin")
+  public ResponseEntity<MartinResponse> chat(@RequestBody MartinRequest request) {
+    MartinResponse response = martinService.ask(request.getPrompt(), request.getPeriod());
+    return ResponseEntity.ok(response);
+  }
 }

@@ -5,5 +5,4 @@
 
 package com.azeem.blueprint.service.alarm;
 
-public class AlarmServiceTest {
-}
+public class AlarmServiceTest {}

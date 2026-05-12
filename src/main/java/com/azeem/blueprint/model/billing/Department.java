@@ -6,13 +6,13 @@
 package com.azeem.blueprint.model.billing;
 
 public enum Department {
-    ENGINEERING,
-    FINANCE,
-    HR,
-    IT,
-    LEGAL,
-    MARKETING,
-    OPERATIONS,
-    SALES,
-    SUPPORT
+  ENGINEERING,
+  FINANCE,
+  HR,
+  IT,
+  LEGAL,
+  MARKETING,
+  OPERATIONS,
+  SALES,
+  SUPPORT
 }

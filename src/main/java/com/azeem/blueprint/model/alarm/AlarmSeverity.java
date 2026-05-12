@@ -6,7 +6,7 @@
 package com.azeem.blueprint.model.alarm;
 
 public enum AlarmSeverity {
-    LOW,
-    MEDIUM,
-    HIGH
+  LOW,
+  MEDIUM,
+  HIGH
 }

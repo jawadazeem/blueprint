@@ -9,10 +9,10 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class SchemaService {
-    public String getSchema() {
-        return """
+  public String getSchema() {
+    return """
             DATABASE SCHEMA
-            
+
             TABLE billing_records (
                 id BIGINT PRIMARY KEY,
                 department TEXT,
@@ -25,7 +25,7 @@ public class SchemaService {
                 sms_count INT,
                 total_charge DOUBLE
             );
-            
+
             TABLE alarms (
                 id UUID PRIMARY KEY,
                 business_key UUID,
@@ -40,5 +40,5 @@ public class SchemaService {
                 department TEXT
             );
             """;
-    }
+  }
 }

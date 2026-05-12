@@ -5,5 +5,4 @@
 
 package com.azeem.blueprint.service.billing;
 
-public class BillingServiceTest {
-}
+public class BillingServiceTest {}

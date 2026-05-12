@@ -3,7 +3,5 @@
  * Apache 2.0 License
  */
 
-/**
- * Provides classes for managing Martin, the Blueprint Bot.
- */
+/** Provides classes for managing Martin, the Blueprint Bot. */
 package com.azeem.blueprint.service.martin;

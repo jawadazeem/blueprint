@@ -10,6 +10,7 @@ import com.azeem.blueprint.model.billing.BillingRecord;
 import com.azeem.blueprint.model.billing.BillingSummary;
 import com.azeem.blueprint.service.billing.BillingS3Service;
 import com.azeem.blueprint.service.billing.BillingService;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -17,119 +18,117 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
-
 /**
  * REST controller exposing endpoints for billing data retrieval and summary generation.
- * <p>
- * Endpoints:
+ *
+ * <p>Endpoints:
+ *
  * <ul>
-*    <li>POST /upload - Upload a csv file that contains billing records to the application</li>
- *   <li>GET /records - Retrieve all billing records.</li>
- *   <li>GET /summary - Get aggregated billing summary.</li>
- *   <li>GET /records/department/{department} - Get billing records filtered by department.</li>
- *   <li>GET /top/{n} - Get top N billing records by total charge.</li>
- *   <li>GET /departments - List all unique departments.</li>
- *   <li>GET /periods - List all available billing periods.</li>
- *   <li>GET /records/period/{billingPeriod} - Get billing records for
- *   specified billing period.</li>
- *   <li>GET /summary/period/{billingPeriod} - Get billing summary for
- *   specified billing period.</li>
+ *   <li>POST /upload - Upload a csv file that contains billing records to the application
+ *   <li>GET /records - Retrieve all billing records.
+ *   <li>GET /summary - Get aggregated billing summary.
+ *   <li>GET /records/department/{department} - Get billing records filtered by department.
+ *   <li>GET /top/{n} - Get top N billing records by total charge.
+ *   <li>GET /departments - List all unique departments.
+ *   <li>GET /periods - List all available billing periods.
+ *   <li>GET /records/period/{billingPeriod} - Get billing records for specified billing period.
+ *   <li>GET /summary/period/{billingPeriod} - Get billing summary for specified billing period.
  * </ul>
  */
-
 @RestController
 public class BillingController {
-    private static final Logger log = LoggerFactory.getLogger(BillingController.class);
-    private final BillingService service;
-    private final BillingS3Service s3Service;
-    private final LoadDummyDataService dummyDataService;
+  private static final Logger log = LoggerFactory.getLogger(BillingController.class);
+  private final BillingService service;
+  private final BillingS3Service s3Service;
+  private final LoadDummyDataService dummyDataService;
 
-    public BillingController(BillingService service,
-                             BillingS3Service s3Service,
-                             LoadDummyDataService dummyDataService
-    ) {
-        this.service = service;
-        this.s3Service = s3Service;
-        this.dummyDataService = dummyDataService;
+  public BillingController(
+      BillingService service, BillingS3Service s3Service, LoadDummyDataService dummyDataService) {
+    this.service = service;
+    this.s3Service = s3Service;
+    this.dummyDataService = dummyDataService;
+  }
+
+  @PostMapping("/upload")
+  public ResponseEntity<String> handleFileUpload(@RequestParam("file") MultipartFile file) {
+
+    if (!file.getOriginalFilename().endsWith(".csv")) {
+      return ResponseEntity.badRequest().body("CSV only, please.");
     }
 
-    @PostMapping("/upload")
-    public ResponseEntity<String> handleFileUpload(
-            @RequestParam("file") MultipartFile file) {
+    s3Service.uploadUserFile("telecom-billing", file);
 
-        if (!file.getOriginalFilename().endsWith(".csv")) {
-            return ResponseEntity.badRequest().body("CSV only, please.");
-        }
+    return ResponseEntity.ok("File received. Processing has started in the background.");
+  }
 
-        s3Service.uploadUserFile("telecom-billing", file);
+  /**
+   * Trigger ingestion of the built-in demonstration dataset. This allows users to test the ETL
+   * pipeline and analytics without providing their own CSV.
+   */
+  @PostMapping("/demo-load")
+  public ResponseEntity<String> loadDemoData() {
+    log.info("POST /demo-load called. Triggering dummy data ingestion.");
+    dummyDataService.loadDummyData();
+    return ResponseEntity.ok("Demo data loaded. You can now use the analytics endpoints.");
+  }
 
-        return ResponseEntity.ok("File received. Processing has started in the background.");
-    }
+  @GetMapping("/records")
+  public Page<BillingRecord> getAllRecords(
+      @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size) {
+    log.info(
+        "GET /records called to retrieve all billing records, page: {}, size: {}.", page, size);
+    return service.getAllRecords(page, size);
+  }
 
-    /**
-     * Trigger ingestion of the built-in demonstration dataset.
-     * This allows users to test the ETL pipeline and analytics without providing their own CSV.
-     */
-    @PostMapping("/demo-load")
-    public ResponseEntity<String> loadDemoData() {
-        log.info("POST /demo-load called. Triggering dummy data ingestion.");
-        dummyDataService.loadDummyData();
-        return ResponseEntity.ok("Demo data loaded. You can now use the analytics endpoints.");
-    }
+  @GetMapping("/summary")
+  public BillingSummary getSummary() {
+    log.info("GET /summary called to generate billing summary.");
+    return service.generateSummary();
+  }
 
-    @GetMapping("/records")
-    public Page<BillingRecord> getAllRecords(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
-        log.info("GET /records called to retrieve all billing records, page: {}, size: {}.", page, size);
-        return service.getAllRecords(page, size);
-    }
+  @GetMapping("/records/department/{department}")
+  public Page<BillingRecord> getRecordsByDepartment(
+      @PathVariable String department,
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "20") int size) {
+    log.info(
+        "GET /records/department/{} called to retrieve records for department. page: {}, size: {}",
+        department,
+        page,
+        size);
+    return service.getRecordsByDepartment(department, page, size);
+  }
 
-    @GetMapping("/summary")
-    public BillingSummary getSummary() {
-        log.info("GET /summary called to generate billing summary.");
-        return service.generateSummary();
-    }
+  @GetMapping("/top/{n}")
+  public Page<BillingRecord> getTopN(@PathVariable int n) {
+    log.info("GET /top/{} called to retrieve top N billing records by total charge.", n);
+    return service.getTopNRecords(n);
+  }
 
-    @GetMapping("/records/department/{department}")
-    public Page<BillingRecord> getRecordsByDepartment(@PathVariable String department,
-                                                      @RequestParam(defaultValue = "0") int page,
-                                                      @RequestParam(defaultValue = "20") int size) {
-        log.info("GET /records/department/{} called to retrieve records for department. page: {}, size: {}", department, page, size);
-        return service.getRecordsByDepartment(department, page, size);
-    }
+  @GetMapping("/departments")
+  public List<String> getDepartments() {
+    log.info("GET /departments called.");
+    return service.getDistinctDepartments();
+  }
 
-    @GetMapping("/top/{n}")
-    public Page<BillingRecord> getTopN(@PathVariable int n) {
-        log.info("GET /top/{} called to retrieve top N billing records by total charge.", n);
-        return service.getTopNRecords(n);
-    }
+  @GetMapping("/periods")
+  public List<String> getBillingPeriods() {
+    log.info("GET /periods called.");
+    return service.getDistinctBillingPeriods();
+  }
 
-    @GetMapping("/departments")
-    public List<String> getDepartments() {
-        log.info("GET /departments called.");
-        return service.getDistinctDepartments();
-    }
+  @GetMapping("/records/period/{billingPeriod}")
+  public Page<BillingRecord> getRecordsByPeriod(
+      @PathVariable String billingPeriod,
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "20") int size) {
+    log.info("GET /records/period/{} called with page {}, size {}", billingPeriod, page, size);
+    return service.getRecordsByPeriod(billingPeriod, page, size);
+  }
 
-    @GetMapping("/periods")
-    public List<String> getBillingPeriods() {
-        log.info("GET /periods called.");
-        return service.getDistinctBillingPeriods();
-    }
-
-    @GetMapping("/records/period/{billingPeriod}")
-    public Page<BillingRecord> getRecordsByPeriod(
-            @PathVariable String billingPeriod,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam (defaultValue = "20") int size) {
-        log.info("GET /records/period/{} called with page {}, size {}", billingPeriod, page, size);
-        return service.getRecordsByPeriod(billingPeriod, page, size);
-    }
-
-    @GetMapping("/summary/period/{billingPeriod}")
-    public BillingSummary getSummaryByPeriod(@PathVariable String billingPeriod) {
-        log.info("GET /summary/period/{} called.", billingPeriod);
-        return service.generateSummaryForPeriod(billingPeriod);
-    }
+  @GetMapping("/summary/period/{billingPeriod}")
+  public BillingSummary getSummaryByPeriod(@PathVariable String billingPeriod) {
+    log.info("GET /summary/period/{} called.", billingPeriod);
+    return service.generateSummaryForPeriod(billingPeriod);
+  }
 }

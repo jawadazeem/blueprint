@@ -6,46 +6,40 @@
 package com.azeem.blueprint.model.alarm;
 
 import com.azeem.blueprint.model.billing.Department;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-
 import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
 
 /**
  * Represents an Alarm.
- * <p>An Alarm object either be for a department or an individual</p>
+ *
+ * <p>An Alarm object either be for the entire account, a department or an individual
  */
-
-public record Alarm(UUID id,
-                    UUID businessKey,
-                    @Enumerated(EnumType.STRING)
-                    AlarmScope alarmScope,
-                    String billingPeriod,
-                    String alarmType,
-                    @Enumerated(EnumType.STRING)
-                    AlarmSeverity alarmSeverity,
-                    String explanation,
-                    Instant timestamp,
-                    String employeeId, // nullable
-                    String phoneNumber, // nullable
-                    @Enumerated(EnumType.STRING)
-                    Department department // nullable
+public record Alarm(
+    UUID id,
+    UUID businessKey,
+    AlarmScope alarmScope,
+    String billingPeriod,
+    String alarmType,
+    AlarmSeverity alarmSeverity,
+    String explanation,
+    Instant timestamp,
+    String employeeId, // nullable
+    String phoneNumber, // nullable
+    Department department // nullable
     ) {
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(
-                businessKey,
-                alarmScope,
-                billingPeriod,
-                alarmType,
-                alarmSeverity,
-                explanation,
-                employeeId,
-                phoneNumber,
-                department
-        );
-    }
+  @Override
+  public int hashCode() {
+    return Objects.hash(
+        businessKey,
+        alarmScope,
+        billingPeriod,
+        alarmType,
+        alarmSeverity,
+        explanation,
+        employeeId,
+        phoneNumber,
+        department);
+  }
 }
