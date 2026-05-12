@@ -10,6 +10,7 @@ import com.azeem.blueprint.model.billing.BillingRecord;
 import com.azeem.blueprint.model.billing.BillingSummary;
 import com.azeem.blueprint.service.billing.BillingS3Service;
 import com.azeem.blueprint.service.billing.BillingService;
+import com.azeem.blueprint.validation.ValidCsvFile;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -55,11 +56,7 @@ public class BillingController {
   }
 
   @PostMapping("/upload")
-  public ResponseEntity<String> handleFileUpload(@RequestParam("file") MultipartFile file) {
-
-    if (!file.getOriginalFilename().endsWith(".csv")) {
-      return ResponseEntity.badRequest().body("CSV only, please.");
-    }
+  public ResponseEntity<String> handleFileUpload(@ValidCsvFile @RequestParam("file") MultipartFile file) {
 
     s3Service.uploadUserFile("telecom-billing", file);
 
