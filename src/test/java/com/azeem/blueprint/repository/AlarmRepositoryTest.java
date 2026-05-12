@@ -103,8 +103,10 @@ public class AlarmRepositoryTest {
   @Test
   @DisplayName("Should return true when alarm exists by id")
   void testFindExistsById() {
+    // Arrange
     UUID id = alarms.getFirst().getId();
 
+    // Act & Assert
     assertThat(alarmRepository.existsById(id)).isTrue();
     UUID fakeId = new UUID(0L, 0L);
     assertThat(alarmRepository.existsById(fakeId)).isFalse();
@@ -112,12 +114,14 @@ public class AlarmRepositoryTest {
 
   @Test
   void testFindByBillingPeriod() {
+    // Act & Assert
     assertThat(alarmRepository.findByBillingPeriod("2026-02")).containsExactly(alarms.getFirst());
     assertThat(alarmRepository.findByBillingPeriod("2026-01")).hasSize(2);
   }
 
   @Test
   void testFindByBillingPeriodAndAlarmScope() {
+    // Act & Assert
     assertThat(alarmRepository.findByBillingPeriodAndAlarmScope("2026-01", AlarmScope.INDIVIDUAL))
         .containsExactly(alarms.get(1));
     assertThat(alarmRepository.findByBillingPeriodAndAlarmScope("2026-01", AlarmScope.ACCOUNT))
@@ -126,6 +130,7 @@ public class AlarmRepositoryTest {
 
   @Test
   void testFindBusinessKeysByBillingPeriod() {
+    // Act & Assert
     assertThat(alarmRepository.findBusinessKeysByBillingPeriod("2026-01"))
         .containsExactlyInAnyOrderElementsOf(
             alarms.stream()
