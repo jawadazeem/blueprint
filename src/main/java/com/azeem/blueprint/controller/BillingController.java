@@ -10,6 +10,7 @@ import com.azeem.blueprint.model.billing.BillingRecord;
 import com.azeem.blueprint.model.billing.BillingSummary;
 import com.azeem.blueprint.service.billing.BillingS3Service;
 import com.azeem.blueprint.service.billing.BillingService;
+import com.azeem.blueprint.validation.BillingPeriod;
 import com.azeem.blueprint.validation.ValidCsvFile;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -56,7 +57,8 @@ public class BillingController {
   }
 
   @PostMapping("/upload")
-  public ResponseEntity<String> handleFileUpload(@ValidCsvFile @RequestParam("file") MultipartFile file) {
+  public ResponseEntity<String> handleFileUpload(
+      @ValidCsvFile @RequestParam("file") MultipartFile file) {
 
     s3Service.uploadUserFile("telecom-billing", file);
 
@@ -118,7 +120,7 @@ public class BillingController {
 
   @GetMapping("/records/period/{billingPeriod}")
   public Page<BillingRecord> getRecordsByPeriod(
-      @PathVariable String billingPeriod,
+      @BillingPeriod @PathVariable String billingPeriod,
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "20") int size) {
     log.info("GET /records/period/{} called with page {}, size {}", billingPeriod, page, size);
@@ -126,7 +128,7 @@ public class BillingController {
   }
 
   @GetMapping("/summary/period/{billingPeriod}")
-  public BillingSummary getSummaryByPeriod(@PathVariable String billingPeriod) {
+  public BillingSummary getSummaryByPeriod(@BillingPeriod @PathVariable String billingPeriod) {
     log.info("GET /summary/period/{} called.", billingPeriod);
     return service.generateSummaryForPeriod(billingPeriod);
   }

@@ -5,6 +5,7 @@
 
 package com.azeem.blueprint.exception;
 
+import jakarta.validation.ConstraintViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -42,6 +43,33 @@ public class GlobalExceptionHandler {
     ErrorResponse response =
         new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), ex.getMessage());
     return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+  }
+
+  // Handle MartinResponseInvalidException
+  @ExceptionHandler(MartinResponseInvalidException.class)
+  public ResponseEntity<ErrorResponse> handleMartinResponseNotValidException(
+      MartinResponseInvalidException ex) {
+    logger.error("Martin's Response was invalid.", ex);
+    ErrorResponse response =
+        new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), ex.getMessage());
+    return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+  }
+
+  // Handle ConstraintViolationException (Jakarta Bean Validation)
+  @ExceptionHandler(ConstraintViolationException.class)
+  public ResponseEntity<ErrorResponse> handleConstraintViolationException(
+      ConstraintViolationException ex) {
+    logger.warn("Validation failed: {}", ex.getMessage());
+
+    String message =
+        ex.getConstraintViolations().stream()
+            .map(v -> v.getPropertyPath() + ": " + v.getMessage())
+            .findFirst()
+            .orElse("Validation error");
+
+    ErrorResponse response = new ErrorResponse(HttpStatus.BAD_REQUEST.value(), message);
+
+    return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
   }
 
   // Handle generic exceptions

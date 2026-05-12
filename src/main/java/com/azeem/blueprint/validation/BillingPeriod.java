@@ -13,8 +13,12 @@ import java.lang.annotation.*;
 @Constraint(validatedBy = CsvFileValidator.class)
 @Target({ElementType.PARAMETER, ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface ValidCsvFile {
-  String message() default "Only non-empty CSV files are allowed";
+public @interface BillingPeriod {
+  String message() default
+      """
+      Only the YYYY-MM billing period format is allowed. The only exception is dummy data,
+      which is for demonstration purposes only.
+      """;
 
   Class<?>[] groups() default {};
 

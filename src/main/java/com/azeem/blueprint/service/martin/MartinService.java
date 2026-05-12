@@ -5,7 +5,7 @@
 
 package com.azeem.blueprint.service.martin;
 
-import com.azeem.blueprint.exception.MartinResponseNotValidException;
+import com.azeem.blueprint.exception.MartinResponseInvalidException;
 import com.azeem.blueprint.model.martin.MartinResponse;
 import com.azeem.blueprint.model.martin.SqlResponse;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -48,7 +48,7 @@ public class MartinService {
     SqlResponse sqlResponse = generateResponse(promptText, currentPeriod);
 
     if (!sqlValidationService.isValidSql(sqlResponse)) {
-      throw new MartinResponseNotValidException("Unsafe SQL detected");
+      throw new MartinResponseInvalidException("Unsafe SQL detected");
     }
 
     List<Map<String, Object>> results = queryExecutionService.executeQuery(sqlResponse);
@@ -86,7 +86,7 @@ public class MartinService {
           "There was a data format error with the Martin's response. Here was "
               + "Martin's response: {}",
           json);
-      throw new MartinResponseNotValidException(
+      throw new MartinResponseInvalidException(
           "There was a data format error with the Martin's response.");
     }
 
