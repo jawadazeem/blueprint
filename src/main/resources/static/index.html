@@ -367,10 +367,10 @@
     <div class="card mb-4">
         <div class="card-header d-flex justify-content-between align-items-center">
             <span>All Records</span>
-            <div id="paginationControls" class="d-flex align-items-center gap-2">
-                <button class="btn btn-sm btn-outline-secondary" onclick="changePage(-1)" id="prevBtn">Previous</button>
-                <span id="pageInfo" class="small fw-bold" style="min-width: 100px; text-align: center;">Page 1</span>
-                <button class="btn btn-sm btn-outline-secondary" onclick="changePage(1)" id="nextBtn">Next</button>
+            <div id="paginationControlsAll" class="d-flex align-items-center gap-2">
+                <button class="btn btn-sm btn-outline-secondary" onclick="changePageAllRecords(-1)" id="prevBtnAllRecords">Previous</button>
+                <span id="pageInfoAllRecords" class="small fw-bold" style="min-width: 100px; text-align: center;">Page 1</span>
+                <button class="btn btn-sm btn-outline-secondary" onclick="changePageAllRecords(1)" id="nextBtnAllRecords">Next</button>
             </div>
         </div>
         <div class="card-body">
@@ -392,7 +392,14 @@
 
 <!-- Filter by Department -->
 <div class="card mb-4">
-    <div class="card-header">Filter by Department</div>
+    <div class="card-header d-flex justify-content-between align-items-center">
+            <span>Filter by Department</span>
+            <div id="paginationControlsDept" class="d-flex align-items-center gap-2">
+                <button class="btn btn-sm btn-outline-secondary" onclick="changePageFilterByDepartment(-1)" id="prevBtnFilterByDepartments">Previous</button>
+                <span id="pageInfoFilterByDepartment" class="small fw-bold" style="min-width: 100px; text-align: center;">Page 1</span>
+                <button class="btn btn-sm btn-outline-secondary" onclick="changePageFilterByDepartment(1)" id="nextBtnFilterByDepartments">Next</button>
+            </div>
+        </div>
     <div class="card-body">
         <select class="form-select w-25 mb-3" id="departmentSelect"></select>
         <button class="btn-modern" onclick="loadByDepartment()">Search</button>
@@ -470,8 +477,10 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
+    let deptChartInstance = null;
     let currentPeriod = null;
-    let currentPage = 0;
+    let currentPageAllRecords = 0;
+    let currentPageFilterByDepartment = 0;
     const pageSize = 20;
 
     async function loadSummary() {
@@ -484,7 +493,11 @@
         document.getElementById("statAvg").textContent = `$${s.averageCharge.toFixed(2)}`;
 
         const hi = s.highestChargeRecord;
-        document.getElementById("statHigh").textContent = `$${hi.totalCharge.toFixed(2)}`;
+        document.getElementById("statHigh").textContent =
+            hi ? `$${hi.totalCharge.toFixed(2)}` : "$0.00";
+
+            document.getElementById("statHighName").textContent =
+            hi ? hi.accountName : "N/A";
         document.getElementById("statHighName").textContent = hi.accountName;
 
         document.getElementById("summaryStats").style.display = "flex";
@@ -552,7 +565,7 @@
         }
 
         const data = await res.json();
-        let msg = data.answer || data.reply || "No response returned.";
+        let msg = (data && (data.answer || data.reply)) || "No response returned.";
 
         if (data.sql) {
         msg += `\n\nSQL:\n${data.sql}`;
@@ -627,7 +640,7 @@
 
     async function loadRecords() {
         // Fetches with pagination parameters
-        const res = await fetch(`/records/period/${currentPeriod}?page=${currentPage}&size=${pageSize}`);
+        const res = await fetch(`/records/period/${currentPeriod}?page=${currentPageAllRecords}&size=${pageSize}`);
         const data = await res.json();
 
         // Spring Data Page wraps list in 'content'
@@ -648,19 +661,25 @@
         });
 
         // Update the UI labels and buttons
-        document.getElementById("pageInfo").textContent = `Page ${currentPage + 1} of ${totalPages}`;
-        document.getElementById("prevBtn").disabled = (currentPage <= 0);
-        document.getElementById("nextBtn").disabled = (currentPage >= totalPages - 1);
+        document.getElementById("pageInfoAllRecords").textContent = `Page ${currentPageAllRecords + 1} of ${totalPages}`;
+        document.getElementById("prevBtnAllRecords").disabled = (currentPageAllRecords <= 0);
+        document.getElementById("nextBtnAllRecords").disabled = (currentPageAllRecords >= totalPages - 1);
     }
 
-    function changePage(step) {
-        currentPage += step;
+    function changePageAllRecords(step) {
+        currentPageAllRecords = Math.max(0, currentPageAllRecords + step);
         loadRecords();
+    }
+
+    function changePageFilterByDepartment(step) {
+        currentPageFilterByDepartment = Math.max(0, currentPageFilterByDepartment + step);
+        loadByDepartment();
     }
 
     function changePeriod() {
         currentPeriod = document.getElementById('periodSelect').value;
-        currentPage = 0; // Reset to page 1 whenever the period changes
+        currentPageAllRecords = 0; // Reset to page 1 whenever the period changes
+        currentPageFilterByDepartment = 0;
         loadSummary();
         loadRecords();
         loadDeptChart()
@@ -672,11 +691,14 @@
         const department = document.getElementById('departmentSelect').value;
         if (!department) return;
 
-        const res = await fetch('/records/department/' + department);
+        const res = await fetch(
+            `/records/department/${department}?page=${currentPageFilterByDepartment}&size=${pageSize}`
+        );
+
         const data = await res.json();
 
-        // handle paged or plain-array responses
-        const records = Array.isArray(data) ? data : (data.content || []);
+        const records = data.content || [];
+        const totalPages = data.totalPages || 1;
 
         const tbody = document.querySelector('#departmentTable tbody');
         tbody.innerHTML = '';
@@ -690,6 +712,16 @@
             `;
             tbody.appendChild(row);
         });
+
+        // update pagination UI
+        document.getElementById("pageInfoFilterByDepartment").textContent =
+            `Page ${currentPageFilterByDepartment + 1} of ${totalPages}`;
+
+        document.getElementById("prevBtnFilterByDepartments").disabled =
+            (currentPageFilterByDepartment <= 0);
+
+        document.getElementById("nextBtnFilterByDepartments").disabled =
+            (currentPageFilterByDepartment >= totalPages - 1);
     }
 
     async function loadTopN() {
@@ -761,133 +793,135 @@
     }
 
     async function loadDeptChart() {
-      // request a larger page so the chart has a meaningful view of departments
-      const res = await fetch('/records?size=1000');
-      const data = await res.json();
+    const res = await fetch(`/records/period/${currentPeriod}?page=0&size=1000`);
+    const data = await res.json();
 
-      // extract records from Page or accept plain array
-      const records = Array.isArray(data) ? data : (data.content || []);
+    const records = Array.isArray(data) ? data : (data.content || []);
 
-      const totals = {};
-      records.forEach(r => {
+    const totals = {};
+    records.forEach(r => {
         totals[r.department] = (totals[r.department] || 0) + r.totalCharge;
-      });
+    });
 
-      new Chart(document.getElementById('deptChart'), {
-        type: 'bar',
-        data: {
-          labels: Object.keys(totals),
-          datasets: [{
-            label: 'Total Charges ($)',
-            data: Object.values(totals)
-          }]
-        }
-      });
+    if (deptChartInstance) {
+        deptChartInstance.destroy();
     }
 
-        async function fetchAlarms() {
-          if (!currentPeriod) return [];
-          const res = await fetch(`/alarms/${currentPeriod}`);
-          if (!res.ok) throw new Error('Failed to load alarms');
-          return await res.json();
+    deptChartInstance = new Chart(document.getElementById('deptChart'), {
+        type: 'bar',
+        data: {
+        labels: Object.keys(totals),
+        datasets: [{
+            label: 'Total Charges ($)',
+            data: Object.values(totals)
+        }]
         }
+    });
+    }
 
-        function renderAlarms(alarms) {
-          const list = document.getElementById('alarms-list');
-          const empty = document.getElementById('alarms-empty');
+    async function fetchAlarms() {
+        if (!currentPeriod) return [];
+        const res = await fetch(`/alarms/${currentPeriod}`);
+        if (!res.ok) throw new Error('Failed to load alarms');
+        return await res.json();
+    }
 
-          list.innerHTML = '';
+    function renderAlarms(alarms) {
+        const list = document.getElementById('alarms-list');
+        const empty = document.getElementById('alarms-empty');
 
-          if (!alarms || alarms.length === 0) {
-            empty.style.display = 'block';
+        list.innerHTML = '';
+
+        if (!alarms || alarms.length === 0) {
+        empty.style.display = 'block';
+        return;
+        }
+        empty.style.display = 'none';
+
+        for (const a of alarms) {
+        const sev = (a.alarmSeverity || '').toLowerCase(); // low/medium/high
+        const type = a.alarmType || 'Alarm';
+        const phone = a.phoneNumber || '—';
+        const emp = a.employeeId || '—';
+        const period = a.billingPeriod || '—';
+        const explanation = a.explanation || '';
+
+        const li = document.createElement('li');
+        li.className = 'alarm-item';
+
+        li.innerHTML = `
+            <div class="alarm-left">
+            <div class="alarm-title">${type}</div>
+            <div class="alarm-meta">Employee: ${emp} • Phone: ${phone} • Period: ${period}</div>
+            <div class="alarm-explain">${explanation}</div>
+            </div>
+            <div class="badge ${sev}">${(a.alarmSeverity || 'UNKNOWN')}</div>
+        `;
+
+        list.appendChild(li);
+        }
+    }
+
+    function openAlarmsModal() {
+        document.getElementById('alarms-overlay').style.display = 'flex';
+    }
+
+    function closeAlarmsModal() {
+        document.getElementById('alarms-overlay').style.display = 'none';
+    }
+
+    function closeHelpModal() {
+        document.getElementById('help-overlay').style.display = 'none';
+    }
+
+    function openHelpModal() {
+        document.getElementById('help-overlay').style.display = 'flex';
+    }
+
+    async function loadDummyData() {
+        const btn = document.getElementById('loadDummyBtn');
+        if (!btn) return;
+        btn.disabled = true;
+        btn.textContent = 'Loading...';
+
+        try {
+        const res = await fetch('/demo-load', { method: 'POST' });
+        if (!res.ok) {
+            const txt = await res.text();
+            alert('Failed to load dummy data: ' + (txt || res.status));
             return;
-          }
-          empty.style.display = 'none';
-
-          for (const a of alarms) {
-            const sev = (a.alarmSeverity || '').toLowerCase(); // low/medium/high
-            const type = a.alarmType || 'Alarm';
-            const phone = a.phoneNumber || '—';
-            const emp = a.employeeId || '—';
-            const period = a.billingPeriod || '—';
-            const explanation = a.explanation || '';
-
-            const li = document.createElement('li');
-            li.className = 'alarm-item';
-
-            li.innerHTML = `
-              <div class="alarm-left">
-                <div class="alarm-title">${type}</div>
-                <div class="alarm-meta">Employee: ${emp} • Phone: ${phone} • Period: ${period}</div>
-                <div class="alarm-explain">${explanation}</div>
-              </div>
-              <div class="badge ${sev}">${(a.alarmSeverity || 'UNKNOWN')}</div>
-            `;
-
-            list.appendChild(li);
-          }
         }
 
-        function openAlarmsModal() {
-          document.getElementById('alarms-overlay').style.display = 'flex';
+        // Wait for backend to process and then refresh UI
+        await waitForDataReady();
+        await loadPeriods();
+        await loadDepartments();
+        changePeriod();
+        closeHelpModal();
+        alert('Dummy data loaded successfully.');
+        } catch (e) {
+        console.error('loadDummyData failed', e);
+        alert('Failed to load dummy data. See console for details.');
+        } finally {
+        btn.disabled = false;
+        btn.textContent = 'Load Dummy Data';
         }
+    }
 
-        function closeAlarmsModal() {
-          document.getElementById('alarms-overlay').style.display = 'none';
+
+    async function onAlarmsClick() {
+        openAlarmsModal();
+        try {
+        const alarms = await fetchAlarms();
+        document.getElementById('alarms-title').textContent = `Alarms (${alarms.length})`;
+        renderAlarms(alarms);
+        // also keep button in sync
+        document.getElementById('alarms-btn').textContent = `Alarms (${alarms.length})`;
+        } catch (e) {
+        console.error(e);
+        renderAlarms([]);
         }
-
-        function closeHelpModal() {
-          document.getElementById('help-overlay').style.display = 'none';
-        }
-
-        function openHelpModal() {
-          document.getElementById('help-overlay').style.display = 'flex';
-        }
-
-        async function loadDummyData() {
-          const btn = document.getElementById('loadDummyBtn');
-          if (!btn) return;
-          btn.disabled = true;
-          btn.textContent = 'Loading...';
-
-          try {
-            const res = await fetch('/demo-load', { method: 'POST' });
-            if (!res.ok) {
-              const txt = await res.text();
-              alert('Failed to load dummy data: ' + (txt || res.status));
-              return;
-            }
-
-            // Wait for backend to process and then refresh UI
-            await waitForDataReady();
-            await loadPeriods();
-            await loadDepartments();
-            changePeriod();
-            closeHelpModal();
-            alert('Dummy data loaded successfully.');
-          } catch (e) {
-            console.error('loadDummyData failed', e);
-            alert('Failed to load dummy data. See console for details.');
-          } finally {
-            btn.disabled = false;
-            btn.textContent = 'Load Dummy Data';
-          }
-        }
-
-
-        async function onAlarmsClick() {
-          openAlarmsModal();
-          try {
-            const alarms = await fetchAlarms();
-            document.getElementById('alarms-title').textContent = `Alarms (${alarms.length})`;
-            renderAlarms(alarms);
-            // also keep button in sync
-            document.getElementById('alarms-btn').textContent = `Alarms (${alarms.length})`;
-          } catch (e) {
-            console.error(e);
-            renderAlarms([]);
-          }
-        }
+    }
 
     async function loadAlarmsCount() {
         try {
@@ -899,7 +933,7 @@
             const count = alarms.length;
             const btn = document.getElementById("alarms-btn");
 
-            btn.textContent = `Alarms (${count})`;
+            if (btn) btn.textContent = `Alarms (${count})`;
 
             // Optional: hide red button if no alarms
             if (count === 0) {

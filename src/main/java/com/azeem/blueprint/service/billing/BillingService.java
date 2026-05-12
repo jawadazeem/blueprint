@@ -5,6 +5,7 @@
 
 package com.azeem.blueprint.service.billing;
 
+import com.azeem.blueprint.entity.BillingRecordEntity;
 import com.azeem.blueprint.etl.SummaryBuilder;
 import com.azeem.blueprint.exception.BillingDataNotFoundException;
 import com.azeem.blueprint.mapper.BillingRecordMapper;
@@ -66,14 +67,12 @@ public class BillingService {
 
   public Page<BillingRecord> getRecordsByDepartment(
       @NotBlank String department, int page, int size) {
-    Pageable recordsByDepartmentRequest =
-        PageRequest.of(page, size, Sort.by("department").descending());
-    Page<BillingRecord> records =
-        repository
-            .findByDepartmentIgnoreCase(department, recordsByDepartmentRequest)
-            .map(mapper::mapToDomain);
-    log.info("Retrieved {}'s records, page: {}, count: {}.", department, page, size);
-    return records;
+    Pageable pageRequest = PageRequest.of(page, size, Sort.by("totalCharge").descending());
+    Page<BillingRecordEntity> entityPage =
+        repository.findByDepartmentIgnoreCase(department, pageRequest);
+    log.info("Found {} records in DB for dept: {}", entityPage.getTotalElements(), department);
+
+    return entityPage.map(mapper::mapToDomain);
   }
 
   // DB-backed distinct departments

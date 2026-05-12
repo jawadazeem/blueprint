@@ -10,11 +10,15 @@ import com.azeem.blueprint.model.billing.BillingRecord;
 import com.azeem.blueprint.model.billing.BillingSummary;
 import com.azeem.blueprint.service.billing.BillingS3Service;
 import com.azeem.blueprint.service.billing.BillingService;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -36,6 +40,7 @@ import org.springframework.web.multipart.MultipartFile;
  * </ul>
  */
 @RestController
+@Validated
 public class BillingController {
   private static final Logger log = LoggerFactory.getLogger(BillingController.class);
   private final BillingService service;
@@ -87,16 +92,13 @@ public class BillingController {
   }
 
   @GetMapping("/records/department/{department}")
-  public Page<BillingRecord> getRecordsByDepartment(
-      @PathVariable String department,
-      @RequestParam(defaultValue = "0") int page,
-      @RequestParam(defaultValue = "20") int size) {
-    log.info(
-        "GET /records/department/{} called to retrieve records for department. page: {}, size: {}",
-        department,
-        page,
-        size);
-    return service.getRecordsByDepartment(department, page, size);
+  public ResponseEntity<Page<BillingRecord>> getRecordsByDepartment(
+      @PathVariable @NotBlank String department,
+      @RequestParam(defaultValue = "0") @Min(0) int page,
+      @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size) {
+    log.info("API Request: Fetching records for department: {}", department);
+    Page<BillingRecord> result = service.getRecordsByDepartment(department, page, size);
+    return ResponseEntity.ok(result);
   }
 
   @GetMapping("/top/{n}")
