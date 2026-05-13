@@ -29,7 +29,7 @@ public class CsvFileValidator implements ConstraintValidator<ValidCsvFile, Multi
       return false;
     }
 
-    // Rule 4: must end in .csv (case insensitive)
+    // Rule 4: must end in .csv (case-insensitive)
     return name.toLowerCase().endsWith(".csv");
   }
 }

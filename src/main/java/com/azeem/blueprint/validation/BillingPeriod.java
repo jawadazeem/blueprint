@@ -10,7 +10,7 @@ import jakarta.validation.Payload;
 import java.lang.annotation.*;
 
 @Documented
-@Constraint(validatedBy = CsvFileValidator.class)
+@Constraint(validatedBy = BillingPeriodFormatValidator.class)
 @Target({ElementType.PARAMETER, ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface BillingPeriod {
