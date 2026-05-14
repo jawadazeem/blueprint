@@ -5,5 +5,4 @@
 
 package com.azeem.blueprint.controller;
 
-public class BillingControllerTest {
-}
+public class BillingControllerTest {}

@@ -4,81 +4,24 @@
     <meta charset="UTF-8" />
     <title>About | Blueprint</title>
 
-    <!-- Google Font -->
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet">
-
-    <!-- Bootstrap (same as dashboard) -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
-
-    <link rel="icon" href="./favicon.png" />
-
-    <style>
-        :root{ --bg:#f5f6fa; --card:#fff; --muted:#6c757d; --accent:#0d6efd; }
-        body {
-            padding: 28px;
-            font-family: "Montserrat", sans-serif;
-            background: linear-gradient(180deg, #f7f8fb 0%, var(--bg) 100%);
-            color: #222;
-        }
-
-        .hero{
-            display:flex;
-            gap:24px;
-            align-items:center;
-            justify-content:space-between;
-            background: linear-gradient(90deg, rgba(13,110,253,0.10), rgba(13,110,253,0.03));
-            border-radius: 12px;
-            padding: 28px;
-            box-shadow: 0 8px 30px rgba(10,20,50,0.04);
-            margin-bottom: 20px;
-        }
-
-        .hero h1{ font-size:48px; margin:0; font-weight:800; letter-spacing:-1px; }
-        .hero p{ margin:6px 0 0 0; color:var(--muted); font-size:16px; }
-
-        .info-grid{ display:grid; grid-template-columns: 1fr 380px; gap:24px; align-items:start; }
-
-        .info-card {
-            background: var(--card);
-            border-radius: 12px;
-            padding: 20px;
-            border: 1px solid #eee;
-            box-shadow: 0 6px 20px rgba(20,30,60,0.03);
-            margin-bottom: 16px;
-        }
-
-        .section-title { font-weight:700; font-size:18px; margin-bottom:12px; }
-
-        .tech-list { display:flex; flex-wrap:wrap; gap:10px; }
-        .tech-badge{ background:#f1f5ff; color:#0b57d0; padding:8px 12px; border-radius:999px; font-weight:600; font-size:13px; border:1px solid rgba(13,110,253,0.08); }
-
-        .feature-list{ list-style:none; padding:0; margin:0; display:grid; gap:10px; }
-        .feature-item{ display:flex; gap:12px; align-items:flex-start; }
-        .feature-item b{ display:block; font-weight:700; }
-
-        pre.sample{ background:#0f1724; color:#dbeafe; padding:12px; border-radius:8px; overflow:auto; }
-
-        .cta { display:flex; gap:10px; align-items:center; }
-        .btn-primary-lg{ padding:12px 18px; font-size:16px; border-radius:10px; }
-
-        footer.app-footer { border-top: 1px solid #e9ecef; margin-top: 28px; padding-top: 18px; }
-
-        @media (max-width:900px){ .info-grid{ grid-template-columns: 1fr; } .hero{ flex-direction:column; align-items:flex-start; } }
-    </style>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="icon" href="/assets/icons/favicon.png" />
+    <link rel="stylesheet" href="/css/main.css" />
+    <link rel="stylesheet" href="/css/info.css" />
 </head>
 
-<body>
-
+<body class="info-page">
 <div class="hero">
     <div>
         <h1>Blueprint</h1>
         <p>Telecom Billing Intelligence Platform: Fast, scalable analytics for enterprise billing.</p>
     </div>
 
-    <div style="text-align:right">
-        <div style="font-size:12px;color:var(--muted);">Ready to explore?</div>
-        <div style="margin-top:8px" class="d-flex gap-2 justify-content-end">
-            <button class="btn btn-primary btn-primary-lg" onclick="window.open('/','_self')">Open Dashboard</button>
+    <div class="hero-cta">
+        <div class="ready-label">Ready to explore?</div>
+        <div class="hero-actions-inline d-flex gap-2 justify-content-end">
+            <button class="btn btn-primary btn-primary-lg" id="openDashboardBtn" type="button">Open Dashboard</button>
         </div>
     </div>
 </div>
@@ -87,23 +30,35 @@
     <div>
         <div class="info-card">
             <div class="section-title">Overview</div>
-            <p style="color:var(--muted)">
+            <p class="text-muted-copy">
                 Blueprint is a focused, production-minded UI for exploring large telecom billing datasets. It combines an ETL-driven backend with a lightweight, interactive dashboard so teams can find cost drivers and anomalies quickly.
             </p>
 
-            <hr/>
+            <hr />
             <div class="section-title">Key Features</div>
             <ul class="feature-list">
-                <li class="feature-item"><div style="color:#6b21a8; font-weight:900;">●</div><div><b>Chat-driven analytics</b><div style="color:var(--muted)">A conversational interface is available to ask analytics questions.</div></div></li>
-                <li class="feature-item"><div style="color:var(--accent); font-weight:900;">●</div><div><b>Paginated, memory-safe queries</b><div style="color:var(--muted)">All large queries use Spring Data paging to avoid loading the full dataset in memory.</div></div></li>
-                <li class="feature-item"><div style="color:#22c55e; font-weight:900;">●</div><div><b>Department & Period analytics</b><div style="color:var(--muted)">Pre-built visuals show charges by department and period-level summaries.</div></div></li>
-                <li class="feature-item"><div style="color:#f97316; font-weight:900;">●</div><div><b>Top‑N & Filtering</b><div style="color:var(--muted)">Quickly surface the largest charges and drill into departments.</div></div></li>
+                <li class="feature-item">
+                    <div class="feature-dot feature-dot-chat">●</div>
+                    <div><b>Chat-driven analytics</b><div class="text-muted-copy">A conversational interface is available to ask analytics questions.</div></div>
+                </li>
+                <li class="feature-item">
+                    <div class="feature-dot feature-dot-data">●</div>
+                    <div><b>Paginated, memory-safe queries</b><div class="text-muted-copy">All large queries use Spring Data paging to avoid loading the full dataset in memory.</div></div>
+                </li>
+                <li class="feature-item">
+                    <div class="feature-dot feature-dot-period">●</div>
+                    <div><b>Department &amp; Period analytics</b><div class="text-muted-copy">Pre-built visuals show charges by department and period-level summaries.</div></div>
+                </li>
+                <li class="feature-item">
+                    <div class="feature-dot feature-dot-filter">●</div>
+                    <div><b>Top‑N &amp; Filtering</b><div class="text-muted-copy">Quickly surface the largest charges and drill into departments.</div></div>
+                </li>
             </ul>
         </div>
 
         <div class="info-card">
             <div class="section-title">Quickstart</div>
-            <ol style="color:var(--muted); margin-left:16px;">
+            <ol class="quickstart-list">
                 <li>
                     Open the <strong>Dashboard</strong> and select <strong>help</strong> on the top left for guidance.
                 </li>
@@ -113,7 +68,6 @@
                 <li>Try <strong>Top N</strong> to find high-charge accounts.</li>
             </ol>
         </div>
-
     </div>
 
     <aside>
@@ -127,11 +81,11 @@
                 <div class="tech-badge">Docker</div>
                 <div class="tech-badge">GitHub Actions (CI/CD)</div>
                 <div class="tech-badge">PostgreSQL</div>
-                <div class="tech-badge">JUnit 5 & Mockito</div>
+                <div class="tech-badge">JUnit 5 &amp; Mockito</div>
             </div>
-            <hr/>
-         </div>
-     </aside>
+            <hr />
+        </div>
+    </aside>
 </div>
 
 <footer class="app-footer mt-5">
@@ -141,5 +95,8 @@
         <span class="footer-sub">© 2026 Jawad Azeem</span>
     </div>
 </footer>
+
+<script src="/js/main.js"></script>
+<script src="/js/info.js"></script>
 </body>
 </html>

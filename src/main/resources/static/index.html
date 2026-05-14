@@ -1,256 +1,63 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8"/>
+    <meta charset="UTF-8" />
     <title>Dashboard | Blueprint</title>
 
-    <!-- Google Font -->
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet">
-
-    <!-- Bootstrap CDN -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
-
-    <link rel="icon" href="/favicon.png"/>
-
-    <!-- Chart.js (CDN) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="icon" href="/assets/icons/favicon.png" />
+    <link rel="stylesheet" href="/css/main.css" />
+    <link rel="stylesheet" href="/css/dashboard.css" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-    <style>
-        body {
-            padding: 30px;
-            font-family: "Montserrat", sans-serif;
-            background-color: #f5f6fa;
-        }
-
-        h1 {
-            font-weight: 600;
-            margin-bottom: 30px;
-        }
-
-        /* Dashboard title styling */
-        .dashboard-title h1 {
-            font-size: 48px;
-            line-height: 1;
-            margin: 0 0 6px 0;
-            font-weight: 700;
-        }
-
-        .dashboard-title .subtitle {
-            font-size: 18px;
-            font-weight: 400;
-            color: #555;
-            margin: 0;
-        }
-
-        .card {
-            border-radius: 12px;
-            border: none;
-            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
-        }
-
-        .card-header {
-            font-weight: 600;
-            background-color: #ffffff;
-            border-bottom: 1px solid #eee;
-            border-radius: 12px 12px 0 0;
-        }
-
-        /* Modern buttons */
-        .btn-modern {
-            background: rgba(0, 0, 0, 0.05);
-            border: none;
-            padding: 10px 20px;
-            border-radius: 8px;
-            font-weight: 500;
-            transition: all 0.25s ease;
-        }
-
-        .btn-modern.alarms {
-            font-weight: 700;
-            background: rgba(255, 0, 0, 0.85);
-            color: white;
-        }
-
-        .btn-modern:hover {
-            background: rgba(0, 0, 0, 0.15);
-            transform: translateY(-2px);
-        }
-
-        .table-container {
-            max-height: 400px;
-            overflow-y: auto;
-        }
-
-        pre {
-            background: #ffffff;
-            padding: 15px;
-            border-radius: 8px;
-            border: 1px solid #eee;
-        }
-
-        /* Info button on footer */
-        .btn-info {
-            font-family: 'Courier New', sans-serif, monospace;
-            background: rgba(0, 0, 0, 0.05);
-            border: none;
-            border-radius: 8px;
-            font-weight: 500;
-            transition: all 0.25s ease;
-        }
-
-        .modal-overlay{
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.35);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 9999;
-            padding: 16px;
-            }
-
-            .alarm-modal{
-            width: min(760px, 96vw);
-            max-height: 80vh;
-            background: #fff;
-            border-radius: 14px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.25);
-            overflow: hidden;
-        }
-
-         .modal-header{
-            display:flex;
-            align-items:center;
-            justify-content: space-between;
-            padding: 14px 16px;
-            border-bottom: 1px solid #eee;
-         }
-
-         .modal-header h3{
-            margin:0;
-            font-size: 18px;
-         }
-
-         .modal-close{
-            border: none;
-            background: transparent;
-            font-size: 20px;
-            cursor: pointer;
-            line-height: 1;
-         }
-
-         .modal-body{
-            padding: 12px 16px 16px 16px;
-            overflow: auto;
-            max-height: calc(80vh - 56px);
-         }
-
-         .alarms-list{
-            list-style: none;
-            padding: 0;
-            margin: 0;
-            display: grid;
-            gap: 10px;
-         }
-
-         .alarm-item{
-            border: 1px solid #eee;
-            border-radius: 12px;
-            padding: 12px;
-            display:flex;
-            justify-content: space-between;
-            gap: 12px;
-         }
-
-         .alarm-left{
-            display:flex;
-            flex-direction: column;
-            gap: 4px;
-         }
-
-         .alarm-title{
-            font-weight: 700;
-         }
-
-         .alarm-meta{
-            font-size: 13px;
-            color: #555;
-         }
-
-         .alarm-explain{
-            font-size: 13px;
-            color: #333;
-         }
-
-         .badge{
-            padding: 6px 10px;
-            border-radius: 999px;
-            font-weight: 700;
-            font-size: 12px;
-            align-self: start;
-         }
-
-         .badge.low{ background: #fff4cc; }
-
-         .badge.medium{ background: #ffe0cc; }
-
-         .badge.high{ background: #ffd6d6; }
-
-         .chart-box {
-          height: 280px;
-          position: relative;
-        }
-
-    </style>
 </head>
 
-<body>
+<body class="dashboard-page">
 <header class="dashboard-title mb-3" role="banner">
     <h1>Blueprint</h1>
     <p class="subtitle">Telecom Billing Intelligence Platform</p>
 </header>
 
-<nav class="navbar navbar-light bg-white shadow-sm mb-4" style="border-radius: 10px;">
+<nav class="navbar navbar-light bg-white shadow-sm mb-4 dashboard-navbar">
     <div class="container-fluid">
-        <span class="navbar-brand mb-0 h1 d-flex align-items-center" style="font-weight:600; gap:8px;" aria-label="Application">
-            <button id="helpBtn" type="button" class="btn btn-sm btn-outline-primary ms-2" onclick="openHelpModal()">Help</button>
+        <span class="navbar-brand mb-0 h1 d-flex align-items-center dashboard-brand" aria-label="Application">
+            <button id="helpBtn" type="button" class="btn btn-sm btn-outline-primary ms-2">Help</button>
         </span>
 
         <div class="d-flex align-items-center gap-3">
             <div class="d-flex align-items-center bg-light p-1 rounded-3 border">
-                <input type="file" id="fileInput" class="form-control form-control-sm" style="width: 200px;" accept=".csv">
-                <button class="btn btn-sm btn-primary ms-2" onclick="uploadFile()" id="uploadBtn">Upload</button>
+                <input type="file" id="fileInput" class="form-control form-control-sm file-input" accept=".csv">
+                <button class="btn btn-sm btn-primary ms-2" id="uploadBtn" type="button">Upload</button>
             </div>
 
             <button class="btn-modern alarms" id="alarms-btn" type="button">
                 Alarms (0)
             </button>
 
-            <select id="periodSelect" class="form-select w-auto" onchange="changePeriod()"></select>
+            <select id="periodSelect" class="form-select w-auto"></select>
         </div>
     </div>
 </nav>
 
-<!-- Modals: moved outside the navbar so fixed positioning works and they don't trap clicks -->
-<div class="modal-overlay" id="alarms-overlay" style="display:none;">
+<div class="modal-overlay" id="alarms-overlay">
     <div class="alarm-modal">
         <div class="modal-header">
             <h3 id="alarms-title">Alarms</h3>
-            <button class="modal-close" id="alarms-close" type="button" onclick="closeAlarmsModal()">✕</button>
+            <button class="modal-close" id="alarms-close" type="button">✕</button>
         </div>
 
         <div class="modal-body">
-            <div id="alarms-empty" style="display:none;">No alarms found.</div>
+            <div id="alarms-empty">No alarms found.</div>
             <ul class="alarms-list" id="alarms-list"></ul>
         </div>
     </div>
 </div>
 
-<div class="modal-overlay" id="help-overlay" style="display:none;">
+<div class="modal-overlay" id="help-overlay">
     <div class="alarm-modal">
         <div class="modal-header">
             <h3>Help</h3>
-            <button class="modal-close" type="button" onclick="closeHelpModal()">✕</button>
+            <button class="modal-close" id="help-close" type="button">✕</button>
         </div>
 
         <div class="modal-body">
@@ -265,18 +72,17 @@
             <p>For more details, open the <a href="/info.html" target="_blank" rel="noopener">info page</a>.</p>
 
             <div class="mt-3 d-flex gap-2">
-                <button id="loadDummyBtn" class="btn btn-lg btn-primary" onclick="loadDummyData()">Load Dummy Data</button>
-                <button class="btn btn-outline-secondary" onclick="closeHelpModal()">Close</button>
+                <button id="loadDummyBtn" class="btn btn-lg btn-primary" type="button">Load Dummy Data</button>
+                <button class="btn btn-outline-secondary" id="helpSecondaryClose" type="button">Close</button>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Summary -->
 <div class="card mb-4">
     <div class="card-header">Latest Period's Summary</div>
     <div class="card-body">
-        <div id="summaryStats" class="row g-3" style="display:none;">
+        <div id="summaryStats" class="row g-3 hidden">
             <div class="col-md-3">
                 <div class="card p-3 text-center">
                     <h6>Total Records</h6>
@@ -309,14 +115,12 @@
     </div>
 </div>
 
-<!-- ChatBot Analytics (matches length and style of Latest Period's Summary) -->
 <div class="card mb-4">
     <div class="card-header">Blueprint Bot Analytics</div>
     <div class="card-body">
-        <div id="chatbotModule" class="row g-3" style="display:flex;">
+        <div id="chatbotModule" class="row g-3">
             <div class="col-12">
-                <div class="card p-3" id="chatWindow" style="height:220px; overflow:auto; background:#fff; border:1px solid #eee;">
-                    <!-- Messages will be appended here -->
+                <div class="card p-3 chat-window" id="chatWindow">
                     <div id="chatEmpty" class="text-muted">Ask Martin questions about billing data, e.g. "Sort the departments by highest charge in descending order"</div>
                 </div>
             </div>
@@ -325,15 +129,13 @@
                 <input id="chatInput" class="form-control" placeholder="Ask Martin..." aria-label="Chat input" />
             </div>
             <div class="col-3 d-flex align-items-start">
-                <button class="btn btn-primary w-100" id="chatSendBtn" onclick="sendChat()">Send</button>
+                <button class="btn btn-primary w-100" id="chatSendBtn" type="button">Send</button>
             </div>
         </div>
     </div>
 </div>
 
 <div class="row mb-4">
-
-    <!-- Charges by Department -->
     <div class="col-lg-6">
         <div class="card h-100">
             <div class="card-header">Charges by Department</div>
@@ -345,7 +147,6 @@
         </div>
     </div>
 
-    <!-- Alarms by Severity -->
     <div class="col-lg-6">
         <div class="card h-100">
             <div class="card-header">Alarms by Severity (Selected Period)</div>
@@ -359,18 +160,16 @@
             </div>
         </div>
     </div>
-
 </div>
 
-<!-- All Records -->
 <div class="card mb-4">
     <div class="card mb-4">
         <div class="card-header d-flex justify-content-between align-items-center">
             <span>All Records</span>
             <div id="paginationControlsAll" class="d-flex align-items-center gap-2">
-                <button class="btn btn-sm btn-outline-secondary" onclick="changePageAllRecords(-1)" id="prevBtnAllRecords">Previous</button>
-                <span id="pageInfoAllRecords" class="small fw-bold" style="min-width: 100px; text-align: center;">Page 1</span>
-                <button class="btn btn-sm btn-outline-secondary" onclick="changePageAllRecords(1)" id="nextBtnAllRecords">Next</button>
+                <button class="btn btn-sm btn-outline-secondary" id="prevBtnAllRecords" type="button">Previous</button>
+                <span id="pageInfoAllRecords" class="small fw-bold page-info">Page 1</span>
+                <button class="btn btn-sm btn-outline-secondary" id="nextBtnAllRecords" type="button">Next</button>
             </div>
         </div>
         <div class="card-body">
@@ -390,19 +189,18 @@
     </div>
 </div>
 
-<!-- Filter by Department -->
 <div class="card mb-4">
     <div class="card-header d-flex justify-content-between align-items-center">
-            <span>Filter by Department</span>
-            <div id="paginationControlsDept" class="d-flex align-items-center gap-2">
-                <button class="btn btn-sm btn-outline-secondary" onclick="changePageFilterByDepartment(-1)" id="prevBtnFilterByDepartments">Previous</button>
-                <span id="pageInfoFilterByDepartment" class="small fw-bold" style="min-width: 100px; text-align: center;">Page 1</span>
-                <button class="btn btn-sm btn-outline-secondary" onclick="changePageFilterByDepartment(1)" id="nextBtnFilterByDepartments">Next</button>
-            </div>
+        <span>Filter by Department</span>
+        <div id="paginationControlsDept" class="d-flex align-items-center gap-2">
+            <button class="btn btn-sm btn-outline-secondary" id="prevBtnFilterByDepartments" type="button">Previous</button>
+            <span id="pageInfoFilterByDepartment" class="small fw-bold page-info">Page 1</span>
+            <button class="btn btn-sm btn-outline-secondary" id="nextBtnFilterByDepartments" type="button">Next</button>
         </div>
+    </div>
     <div class="card-body">
         <select class="form-select w-25 mb-3" id="departmentSelect"></select>
-        <button class="btn-modern" onclick="loadByDepartment()">Search</button>
+        <button class="btn-modern" id="departmentSearchBtn" type="button">Search</button>
         <div class="table-container">
             <table class="table" id="departmentTable">
                 <thead>
@@ -418,12 +216,11 @@
     </div>
 </div>
 
-<!-- Top N -->
 <div class="card mb-4">
     <div class="card-header">Top N Highest Charges</div>
     <div class="card-body">
-        <input class="form-control w-25 mb-3" id="topInput" placeholder="Example: 5"/>
-        <button class="btn-modern" onclick="loadTopN()">Load</button>
+        <input class="form-control w-25 mb-3" id="topInput" placeholder="Example: 5" />
+        <button class="btn-modern" id="topLoadBtn" type="button">Load</button>
         <table class="table" id="topOutput">
             <thead>
             <tr>
@@ -437,597 +234,18 @@
     </div>
 </div>
 
-<!-- Footer -->
 <footer class="app-footer mt-5">
     <div class="container text-center py-3">
         <span class="footer-title">Blueprint Billing Portal</span>
         <span class="footer-separator">•</span>
         <span class="footer-sub">© 2026 Jawad Azeem</span>
         <span class="footer-separator">•</span>
-        <button class="btn-info" onclick="openInfo()"><b>i</b></button>
+        <button class="btn-info" id="infoBtn" type="button"><b>i</b></button>
     </div>
 </footer>
 
-<style>
-    .app-footer {
-        border-top: 1px solid #e3e3e3;
-        margin-top: 60px;
-        padding-top: 15px;
-        color: #555;
-        background-color: #fafafa;
-        font-family: 'Montserrat', sans-serif;
-    }
-
-    .footer-title {
-        font-weight: 600;
-    }
-
-    .footer-sub {
-        opacity: 0.8;
-    }
-
-    .footer-separator {
-        margin: 0 8px;
-        opacity: 0.5;
-    }
-</style>
-
-
-<!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-
-<script>
-    let deptChartInstance = null;
-    let currentPeriod = null;
-    let currentPageAllRecords = 0;
-    let currentPageFilterByDepartment = 0;
-    const pageSize = 20;
-
-    async function loadSummary() {
-        const res = await fetch(`/summary/period/${currentPeriod}`);
-        const s = await res.json();
-
-        // Fill stat cards
-        document.getElementById("statRecords").textContent = s.totalRecords;
-        document.getElementById("statTotal").textContent = `$${s.totalCharges.toFixed(2)}`;
-        document.getElementById("statAvg").textContent = `$${s.averageCharge.toFixed(2)}`;
-
-        const hi = s.highestChargeRecord;
-        document.getElementById("statHigh").textContent =
-            hi ? `$${hi.totalCharge.toFixed(2)}` : "$0.00";
-
-            document.getElementById("statHighName").textContent =
-            hi ? hi.accountName : "N/A";
-        document.getElementById("statHighName").textContent = hi.accountName;
-
-        document.getElementById("summaryStats").style.display = "flex";
-    }
-    let alarmsChartInstance = null;
-
-    function countBySeverity(alarms) {
-      const counts = { LOW: 0, MEDIUM: 0, HIGH: 0, UNKNOWN: 0 };
-      for (const a of (alarms || [])) {
-        const sev = String(a.alarmSeverity || "UNKNOWN").toUpperCase();
-        if (counts[sev] === undefined) counts.UNKNOWN++;
-        else counts[sev]++;
-      }
-      return counts;
-    }
-
-    // ChatBot UI helpers
-    function appendChatMessage(sender, text) {
-      const chat = document.getElementById('chatWindow');
-      const empty = document.getElementById('chatEmpty');
-      if (empty) empty.style.display = 'none';
-
-      const wrapper = document.createElement('div');
-      wrapper.className = sender === 'user' ? 'text-end mb-2' : 'text-start mb-2';
-
-      const bubble = document.createElement('div');
-      bubble.className = 'd-inline-block p-2';
-      bubble.style.maxWidth = '80%';
-      bubble.style.borderRadius = '10px';
-      if (sender === 'user') {
-        bubble.style.background = '#0d6efd';
-        bubble.style.color = '#fff';
-      } else {
-        bubble.style.background = '#f1f3f5';
-        bubble.style.color = '#000';
-      }
-      bubble.textContent = text;
-
-      wrapper.appendChild(bubble);
-      chat.appendChild(wrapper);
-      chat.scrollTop = chat.scrollHeight;
-    }
-
-    async function sendChat() {
-      const input = document.getElementById('chatInput');
-      const text = input.value.trim();
-      if (!text) return;
-
-      appendChatMessage('user', text);
-      input.value = '';
-
-      try {
-        const res = await fetch('/martin', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                prompt: text,
-                period: currentPeriod
-            })
-        });
-
-        if (!res.ok) {
-          appendChatMessage('bot', `Server error: ${res.status}`);
-          return;
-        }
-
-        const data = await res.json();
-        let msg = (data && (data.answer || data.reply)) || "No response returned.";
-
-        if (data.sql) {
-        msg += `\n\nSQL:\n${data.sql}`;
-        }
-
-        if (data.reasoning) {
-        msg += `\n\nWhy:\n${data.reasoning}`;
-        }
-
-        appendChatMessage('bot', msg);
-
-      } catch (e) {
-        console.error('Chat send failed', e);
-        appendChatMessage('bot', 'Failed to send message — the chat service may be unavailable.');
-      }
-    }
-
-    // allow Enter to submit the chat
-    document.addEventListener('DOMContentLoaded', () => {
-      const chatInput = document.getElementById('chatInput');
-      if (chatInput) {
-        chatInput.addEventListener('keydown', (e) => {
-          if (e.key === 'Enter') {
-            e.preventDefault();
-            sendChat();
-          }
-        });
-      }
-    });
-
-    async function loadAlarmsChart() {
-      if (!currentPeriod) return;
-
-      try {
-        const alarms = await fetchAlarms(); // you already have this helper
-        const counts = countBySeverity(alarms);
-
-        const labels = Object.keys(counts);
-        const values = Object.values(counts);
-
-        // destroy old chart before re-creating (prevents overlay + memory leak)
-        if (alarmsChartInstance) {
-          alarmsChartInstance.destroy();
-        }
-
-        alarmsChartInstance = new Chart(document.getElementById("alarmsChart"), {
-          type: "bar",
-          data: {
-            labels,
-            datasets: [{
-              label: "Alarm Count",
-              data: values
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-              legend: { display: false },
-              tooltip: { enabled: true }
-            },
-            scales: {
-              y: { beginAtZero: true, ticks: { precision: 0 } }
-            }
-          }
-        });
-
-      } catch (e) {
-        console.error("Failed to load alarms chart", e);
-      }
-    }
-
-    async function loadRecords() {
-        // Fetches with pagination parameters
-        const res = await fetch(`/records/period/${currentPeriod}?page=${currentPageAllRecords}&size=${pageSize}`);
-        const data = await res.json();
-
-        // Spring Data Page wraps list in 'content'
-        const records = data.content || [];
-        const totalPages = data.totalPages || 1;
-
-        const tbody = document.querySelector('#recordsTable tbody');
-        tbody.innerHTML = '';
-
-        records.forEach(record => {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${record.phoneNumber}</td>
-                <td>${record.department}</td>
-                <td>$${record.totalCharge.toFixed(2)}</td>
-            `;
-            tbody.appendChild(row);
-        });
-
-        // Update the UI labels and buttons
-        document.getElementById("pageInfoAllRecords").textContent = `Page ${currentPageAllRecords + 1} of ${totalPages}`;
-        document.getElementById("prevBtnAllRecords").disabled = (currentPageAllRecords <= 0);
-        document.getElementById("nextBtnAllRecords").disabled = (currentPageAllRecords >= totalPages - 1);
-    }
-
-    function changePageAllRecords(step) {
-        currentPageAllRecords = Math.max(0, currentPageAllRecords + step);
-        loadRecords();
-    }
-
-    function changePageFilterByDepartment(step) {
-        currentPageFilterByDepartment = Math.max(0, currentPageFilterByDepartment + step);
-        loadByDepartment();
-    }
-
-    function changePeriod() {
-        currentPeriod = document.getElementById('periodSelect').value;
-        currentPageAllRecords = 0; // Reset to page 1 whenever the period changes
-        currentPageFilterByDepartment = 0;
-        loadSummary();
-        loadRecords();
-        loadDeptChart()
-        loadAlarmsCount();
-        loadAlarmsChart();
-    }
-
-    async function loadByDepartment() {
-        const department = document.getElementById('departmentSelect').value;
-        if (!department) return;
-
-        const res = await fetch(
-            `/records/department/${department}?page=${currentPageFilterByDepartment}&size=${pageSize}`
-        );
-
-        const data = await res.json();
-
-        const records = data.content || [];
-        const totalPages = data.totalPages || 1;
-
-        const tbody = document.querySelector('#departmentTable tbody');
-        tbody.innerHTML = '';
-
-        records.forEach(record => {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${record.phoneNumber}</td>
-                <td>${record.department}</td>
-                <td>$${record.totalCharge.toFixed(2)}</td>
-            `;
-            tbody.appendChild(row);
-        });
-
-        // update pagination UI
-        document.getElementById("pageInfoFilterByDepartment").textContent =
-            `Page ${currentPageFilterByDepartment + 1} of ${totalPages}`;
-
-        document.getElementById("prevBtnFilterByDepartments").disabled =
-            (currentPageFilterByDepartment <= 0);
-
-        document.getElementById("nextBtnFilterByDepartments").disabled =
-            (currentPageFilterByDepartment >= totalPages - 1);
-    }
-
-    async function loadTopN() {
-        const n = document.getElementById('topInput').value.trim();
-        if (!n) return;
-
-        const res = await fetch('/top/' + n);
-        const data = await res.json();
-
-        // handle paged or plain-array responses
-        const records = Array.isArray(data) ? data : (data.content || []);
-
-        const tbody = document.querySelector('#topOutput tbody');
-        tbody.innerHTML = '';
-
-        records.forEach(record => {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${record.phoneNumber}</td>
-                <td>${record.department}</td>
-                <td>$${record.totalCharge.toFixed(2)}</td>
-            `;
-            tbody.appendChild(row);
-        });
-    }
-
-    async function loadPeriods() {
-        const res = await fetch('/periods');
-        const periods = await res.json();
-
-        const select = document.getElementById('periodSelect');
-        select.innerHTML = '';
-
-        periods.forEach((p, i) => {
-            const opt = document.createElement('option');
-            opt.value = p;
-            opt.textContent = p;
-            select.appendChild(opt);
-
-            if (i === periods.length - 1) {
-                currentPeriod = p; // default to latest
-            }
-        });
-        select.value = currentPeriod;
-    }
-
-    async function loadDepartments() {
-        const res = await fetch('/departments');
-        const departments = await res.json();
-
-        const select = document.getElementById('departmentSelect');
-        select.innerHTML = '';
-
-        departments.forEach(d => {
-            const opt = document.createElement('option');
-            opt.value = d;
-            opt.textContent = d;
-            select.appendChild(opt);
-        });
-    }
-
-    // Open info popup
-    function openInfo() {
-        window.open(
-            "/info.html",
-            "infoPopup",
-            "width=600,height=650,resizable=yes,scrollbars=yes"
-        );
-    }
-
-    async function loadDeptChart() {
-    const res = await fetch(`/records/period/${currentPeriod}?page=0&size=1000`);
-    const data = await res.json();
-
-    const records = Array.isArray(data) ? data : (data.content || []);
-
-    const totals = {};
-    records.forEach(r => {
-        totals[r.department] = (totals[r.department] || 0) + r.totalCharge;
-    });
-
-    if (deptChartInstance) {
-        deptChartInstance.destroy();
-    }
-
-    deptChartInstance = new Chart(document.getElementById('deptChart'), {
-        type: 'bar',
-        data: {
-        labels: Object.keys(totals),
-        datasets: [{
-            label: 'Total Charges ($)',
-            data: Object.values(totals)
-        }]
-        }
-    });
-    }
-
-    async function fetchAlarms() {
-        if (!currentPeriod) return [];
-        const res = await fetch(`/alarms/${currentPeriod}`);
-        if (!res.ok) throw new Error('Failed to load alarms');
-        return await res.json();
-    }
-
-    function renderAlarms(alarms) {
-        const list = document.getElementById('alarms-list');
-        const empty = document.getElementById('alarms-empty');
-
-        list.innerHTML = '';
-
-        if (!alarms || alarms.length === 0) {
-        empty.style.display = 'block';
-        return;
-        }
-        empty.style.display = 'none';
-
-        for (const a of alarms) {
-        const sev = (a.alarmSeverity || '').toLowerCase(); // low/medium/high
-        const type = a.alarmType || 'Alarm';
-        const phone = a.phoneNumber || '—';
-        const emp = a.employeeId || '—';
-        const period = a.billingPeriod || '—';
-        const explanation = a.explanation || '';
-
-        const li = document.createElement('li');
-        li.className = 'alarm-item';
-
-        li.innerHTML = `
-            <div class="alarm-left">
-            <div class="alarm-title">${type}</div>
-            <div class="alarm-meta">Employee: ${emp} • Phone: ${phone} • Period: ${period}</div>
-            <div class="alarm-explain">${explanation}</div>
-            </div>
-            <div class="badge ${sev}">${(a.alarmSeverity || 'UNKNOWN')}</div>
-        `;
-
-        list.appendChild(li);
-        }
-    }
-
-    function openAlarmsModal() {
-        document.getElementById('alarms-overlay').style.display = 'flex';
-    }
-
-    function closeAlarmsModal() {
-        document.getElementById('alarms-overlay').style.display = 'none';
-    }
-
-    function closeHelpModal() {
-        document.getElementById('help-overlay').style.display = 'none';
-    }
-
-    function openHelpModal() {
-        document.getElementById('help-overlay').style.display = 'flex';
-    }
-
-    async function loadDummyData() {
-        const btn = document.getElementById('loadDummyBtn');
-        if (!btn) return;
-        btn.disabled = true;
-        btn.textContent = 'Loading...';
-
-        try {
-        const res = await fetch('/demo-load', { method: 'POST' });
-        if (!res.ok) {
-            const txt = await res.text();
-            alert('Failed to load dummy data: ' + (txt || res.status));
-            return;
-        }
-
-        // Wait for backend to process and then refresh UI
-        await waitForDataReady();
-        await loadPeriods();
-        await loadDepartments();
-        changePeriod();
-        closeHelpModal();
-        alert('Dummy data loaded successfully.');
-        } catch (e) {
-        console.error('loadDummyData failed', e);
-        alert('Failed to load dummy data. See console for details.');
-        } finally {
-        btn.disabled = false;
-        btn.textContent = 'Load Dummy Data';
-        }
-    }
-
-
-    async function onAlarmsClick() {
-        openAlarmsModal();
-        try {
-        const alarms = await fetchAlarms();
-        document.getElementById('alarms-title').textContent = `Alarms (${alarms.length})`;
-        renderAlarms(alarms);
-        // also keep button in sync
-        document.getElementById('alarms-btn').textContent = `Alarms (${alarms.length})`;
-        } catch (e) {
-        console.error(e);
-        renderAlarms([]);
-        }
-    }
-
-    async function loadAlarmsCount() {
-        try {
-            if (!currentPeriod) return;
-
-            const res = await fetch(`/alarms/${currentPeriod}`);
-            const alarms = await res.json();
-
-            const count = alarms.length;
-            const btn = document.getElementById("alarms-btn");
-
-            if (btn) btn.textContent = `Alarms (${count})`;
-
-            // Optional: hide red button if no alarms
-            if (count === 0) {
-                btn.style.opacity = "0.4";
-            } else {
-                btn.style.opacity = "1";
-            }
-
-        } catch (e) {
-            console.error("Failed to load alarms", e);
-        }
-    }
-
-    async function uploadFile() {
-        const fileInput = document.getElementById('fileInput');
-        const uploadBtn = document.getElementById('uploadBtn');
-
-        if (fileInput.files.length === 0) {
-            alert("Please select a CSV file first.");
-            return;
-        }
-
-        const file = fileInput.files[0];
-        const formData = new FormData();
-        formData.append("file", file);
-
-        uploadBtn.disabled = true;
-        uploadBtn.textContent = "Uploading...";
-
-        try {
-            const response = await fetch('/upload', {
-                method: 'POST',
-                body: formData
-            });
-
-            if (response.ok) {
-                // 1. Clear the input so it's ready for the next one
-                fileInput.value = "";
-
-                // 2. Give the SQS listener a moment to breathe (2 seconds)
-                // Then refresh the dashboard components
-                setTimeout(async () => {
-                    await waitForDataReady();
-                    await loadPeriods();      // Get the new period in the dropdown
-                    await loadDepartments();  // Update department list
-                    changePeriod();           // Refresh summary, records, and charts
-                }, 2000);
-
-            } else {
-                const errorText = await response.text();
-                alert("Upload failed: " + errorText);
-            }
-        } catch (error) {
-            console.error("Upload error:", error);
-        } finally {
-            uploadBtn.disabled = false;
-            uploadBtn.textContent = "Upload";
-        }
-    }
-
-    async function waitForDataReady() {
-        for (let i = 0; i < 10; i++) {
-            const res = await fetch('/periods');
-            const data = await res.json();
-
-            if (data.length > 0) return;
-
-            await new Promise(r => setTimeout(r, 1000));
-        }
-    }
-
-    // To load summary and records on page load
-    window.addEventListener("DOMContentLoaded", async () => {
-      await loadPeriods();
-      await loadDepartments();
-
-      loadSummary();
-      loadRecords();
-      loadDeptChart();
-      loadAlarmsCount();
-      loadAlarmsChart();
-
-      document.getElementById("alarms-btn")
-        .addEventListener("click", onAlarmsClick);
-
-      document.getElementById("alarms-close")
-        .addEventListener("click", closeAlarmsModal);
-
-      // Wire up Help button and help modal close reliably
-      const helpBtn = document.getElementById('helpBtn');
-      if (helpBtn) helpBtn.addEventListener('click', openHelpModal);
-
-    });
-
-</script>
+<script src="/js/main.js"></script>
+<script src="/js/dashboard.js"></script>
 </body>
 </html>

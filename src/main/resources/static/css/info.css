@@ -1,0 +1,145 @@
+.info-page {
+    padding: 28px;
+    background: linear-gradient(180deg, #f7f8fb 0%, var(--bg) 100%);
+}
+
+.hero {
+    display: flex;
+    gap: 24px;
+    align-items: center;
+    justify-content: space-between;
+    background: linear-gradient(90deg, rgba(13, 110, 253, 0.10), rgba(13, 110, 253, 0.03));
+    border-radius: 12px;
+    padding: 28px;
+    box-shadow: 0 8px 30px rgba(10, 20, 50, 0.04);
+    margin-bottom: 20px;
+}
+
+.hero h1 {
+    font-size: 48px;
+    margin: 0;
+    font-weight: 800;
+    letter-spacing: -1px;
+}
+
+.hero p {
+    margin: 6px 0 0 0;
+    color: var(--muted);
+    font-size: 16px;
+}
+
+.hero-cta {
+    text-align: right;
+}
+
+.ready-label {
+    font-size: 12px;
+    color: var(--muted);
+}
+
+.hero-actions-inline {
+    margin-top: 8px;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 24px;
+    align-items: start;
+}
+
+.info-card {
+    background: var(--card);
+    border-radius: 12px;
+    padding: 20px;
+    border: 1px solid #eee;
+    box-shadow: 0 6px 20px rgba(20, 30, 60, 0.03);
+    margin-bottom: 16px;
+}
+
+.section-title {
+    font-weight: 700;
+    font-size: 18px;
+    margin-bottom: 12px;
+}
+
+.tech-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.tech-badge {
+    background: #f1f5ff;
+    color: #0b57d0;
+    padding: 8px 12px;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 13px;
+    border: 1px solid rgba(13, 110, 253, 0.08);
+}
+
+.feature-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 10px;
+}
+
+.feature-item {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+}
+
+.feature-item b {
+    display: block;
+    font-weight: 700;
+}
+
+.feature-dot {
+    font-weight: 900;
+}
+
+.feature-dot-chat {
+    color: #6b21a8;
+}
+
+.feature-dot-data {
+    color: var(--accent);
+}
+
+.feature-dot-period {
+    color: #22c55e;
+}
+
+.feature-dot-filter {
+    color: #f97316;
+}
+
+.quickstart-list {
+    color: var(--muted);
+    margin-left: 16px;
+}
+
+.text-muted-copy {
+    color: var(--muted);
+}
+
+.info-page footer.app-footer {
+    border-top: 1px solid #e9ecef;
+    margin-top: 28px;
+    padding-top: 18px;
+}
+
+@media (max-width: 900px) {
+    .info-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .hero {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}

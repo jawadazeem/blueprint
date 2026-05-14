@@ -5,5 +5,4 @@
 
 package com.azeem.blueprint.service.martin;
 
-public class MartinServiceTest {
-}
+public class MartinServiceTest {}

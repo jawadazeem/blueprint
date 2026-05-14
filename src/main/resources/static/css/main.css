@@ -1,0 +1,47 @@
+:root {
+    --bg: #f5f6fa;
+    --card: #ffffff;
+    --muted: #6c757d;
+    --accent: #0d6efd;
+    --border: #e9ecef;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: "Montserrat", sans-serif;
+    color: #222;
+}
+
+.app-footer {
+    border-top: 1px solid #e3e3e3;
+    color: #555;
+    background-color: #fafafa;
+    font-family: "Montserrat", sans-serif;
+}
+
+.footer-title {
+    font-weight: 600;
+}
+
+.footer-sub {
+    color: var(--muted);
+    opacity: 0.8;
+}
+
+.footer-separator {
+    margin: 0 8px;
+    opacity: 0.5;
+}
+
+.btn-primary-lg {
+    padding: 12px 18px;
+    font-size: 16px;
+    border-radius: 10px;
+}
+
+.hidden {
+    display: none;
+}
