@@ -1,33 +1,27 @@
-(() => {
-    const form = document.getElementById("loginForm") as HTMLFormElement | null;
-    const guestBtn = document.getElementById("guestBtn") as HTMLButtonElement | null;
-    const statusMessage = document.getElementById("statusMessage") as HTMLDivElement | null;
+(function () {
+    const form = document.getElementById("loginForm");
+    const guestBtn = document.getElementById("guestBtn");
+    const statusMessage = document.getElementById("statusMessage");
 
-    function showMessage(type: "error" | "success", text: string): void {
-        if (!statusMessage) return;
-
+    function showMessage(type, text) {
         statusMessage.style.display = "block";
         statusMessage.className = "status-message " + type;
         statusMessage.textContent = text;
     }
 
-    function enterApp(message: string): void {
+    function enterApp(message) {
         showMessage("success", message);
-
         setTimeout(() => {
             window.location.href = "/";
         }, 600);
     }
 
     if (form) {
-        form.addEventListener("submit", (e: SubmitEvent) => {
+        form.addEventListener("submit", (e) => {
             e.preventDefault();
 
-            const usernameInput = document.getElementById("username") as HTMLInputElement | null;
-            const passwordInput = document.getElementById("password") as HTMLInputElement | null;
-
-            const username = usernameInput?.value.trim() ?? "";
-            const password = passwordInput?.value.trim() ?? "";
+            const username = document.getElementById("username").value.trim();
+            const password = document.getElementById("password").value.trim();
 
             if (!username || !password) {
                 showMessage("error", "Enter both username and password.");
@@ -35,7 +29,6 @@
             }
 
             console.log("Login:", { username, password });
-
             enterApp("Login accepted. Entering dashboard...");
         });
     }

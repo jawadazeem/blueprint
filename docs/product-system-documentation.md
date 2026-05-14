@@ -1,7 +1,8 @@
 # Blueprint Product and System Documentation
 
-This document explains what Blueprint currently is, how it works, and how the major workflows are implemented. It documents implemented code and clearly labels incomplete or scaffolded systems.
-
+This document explains what Blueprint currently is, how it works, and how the major workflows are implemented. It documents implemented code and clearly labels incomplete or scaffolded systems. 
+<br>
+Last updated: May 14, 2026
 ## Project Overview
 
 Blueprint is a telecom billing intelligence dashboard. It helps users ingest telecom billing CSV data, store it in PostgreSQL, inspect records by period and department, summarize charges, surface budget alarms, and ask natural-language billing questions through an AI assistant named Martin.
