@@ -6,6 +6,7 @@
 package com.azeem.blueprint.service.alarm;
 
 import com.azeem.blueprint.entity.AlarmEntity;
+import com.azeem.blueprint.entity.BillingRecordEntity;
 import com.azeem.blueprint.mapper.AlarmMapper;
 import com.azeem.blueprint.mapper.BillingRecordMapper;
 import com.azeem.blueprint.model.alarm.Alarm;
@@ -13,11 +14,9 @@ import com.azeem.blueprint.model.alarm.AlarmScope;
 import com.azeem.blueprint.model.billing.BillingRecord;
 import com.azeem.blueprint.repository.AlarmRepository;
 import com.azeem.blueprint.repository.BillingRecordRepository;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
-import org.springframework.data.domain.Pageable;
+import java.util.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -43,37 +42,55 @@ public class AlarmService {
     this.alarmMapper = alarmMapper;
   }
 
+  /**
+   * Detects alarms from billing records and persists only new ones for the given billing period.
+   */
   @Transactional
   public void detectAndPersistAlarms(String billingPeriod) {
-    List<BillingRecord> records =
-        billingRecordRepository.findByBillingPeriod(billingPeriod, Pageable.unpaged()).stream()
-            .map(billingMapper::mapToDomain)
-            .toList();
+    int page = 0;
+    int chunkSize = 1000;
+    Page<BillingRecordEntity> chunk;
+    Set<UUID> existingKeys =
+        new HashSet<>(alarmRepository.findBusinessKeysByBillingPeriod(billingPeriod));
 
-    List<Alarm> detectedAlarms = alarmDetectionService.detectAlarms(records, billingPeriod);
+    boolean hasMore = true;
+    while (hasMore) {
+      chunk =
+          billingRecordRepository.findByBillingPeriod(
+              billingPeriod, PageRequest.of(page++, chunkSize));
 
-    if (detectedAlarms.isEmpty()) return;
+      List<BillingRecord> chunkList = chunk.stream().map(billingMapper::mapToDomain).toList();
+      List<Alarm> detectedAlarms = alarmDetectionService.detectAlarms(chunkList, billingPeriod);
 
-    List<UUID> existingAlarmKeys = alarmRepository.findBusinessKeysByBillingPeriod(billingPeriod);
-
-    Set<UUID> existingKeys = new HashSet<>(existingAlarmKeys); // using set for o(m) lookups
-
-    List<Alarm> newAlarms =
-        detectedAlarms.stream().filter(a -> !existingKeys.contains(a.businessKey())).toList();
-
-    if (newAlarms.isEmpty()) return;
-
-    List<AlarmEntity> entities = newAlarms.stream().map(alarmMapper::mapToEntity).toList();
-
-    alarmRepository.saveAll(entities);
+      if (!detectedAlarms.isEmpty()) {
+        List<AlarmEntity> entities = buildNewAlarmEntities(detectedAlarms, existingKeys);
+        if (!entities.isEmpty()) {
+          alarmRepository.saveAll(entities);
+        }
+      }
+      hasMore = chunk.hasNext();
+    }
   }
 
+  /**
+   * Builds AlarmEntity objects for alarms that do not already exist in the given billing period.
+   */
+  private List<AlarmEntity> buildNewAlarmEntities(
+      List<Alarm> detectedAlarms, Set<UUID> existingKeys) {
+    return detectedAlarms.stream()
+        .filter(a -> !existingKeys.contains(a.businessKey()))
+        .map(alarmMapper::mapToEntity)
+        .toList();
+  }
+
+  /** Retrieves all alarms for a given billing period. */
   public List<Alarm> getAllAlarms(String billingPeriod) {
     return alarmRepository.findByBillingPeriod(billingPeriod).stream()
         .map(alarmMapper::mapToDomain)
         .toList();
   }
 
+  /** Retrieves alarms scoped to departments for a billing period. */
   public List<Alarm> getDepartmentAlarms(String billingPeriod) {
     return alarmRepository
         .findByBillingPeriodAndAlarmScope(billingPeriod, AlarmScope.DEPARTMENT)
@@ -82,6 +99,7 @@ public class AlarmService {
         .toList();
   }
 
+  /** Retrieves alarms scoped to individual users for a billing period. */
   public List<Alarm> getIndividualAlarms(String billingPeriod) {
     return alarmRepository
         .findByBillingPeriodAndAlarmScope(billingPeriod, AlarmScope.INDIVIDUAL)
@@ -90,6 +108,7 @@ public class AlarmService {
         .toList();
   }
 
+  /** Retrieves account-level alarms for a billing period. */
   public List<Alarm> getAccountAlarm(String billingPeriod) {
     return alarmRepository
         .findByBillingPeriodAndAlarmScope(billingPeriod, AlarmScope.ACCOUNT)
