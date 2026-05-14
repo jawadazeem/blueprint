@@ -49,35 +49,32 @@ public class AlarmServiceTest {
 
   private Alarm alarm(UUID businessKey) {
     return new Alarm(
-            null,
-            businessKey,
-            AlarmScope.DEPARTMENT,
-            "2026-01",
-            null,
-            AlarmSeverity.HIGH,
-            "test",
-            Instant.now(),
-            null,
-            null,
-            Department.IT);
+        null,
+        businessKey,
+        AlarmScope.DEPARTMENT,
+        "2026-01",
+        null,
+        AlarmSeverity.HIGH,
+        "test",
+        Instant.now(),
+        null,
+        null,
+        Department.IT);
   }
 
   @Test
   void shouldDetectAndPersistAlarms() {
-    when(alarmRepository.findBusinessKeysByBillingPeriod("2026-01"))
-            .thenReturn(List.of());
+    when(alarmRepository.findBusinessKeysByBillingPeriod("2026-01")).thenReturn(List.of());
 
     when(billingRecordRepository.findByBillingPeriod(anyString(), any()))
-            .thenReturn(new PageImpl<>(List.of(billingRecordEntity())));
+        .thenReturn(new PageImpl<>(List.of(billingRecordEntity())));
 
-    when(billingMapper.mapToDomain(any()))
-            .thenReturn(mock(BillingRecord.class));
+    when(billingMapper.mapToDomain(any())).thenReturn(mock(BillingRecord.class));
 
     when(alarmDetectionService.detectAlarms(anyList(), eq("2026-01")))
-            .thenReturn(List.of(alarm(new UUID(0L, 1L))));
+        .thenReturn(List.of(alarm(new UUID(0L, 1L))));
 
-    when(alarmMapper.mapToEntity(any()))
-            .thenReturn(new AlarmEntity());
+    when(alarmMapper.mapToEntity(any())).thenReturn(new AlarmEntity());
 
     service.detectAndPersistAlarms("2026-01");
 
@@ -86,14 +83,11 @@ public class AlarmServiceTest {
 
   @Test
   void shouldNotPersistWhenNoAlarmsDetected() {
-    when(alarmRepository.findBusinessKeysByBillingPeriod("2026-01"))
-            .thenReturn(List.of());
+    when(alarmRepository.findBusinessKeysByBillingPeriod("2026-01")).thenReturn(List.of());
 
-    when(billingRecordRepository.findByBillingPeriod(anyString(), any()))
-            .thenReturn(Page.empty());
+    when(billingRecordRepository.findByBillingPeriod(anyString(), any())).thenReturn(Page.empty());
 
-    when(alarmDetectionService.detectAlarms(anyList(), eq("2026-01")))
-            .thenReturn(List.of());
+    when(alarmDetectionService.detectAlarms(anyList(), eq("2026-01"))).thenReturn(List.of());
 
     service.detectAndPersistAlarms("2026-01");
 
@@ -104,14 +98,13 @@ public class AlarmServiceTest {
   void shouldNotPersistWhenAllDetectedAlarmsAlreadyExist() {
     UUID key = new UUID(0L, 1L);
 
-    when(alarmRepository.findBusinessKeysByBillingPeriod("2026-01"))
-            .thenReturn(List.of(key));
+    when(alarmRepository.findBusinessKeysByBillingPeriod("2026-01")).thenReturn(List.of(key));
 
     when(billingRecordRepository.findByBillingPeriod(anyString(), any()))
-            .thenReturn(new PageImpl<>(List.of(billingRecordEntity())));
+        .thenReturn(new PageImpl<>(List.of(billingRecordEntity())));
 
     when(alarmDetectionService.detectAlarms(anyList(), eq("2026-01")))
-            .thenReturn(List.of(alarm(key)));
+        .thenReturn(List.of(alarm(key)));
 
     service.detectAndPersistAlarms("2026-01");
 
@@ -123,17 +116,15 @@ public class AlarmServiceTest {
     UUID existing = new UUID(0L, 1L);
     UUID newKey = new UUID(0L, 2L);
 
-    when(alarmRepository.findBusinessKeysByBillingPeriod("2026-01"))
-            .thenReturn(List.of(existing));
+    when(alarmRepository.findBusinessKeysByBillingPeriod("2026-01")).thenReturn(List.of(existing));
 
     when(billingRecordRepository.findByBillingPeriod(anyString(), any()))
-            .thenReturn(new PageImpl<>(List.of(billingRecordEntity())));
+        .thenReturn(new PageImpl<>(List.of(billingRecordEntity())));
 
     when(alarmDetectionService.detectAlarms(anyList(), eq("2026-01")))
-            .thenReturn(List.of(alarm(existing), alarm(newKey)));
+        .thenReturn(List.of(alarm(existing), alarm(newKey)));
 
-    when(alarmMapper.mapToEntity(any()))
-            .thenReturn(new AlarmEntity());
+    when(alarmMapper.mapToEntity(any())).thenReturn(new AlarmEntity());
 
     service.detectAndPersistAlarms("2026-01");
 
@@ -142,14 +133,12 @@ public class AlarmServiceTest {
 
   @Test
   void shouldMapBillingRecordsToDomainBeforeDetection() {
-    when(alarmRepository.findBusinessKeysByBillingPeriod(anyString()))
-            .thenReturn(List.of());
+    when(alarmRepository.findBusinessKeysByBillingPeriod(anyString())).thenReturn(List.of());
 
     when(billingRecordRepository.findByBillingPeriod(anyString(), any()))
-            .thenReturn(new PageImpl<>(List.of(billingRecordEntity())));
+        .thenReturn(new PageImpl<>(List.of(billingRecordEntity())));
 
-    when(alarmDetectionService.detectAlarms(anyList(), anyString()))
-            .thenReturn(List.of());
+    when(alarmDetectionService.detectAlarms(anyList(), anyString())).thenReturn(List.of());
 
     service.detectAndPersistAlarms("2026-01");
 
@@ -158,14 +147,12 @@ public class AlarmServiceTest {
 
   @Test
   void shouldPassCorrectBillingPeriodToDetectionService() {
-    when(alarmRepository.findBusinessKeysByBillingPeriod(anyString()))
-            .thenReturn(List.of());
+    when(alarmRepository.findBusinessKeysByBillingPeriod(anyString())).thenReturn(List.of());
 
     when(billingRecordRepository.findByBillingPeriod(anyString(), any()))
-            .thenReturn(new PageImpl<>(List.of(billingRecordEntity())));
+        .thenReturn(new PageImpl<>(List.of(billingRecordEntity())));
 
-    when(alarmDetectionService.detectAlarms(anyList(), eq("2026-01")))
-            .thenReturn(List.of());
+    when(alarmDetectionService.detectAlarms(anyList(), eq("2026-01"))).thenReturn(List.of());
 
     service.detectAndPersistAlarms("2026-01");
 
@@ -176,17 +163,15 @@ public class AlarmServiceTest {
   void shouldConvertDetectedAlarmsToEntitiesBeforeSaving() {
     UUID key = new UUID(0L, 1L);
 
-    when(alarmRepository.findBusinessKeysByBillingPeriod(anyString()))
-            .thenReturn(List.of());
+    when(alarmRepository.findBusinessKeysByBillingPeriod(anyString())).thenReturn(List.of());
 
     when(billingRecordRepository.findByBillingPeriod(anyString(), any()))
-            .thenReturn(new PageImpl<>(List.of(billingRecordEntity())));
+        .thenReturn(new PageImpl<>(List.of(billingRecordEntity())));
 
     when(alarmDetectionService.detectAlarms(anyList(), anyString()))
-            .thenReturn(List.of(alarm(key)));
+        .thenReturn(List.of(alarm(key)));
 
-    when(alarmMapper.mapToEntity(any()))
-            .thenReturn(new AlarmEntity());
+    when(alarmMapper.mapToEntity(any())).thenReturn(new AlarmEntity());
 
     service.detectAndPersistAlarms("2026-01");
 
@@ -197,17 +182,15 @@ public class AlarmServiceTest {
   void shouldCallSaveAllWithCorrectEntities() {
     UUID key = new UUID(0L, 1L);
 
-    when(alarmRepository.findBusinessKeysByBillingPeriod(anyString()))
-            .thenReturn(List.of());
+    when(alarmRepository.findBusinessKeysByBillingPeriod(anyString())).thenReturn(List.of());
 
     when(billingRecordRepository.findByBillingPeriod(anyString(), any()))
-            .thenReturn(new PageImpl<>(List.of(billingRecordEntity())));
+        .thenReturn(new PageImpl<>(List.of(billingRecordEntity())));
 
     when(alarmDetectionService.detectAlarms(anyList(), anyString()))
-            .thenReturn(List.of(alarm(key)));
+        .thenReturn(List.of(alarm(key)));
 
-    when(alarmMapper.mapToEntity(any()))
-            .thenReturn(new AlarmEntity());
+    when(alarmMapper.mapToEntity(any())).thenReturn(new AlarmEntity());
 
     service.detectAndPersistAlarms("2026-01");
 
@@ -216,11 +199,9 @@ public class AlarmServiceTest {
 
   @Test
   void shouldReturnAllPersistedAlarms() {
-    when(alarmRepository.findByBillingPeriod("2026-01"))
-            .thenReturn(List.of(new AlarmEntity()));
+    when(alarmRepository.findByBillingPeriod("2026-01")).thenReturn(List.of(new AlarmEntity()));
 
-    when(alarmMapper.mapToDomain(any()))
-            .thenReturn(alarm(new UUID(0L, 1L)));
+    when(alarmMapper.mapToDomain(any())).thenReturn(alarm(new UUID(0L, 1L)));
 
     List<Alarm> result = service.getAllAlarms("2026-01");
 
@@ -230,10 +211,9 @@ public class AlarmServiceTest {
   @Test
   void shouldReturnDepartmentAlarms() {
     when(alarmRepository.findByBillingPeriodAndAlarmScope(anyString(), eq(AlarmScope.DEPARTMENT)))
-            .thenReturn(List.of(new AlarmEntity()));
+        .thenReturn(List.of(new AlarmEntity()));
 
-    when(alarmMapper.mapToDomain(any()))
-            .thenReturn(alarm(new UUID(0L, 1L)));
+    when(alarmMapper.mapToDomain(any())).thenReturn(alarm(new UUID(0L, 1L)));
 
     assertFalse(service.getDepartmentAlarms("2026-01").isEmpty());
   }
@@ -241,10 +221,9 @@ public class AlarmServiceTest {
   @Test
   void shouldReturnIndividualAlarms() {
     when(alarmRepository.findByBillingPeriodAndAlarmScope(anyString(), eq(AlarmScope.INDIVIDUAL)))
-            .thenReturn(List.of(new AlarmEntity()));
+        .thenReturn(List.of(new AlarmEntity()));
 
-    when(alarmMapper.mapToDomain(any()))
-            .thenReturn(alarm(new UUID(0L, 1L)));
+    when(alarmMapper.mapToDomain(any())).thenReturn(alarm(new UUID(0L, 1L)));
 
     assertFalse(service.getIndividualAlarms("2026-01").isEmpty());
   }
@@ -252,18 +231,16 @@ public class AlarmServiceTest {
   @Test
   void shouldReturnAccountAlarms() {
     when(alarmRepository.findByBillingPeriodAndAlarmScope(anyString(), eq(AlarmScope.ACCOUNT)))
-            .thenReturn(List.of(new AlarmEntity()));
+        .thenReturn(List.of(new AlarmEntity()));
 
-    when(alarmMapper.mapToDomain(any()))
-            .thenReturn(alarm(new UUID(0L, 1L)));
+    when(alarmMapper.mapToDomain(any())).thenReturn(alarm(new UUID(0L, 1L)));
 
     assertFalse(service.getAccountAlarm("2026-01").isEmpty());
   }
 
   @Test
   void shouldReturnEmptyListWhenNoAlarmsExist() {
-    when(alarmRepository.findByBillingPeriod(anyString()))
-            .thenReturn(List.of());
+    when(alarmRepository.findByBillingPeriod(anyString())).thenReturn(List.of());
 
     List<Alarm> result = service.getAllAlarms("2026-01");
 
@@ -272,11 +249,9 @@ public class AlarmServiceTest {
 
   @Test
   void shouldHandleEmptyBillingRecordsGracefully() {
-    when(alarmRepository.findBusinessKeysByBillingPeriod(anyString()))
-            .thenReturn(List.of());
+    when(alarmRepository.findBusinessKeysByBillingPeriod(anyString())).thenReturn(List.of());
 
-    when(billingRecordRepository.findByBillingPeriod(anyString(), any()))
-            .thenReturn(Page.empty());
+    when(billingRecordRepository.findByBillingPeriod(anyString(), any())).thenReturn(Page.empty());
 
     service.detectAndPersistAlarms("2026-01");
 
