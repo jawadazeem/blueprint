@@ -22,14 +22,11 @@ class AlarmMapperTest {
 
   private AlarmMapper alarmMapper;
 
-  private static final UUID ID =
-          UUID.fromString("11111111-1111-1111-1111-111111111111");
+  private static final UUID ID = UUID.fromString("11111111-1111-1111-1111-111111111111");
 
-  private static final UUID BUSINESS_KEY =
-          UUID.fromString("22222222-2222-2222-2222-222222222222");
+  private static final UUID BUSINESS_KEY = UUID.fromString("22222222-2222-2222-2222-222222222222");
 
-  private static final Instant TIMESTAMP =
-          Instant.parse("2026-01-15T10:15:30Z");
+  private static final Instant TIMESTAMP = Instant.parse("2026-01-15T10:15:30Z");
 
   @BeforeEach
   void setUp() {
@@ -41,18 +38,18 @@ class AlarmMapperTest {
   void shouldMapToEntity() {
 
     Alarm alarm =
-            new Alarm(
-                    ID,
-                    BUSINESS_KEY,
-                    AlarmScope.ACCOUNT,
-                    "2026-01",
-                    "OVERAGE",
-                    AlarmSeverity.HIGH,
-                    "Usage exceeded threshold",
-                    TIMESTAMP,
-                    "EMP-1001",
-                    "+15551234567",
-                    Department.FINANCE);
+        new Alarm(
+            ID,
+            BUSINESS_KEY,
+            AlarmScope.ACCOUNT,
+            "2026-01",
+            "OVERAGE",
+            AlarmSeverity.HIGH,
+            "Usage exceeded threshold",
+            TIMESTAMP,
+            "EMP-1001",
+            "+15551234567",
+            Department.FINANCE);
 
     AlarmEntity result = alarmMapper.mapToEntity(alarm);
 
@@ -110,18 +107,18 @@ class AlarmMapperTest {
   void shouldHandleNullOptionalFields() {
 
     Alarm alarm =
-            new Alarm(
-                    ID,
-                    BUSINESS_KEY,
-                    AlarmScope.ACCOUNT,
-                    "2026-01",
-                    "OVERAGE",
-                    AlarmSeverity.MEDIUM,
-                    "Department not specified",
-                    TIMESTAMP,
-                    null,
-                    null,
-                    null);
+        new Alarm(
+            ID,
+            BUSINESS_KEY,
+            AlarmScope.ACCOUNT,
+            "2026-01",
+            "OVERAGE",
+            AlarmSeverity.MEDIUM,
+            "Department not specified",
+            TIMESTAMP,
+            null,
+            null,
+            null);
 
     AlarmEntity entity = alarmMapper.mapToEntity(alarm);
 

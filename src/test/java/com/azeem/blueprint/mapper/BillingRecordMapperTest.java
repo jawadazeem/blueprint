@@ -27,16 +27,16 @@ class BillingRecordMapperTest {
   void shouldMapToEntity() {
 
     BillingRecord record =
-            new BillingRecord(
-                    "Acme Corporation",
-                    "EMP-1001",
-                    "FINANCE",
-                    "+15551234567",
-                    "2026-01",
-                    1240,
-                    18.75,
-                    320,
-                    249.99);
+        new BillingRecord(
+            "Acme Corporation",
+            "EMP-1001",
+            "FINANCE",
+            "+15551234567",
+            "2026-01",
+            1240,
+            18.75,
+            320,
+            249.99);
 
     BillingRecordEntity result = billingRecordMapper.mapToEntity(record);
 
@@ -89,17 +89,7 @@ class BillingRecordMapperTest {
   @DisplayName("Should preserve null optional fields during mapping")
   void shouldHandleNullFields() {
 
-    BillingRecord record =
-            new BillingRecord(
-                    null,
-                    null,
-                    null,
-                    null,
-                    "2026-01",
-                    0,
-                    0.0,
-                    0,
-                    0.0);
+    BillingRecord record = new BillingRecord(null, null, null, null, "2026-01", 0, 0.0, 0, 0.0);
 
     BillingRecordEntity entity = billingRecordMapper.mapToEntity(record);
 
@@ -121,16 +111,16 @@ class BillingRecordMapperTest {
   void shouldPreserveNumericValues() {
 
     BillingRecord record =
-            new BillingRecord(
-                    "Enterprise Telecom",
-                    "EMP-9001",
-                    "OPERATIONS",
-                    "+15559876543",
-                    "2026-02",
-                    99999,
-                    9999.99,
-                    50000,
-                    123456.78);
+        new BillingRecord(
+            "Enterprise Telecom",
+            "EMP-9001",
+            "OPERATIONS",
+            "+15559876543",
+            "2026-02",
+            99999,
+            9999.99,
+            50000,
+            123456.78);
 
     BillingRecordEntity entity = billingRecordMapper.mapToEntity(record);
 
