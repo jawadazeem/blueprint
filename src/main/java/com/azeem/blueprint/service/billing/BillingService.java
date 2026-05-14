@@ -35,6 +35,7 @@ import org.springframework.validation.annotation.Validated;
 @Validated
 public class BillingService {
   private static final Logger log = LoggerFactory.getLogger(BillingService.class);
+
   @Value("${billing.charges.max-top-n:100}")
   private int maxTopNLimit;
 
@@ -97,9 +98,12 @@ public class BillingService {
 
   public Page<BillingRecord> getTopNRecords(@Min(1) int n) {
     if (n > maxTopNLimit) {
-      throw new QueryLimitExceededException("Requested record count exceeds the maximum allowed limit of " + maxTopNLimit);
-    } if (n > repository.count()) {
-      throw new QueryLimitExceededException("Requested record count exceeds the maximum number of records ingested");
+      throw new QueryLimitExceededException(
+          "Requested record count exceeds the maximum allowed limit of " + maxTopNLimit);
+    }
+    if (n > repository.count()) {
+      throw new QueryLimitExceededException(
+          "Requested record count exceeds the maximum number of records ingested");
     }
 
     Pageable topNRequest = PageRequest.of(0, n, Sort.by("totalCharge").descending());
@@ -122,18 +126,26 @@ public class BillingService {
   }
 
   public BillingSummary generateSummary() {
-    // Stream pages to avoid loading entire dataset into memory
+
     int page = 0;
-    int size = 1000; // reasonable chunk size
+    int size = 1000;
+
     List<BillingRecord> all = new ArrayList<>();
 
     while (true) {
+
       Page<BillingRecord> recordsPage = getAllRecords(page, size);
-      if (recordsPage == null || recordsPage.isEmpty()) break;
+
+      if (recordsPage.isEmpty()) {
+        break;
+      }
 
       all.addAll(recordsPage.getContent());
 
-      if (recordsPage.isLast()) break;
+      if (recordsPage.isLast()) {
+        break;
+      }
+
       page++;
     }
 
@@ -141,8 +153,8 @@ public class BillingService {
       throw new BillingDataNotFoundException("No billing data was found for summary generation");
     }
 
-    SummaryBuilder builder = new SummaryBuilder(all);
     log.info("A billing summary is being generated for {} records.", all.size());
-    return builder.build();
+
+    return new SummaryBuilder(all).build();
   }
 }

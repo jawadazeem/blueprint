@@ -52,7 +52,7 @@ public class SummaryBuilderTest {
     // average charge = 60.75 / 3 = 20.25
     assertEquals(20.25, summary.getAverageCharge(), 1e-9);
 
-    Map<String, Double> byDept = summary.getChargesByState();
+    Map<String, Double> byDept = summary.getChargesByDepartment();
     assertEquals(2, byDept.size(), "There should be two departments in the map");
     assertEquals(50.75, byDept.get("Engineering"), 1e-9);
     assertEquals(10.00, byDept.get("Sales"), 1e-9);
@@ -70,7 +70,7 @@ public class SummaryBuilderTest {
     assertEquals(0, summary.getTotalRecords());
     assertEquals(0.0, summary.getTotalCharges(), 1e-9);
     assertEquals(0.0, summary.getAverageCharge(), 1e-9);
-    assertTrue(summary.getChargesByState().isEmpty());
+    assertTrue(summary.getChargesByDepartment().isEmpty());
     assertNull(
         summary.getHighestChargeRecord(), "highestChargeRecord should be null for empty input");
   }
@@ -103,7 +103,7 @@ public class SummaryBuilderTest {
       SummaryBuilder builder = new SummaryBuilder(records);
       BillingSummary summary = builder.build();
 
-      Map<String, Double> byDept = summary.getChargesByState();
+      Map<String, Double> byDept = summary.getChargesByDepartment();
       assertEquals(2, byDept.size());
       assertEquals(1.00, byDept.get("D1"), 1e-9);
       assertEquals(2.50, byDept.get("D2"), 1e-9);

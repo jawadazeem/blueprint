@@ -74,11 +74,10 @@ public class GlobalExceptionHandler {
 
   // Handle ApiExceptions
   @ExceptionHandler(ApiException.class)
-  public ResponseEntity<ErrorResponse> handleApiException(
-          ApiException ex) {
+  public ResponseEntity<ErrorResponse> handleApiException(ApiException ex) {
 
     ErrorResponse response =
-            new ErrorResponse(HttpStatus.TOO_MANY_REQUESTS.value(), ex.getMessage());
+        new ErrorResponse(HttpStatus.TOO_MANY_REQUESTS.value(), ex.getMessage());
 
     return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
   }

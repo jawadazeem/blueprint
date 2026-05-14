@@ -45,7 +45,7 @@ public class SummaryBuilder {
     summary.setTotalRecords(calculateTotalRecords());
     summary.setTotalCharges(calculateTotalCharges());
     summary.setHighestChargeRecord(findHighestChargeRecord());
-    summary.setChargesByState(calculateChargesByState());
+    summary.setChargesByDepartment(calculateChargesByState());
     summary.setAverageCharge(averageCharge());
 
     log.info("The summary has been built successfully with {} records.", summary.getTotalRecords());
