@@ -7,6 +7,8 @@ package com.azeem.blueprint.repository;
 
 import com.azeem.blueprint.entity.BillingRecordEntity;
 import java.util.List;
+
+import org.jetbrains.annotations.NotNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -32,11 +34,13 @@ public interface BillingRecordRepository extends JpaRepository<BillingRecordEnti
       "SELECT CASE WHEN COUNT(b) > 0 THEN true ELSE false END FROM BillingRecordEntity b WHERE b.billingPeriod = :period")
   boolean existsByBillingPeriod(@Param("period") String period);
 
-  Page<BillingRecordEntity> findAll(Pageable pageable);
+  @NotNull Page<BillingRecordEntity> findAll(Pageable pageable);
 
   Page<BillingRecordEntity> findByBillingPeriod(String billingPeriod, Pageable pageable);
 
   List<BillingRecordEntity> findByBillingPeriod(String billingPeriod);
 
   Page<BillingRecordEntity> findByDepartmentIgnoreCase(String department, Pageable pageable);
+
+  long count();
 }

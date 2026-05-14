@@ -34,6 +34,9 @@ logging:
   file:
     name: app.log
 # Business-specific configuration
+billing:
+  charges:
+    max-top-n: 100
 alarm:
   department:
     monthlyLimit: 7500

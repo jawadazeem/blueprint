@@ -8,16 +8,19 @@ package com.azeem.blueprint.service.billing;
 import com.azeem.blueprint.entity.BillingRecordEntity;
 import com.azeem.blueprint.etl.SummaryBuilder;
 import com.azeem.blueprint.exception.BillingDataNotFoundException;
+import com.azeem.blueprint.exception.QueryLimitExceededException;
 import com.azeem.blueprint.mapper.BillingRecordMapper;
 import com.azeem.blueprint.model.billing.BillingRecord;
 import com.azeem.blueprint.model.billing.BillingSummary;
 import com.azeem.blueprint.repository.BillingRecordRepository;
+import com.azeem.blueprint.validation.BillingPeriod;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import java.util.ArrayList;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -32,6 +35,8 @@ import org.springframework.validation.annotation.Validated;
 @Validated
 public class BillingService {
   private static final Logger log = LoggerFactory.getLogger(BillingService.class);
+  @Value("${billing.charges.max-top-n:100}")
+  private int maxTopNLimit;
 
   private final BillingRecordRepository repository;
   private final BillingRecordMapper mapper;
@@ -51,9 +56,19 @@ public class BillingService {
     return repository.findAllDistinctBillingPeriods();
   }
 
-  public Page<BillingRecord> getRecordsByPeriod(String billingPeriod, int page, int size) {
-    Pageable periodRequest = PageRequest.of(page, size, Sort.by("billingPeriod").descending());
-    return repository.findByBillingPeriod(billingPeriod, periodRequest).map(mapper::mapToDomain);
+  public Page<BillingRecord> getRecordsByPeriod(
+      @BillingPeriod String billingPeriod, int page, int size) {
+    Pageable periodRequest = PageRequest.of(page, size);
+
+    Page<BillingRecord> records =
+        repository.findByBillingPeriod(billingPeriod, periodRequest).map(mapper::mapToDomain);
+
+    if (records.isEmpty()) {
+      throw new BillingDataNotFoundException(
+          "Could not find billing data for period: " + billingPeriod);
+    }
+
+    return records;
   }
 
   public Page<BillingRecord> getAllRecords(int page, int size) {
@@ -81,6 +96,12 @@ public class BillingService {
   }
 
   public Page<BillingRecord> getTopNRecords(@Min(1) int n) {
+    if (n > maxTopNLimit) {
+      throw new QueryLimitExceededException("Requested record count exceeds the maximum allowed limit of " + maxTopNLimit);
+    } if (n > repository.count()) {
+      throw new QueryLimitExceededException("Requested record count exceeds the maximum number of records ingested");
+    }
+
     Pageable topNRequest = PageRequest.of(0, n, Sort.by("totalCharge").descending());
     Page<BillingRecord> records = repository.findAll(topNRequest).map(mapper::mapToDomain);
     log.info("Retrieved top {} records, count: {}.", n, records.getTotalElements());
@@ -88,7 +109,7 @@ public class BillingService {
     return records;
   }
 
-  public BillingSummary generateSummaryForPeriod(@NotBlank String billingPeriod) {
+  public BillingSummary generateSummaryForPeriod(@BillingPeriod String billingPeriod) {
     List<BillingRecord> records =
         repository.findByBillingPeriod(billingPeriod).stream().map(mapper::mapToDomain).toList();
 

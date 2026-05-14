@@ -72,6 +72,17 @@ public class GlobalExceptionHandler {
     return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
   }
 
+  // Handle ApiExceptions
+  @ExceptionHandler(ApiException.class)
+  public ResponseEntity<ErrorResponse> handleApiException(
+          ApiException ex) {
+
+    ErrorResponse response =
+            new ErrorResponse(HttpStatus.TOO_MANY_REQUESTS.value(), ex.getMessage());
+
+    return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+  }
+
   // Handle generic exceptions
   @ExceptionHandler(BillingException.class)
   public ResponseEntity<ErrorResponse> handleGenericException(BillingException ex) {
