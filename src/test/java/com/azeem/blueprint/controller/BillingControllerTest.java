@@ -17,7 +17,6 @@ import com.azeem.blueprint.model.billing.BillingRecord;
 import com.azeem.blueprint.model.billing.BillingSummary;
 import com.azeem.blueprint.service.billing.BillingS3Service;
 import com.azeem.blueprint.service.billing.BillingService;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
 import java.util.Random;
 import org.junit.jupiter.api.Test;
@@ -31,16 +30,15 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(BillingController.class)
-public class BillingControllerTest {
+class BillingControllerTest {
   @Autowired private MockMvc mockMvc;
-  @Autowired private ObjectMapper mapper;
 
   @MockitoBean private BillingService billingService;
   @MockitoBean private BillingS3Service s3Service;
   @MockitoBean private LoadDummyDataService dummyDataService;
 
   @Test
-  public void shouldAcceptMultipartFile() throws Exception {
+  void shouldAcceptMultipartFile() throws Exception {
     // arrange
     byte[] bytes = new byte[16];
     new Random().nextBytes(bytes);
@@ -55,7 +53,7 @@ public class BillingControllerTest {
   }
 
   @Test
-  public void shouldLoadDemoData() throws Exception {
+  void shouldLoadDemoData() throws Exception {
     // arrange, act & assert
     mockMvc.perform(post("/demo-load")).andExpect(status().isOk());
 
@@ -63,7 +61,7 @@ public class BillingControllerTest {
   }
 
   @Test
-  public void defaultPageAndSize_shouldReturnAllRecordsInDefaultSizedPage() throws Exception {
+  void defaultPageAndSize_shouldReturnAllRecordsInDefaultSizedPage() throws Exception {
     // arrange, act & assert
     mockMvc.perform(get("/records")).andExpect(status().isOk());
 
@@ -71,7 +69,7 @@ public class BillingControllerTest {
   }
 
   @Test
-  public void customPageAndSize_shouldReturnAllRecordsInCustomSizedPage() throws Exception {
+  void customPageAndSize_shouldReturnAllRecordsInCustomSizedPage() throws Exception {
     // arrange, act & assert
     mockMvc
         .perform(get("/records").param("page", "1").param("size", "1"))
@@ -81,7 +79,7 @@ public class BillingControllerTest {
   }
 
   @Test
-  public void shouldReturnGeneratedBillingSummary() throws Exception {
+  void shouldReturnGeneratedBillingSummary() throws Exception {
     // arrange, act & assert
     mockMvc.perform(get("/summary")).andExpect(status().isOk());
 
@@ -89,7 +87,7 @@ public class BillingControllerTest {
   }
 
   @Test
-  public void customPageAndSize_shouldReturnRecordsByDepartment() throws Exception {
+  void customPageAndSize_shouldReturnRecordsByDepartment() throws Exception {
     // arrange, act & assert
     mockMvc
         .perform(get("/records/department/IT").param("page", "1").param("size", "20"))
@@ -99,7 +97,7 @@ public class BillingControllerTest {
   }
 
   @Test
-  public void defaultPageAndSize_shouldReturnRecordsByDepartment() throws Exception {
+  void defaultPageAndSize_shouldReturnRecordsByDepartment() throws Exception {
     // arrange, act & assert
     mockMvc.perform(get("/records/department/IT")).andExpect(status().isOk());
 
@@ -107,7 +105,7 @@ public class BillingControllerTest {
   }
 
   @Test
-  public void shouldReturnTopNBillingRecordsBySpend() throws Exception {
+  void shouldReturnTopNBillingRecordsBySpend() throws Exception {
     // arrange, act & assert
     mockMvc.perform(get("/top/5")).andExpect(status().isOk());
 
@@ -116,7 +114,7 @@ public class BillingControllerTest {
 
   // N cannot be greater than 100 (@Max(100) validation)
   @Test
-  public void shouldGracefullyHandleTooHighN_TopNBillingRecordsBySpend() throws Exception {
+  void shouldGracefullyHandleTooHighN_TopNBillingRecordsBySpend() throws Exception {
     // arrange, act & assert
     mockMvc.perform(get("/top/101")).andExpect(status().isBadRequest());
 
@@ -124,7 +122,7 @@ public class BillingControllerTest {
   }
 
   @Test
-  public void shouldReturnAllDepartments() throws Exception {
+  void shouldReturnAllDepartments() throws Exception {
     // arrange, act & assert
     mockMvc.perform(get("/departments")).andExpect(status().isOk());
 
@@ -132,7 +130,7 @@ public class BillingControllerTest {
   }
 
   @Test
-  public void shouldReturnAllPeriods() throws Exception {
+  void shouldReturnAllPeriods() throws Exception {
     // arrange, act & assert
     mockMvc.perform(get("/periods")).andExpect(status().isOk());
 
@@ -140,18 +138,18 @@ public class BillingControllerTest {
   }
 
   @Test
-  public void defaultPageAndSize_shouldReturnBillingRecordsByPeriod() throws Exception {
+  void defaultPageAndSize_shouldReturnBillingRecordsByPeriod() throws Exception {
+    // arrange
     Page<BillingRecord> page = new PageImpl<>(List.of(), PageRequest.of(0, 20), 1);
-
     when(billingService.getRecordsByPeriod(anyString(), anyInt(), anyInt())).thenReturn(page);
 
+    // act & assert
     mockMvc.perform(get("/records/period/2026-01")).andExpect(status().isOk());
-
     verify(billingService).getRecordsByPeriod("2026-01", 0, 20);
   }
 
   @Test
-  public void customPageAndSize_shouldReturnBillingRecordsByPeriod() throws Exception {
+  void customPageAndSize_shouldReturnBillingRecordsByPeriod() throws Exception {
 
     when(billingService.getRecordsByPeriod(anyString(), anyInt(), anyInt()))
         .thenReturn(Page.empty());
@@ -164,19 +162,18 @@ public class BillingControllerTest {
   }
 
   @Test
-  public void shouldReturnGeneratedBillingSummaryByPeriod() throws Exception {
-
+  void shouldReturnGeneratedBillingSummaryByPeriod() throws Exception {
+    // arrange
     BillingSummary summary = new BillingSummary();
-
     when(billingService.generateSummaryForPeriod("2026-01")).thenReturn(summary);
 
+    // act & assert
     mockMvc.perform(get("/summary/period/2026-01")).andExpect(status().isOk());
-
     verify(billingService).generateSummaryForPeriod("2026-01");
   }
 
   @Test
-  public void handleInvalidBillingPeriodFormat() throws Exception {
+  void handleInvalidBillingPeriodFormat() throws Exception {
 
     BillingSummary summary = new BillingSummary();
 
@@ -186,7 +183,7 @@ public class BillingControllerTest {
   }
 
   @Test
-  public void shouldDeleteRecordsByPeriod() throws Exception {
+  void shouldDeleteRecordsByPeriod() throws Exception {
     // arrange
     when(billingService.deleteRecordsByPeriod("2026-01")).thenReturn(5);
 
