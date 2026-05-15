@@ -177,7 +177,7 @@
 
 -------------------------------------------------------------------------------
 
-Telecom Billing Processor
+Blueprint
 
    Copyright 2025-2026 Jawad Azeem
 
@@ -197,19 +197,139 @@ Telecom Billing Processor
 
 Third Party Libraries - Java
 
-   Log4j2
-   (C) Copyright 1999-2026 Apache Software Foundation
-   Apache License 2.0
-   http://logging.apache.org/log4j/2.x/
+   This section lists the direct Maven dependencies and dependency-management
+   entries declared in pom.xml. Transitive dependencies are not enumerated here;
+   they remain governed by the license metadata distributed with their own
+   artifacts.
+
+   Spring Boot Starter Parent
+   Maven coordinates: org.springframework.boot:spring-boot-starter-parent:3.5.7
+   Apache License, Version 2.0
+   https://spring.io/projects/spring-boot
+   https://www.apache.org/licenses/LICENSE-2.0
+
+   Spring Boot Starter Web
+   Maven coordinates: org.springframework.boot:spring-boot-starter-web
+   Apache License, Version 2.0
+   https://spring.io/projects/spring-boot
+   https://www.apache.org/licenses/LICENSE-2.0
+
+   Spring Boot Starter JDBC
+   Maven coordinates: org.springframework.boot:spring-boot-starter-jdbc
+   Apache License, Version 2.0
+   https://spring.io/projects/spring-boot
+   https://www.apache.org/licenses/LICENSE-2.0
+
+   Spring Boot Starter Actuator
+   Maven coordinates: org.springframework.boot:spring-boot-starter-actuator
+   Apache License, Version 2.0
+   https://spring.io/projects/spring-boot
+   https://www.apache.org/licenses/LICENSE-2.0
+
+   Spring Boot Starter Data JPA
+   Maven coordinates: org.springframework.boot:spring-boot-starter-data-jpa
+   Apache License, Version 2.0
+   https://spring.io/projects/spring-boot
+   https://www.apache.org/licenses/LICENSE-2.0
+
+   Spring Boot Starter Validation
+   Maven coordinates: org.springframework.boot:spring-boot-starter-validation
+   Apache License, Version 2.0
+   https://spring.io/projects/spring-boot
+   https://www.apache.org/licenses/LICENSE-2.0
+
+   Spring Cloud AWS Dependencies
+   Maven coordinates: io.awspring.cloud:spring-cloud-aws-dependencies:3.1.0
+   Apache License, Version 2.0
+   https://awspring.io/
+   https://www.apache.org/licenses/LICENSE-2.0
+
+   Spring Cloud AWS Starter S3
+   Maven coordinates: io.awspring.cloud:spring-cloud-aws-starter-s3
+   Apache License, Version 2.0
+   https://awspring.io/
+   https://www.apache.org/licenses/LICENSE-2.0
+
+   Spring Cloud AWS Starter SQS
+   Maven coordinates: io.awspring.cloud:spring-cloud-aws-starter-sqs
+   Apache License, Version 2.0
+   https://awspring.io/
+   https://www.apache.org/licenses/LICENSE-2.0
+
+   Spring AI Google GenAI Starter
+   Maven coordinates: org.springframework.ai:spring-ai-starter-model-google-genai:1.1.0
+   Apache License, Version 2.0
+   https://github.com/spring-projects/spring-ai
+   https://www.apache.org/licenses/LICENSE-2.0.txt
+
+   OpenCSV
+   Maven coordinates: com.opencsv:opencsv:5.9
+   Apache License, Version 2.0
+   http://opencsv.sf.net
+   http://www.apache.org/licenses/LICENSE-2.0.txt
+
+   PostgreSQL JDBC Driver
+   Maven coordinates: org.postgresql:postgresql:42.7.3
+   BSD 2-Clause License
+   https://jdbc.postgresql.org
+   https://jdbc.postgresql.org/about/license.html
+
+   Project Lombok
+   Maven coordinates: org.projectlombok:lombok
+   MIT License
+   https://projectlombok.org
+   https://projectlombok.org/LICENSE
 
 -------------------------------------------------------------------------------
 
 Third Party Libraries - Java / Test Code Only
 
-   JUnit
-   (C) Copyright 2002-2014 JUnit
-   Eclipse Public License 1.0
-   http://junit.org/
+   Spring Boot Starter Test
+   Maven coordinates: org.springframework.boot:spring-boot-starter-test
+   Apache License, Version 2.0
+   https://spring.io/projects/spring-boot
+   https://www.apache.org/licenses/LICENSE-2.0
+
+   Mockito Core
+   Maven coordinates: org.mockito:mockito-core:5.11.0
+   MIT License
+   https://github.com/mockito/mockito
+   https://opensource.org/licenses/MIT
+
+   H2 Database Engine
+   Maven coordinates: com.h2database:h2
+   Dual licensed under MPL 2.0 and EPL 1.0
+   https://h2database.com
+   https://www.mozilla.org/en-US/MPL/2.0/
+   https://opensource.org/licenses/eclipse-1.0.php
+
+-------------------------------------------------------------------------------
+
+Third Party Build Tools - Maven
+
+   Apache Maven Compiler Plugin
+   Maven coordinates: org.apache.maven.plugins:maven-compiler-plugin
+   Apache License, Version 2.0
+   https://maven.apache.org/plugins/maven-compiler-plugin/
+   https://www.apache.org/licenses/LICENSE-2.0
+
+   Spring Boot Maven Plugin
+   Maven coordinates: org.springframework.boot:spring-boot-maven-plugin
+   Apache License, Version 2.0
+   https://spring.io/projects/spring-boot
+   https://www.apache.org/licenses/LICENSE-2.0
+
+   Spotless Maven Plugin
+   Maven coordinates: com.diffplug.spotless:spotless-maven-plugin:2.43.0
+   Apache License, Version 2.0
+   https://github.com/diffplug/spotless
+   https://www.apache.org/licenses/LICENSE-2.0.txt
+
+   Google Java Format
+   Maven coordinates: com.google.googlejavaformat:google-java-format:1.27.0
+   Apache License, Version 2.0
+   https://github.com/google/google-java-format
+   https://www.apache.org/licenses/LICENSE-2.0
 
 
 -------------------------------------------------------------------------------
