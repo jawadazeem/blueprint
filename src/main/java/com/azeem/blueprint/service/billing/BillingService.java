@@ -72,6 +72,17 @@ public class BillingService {
     return records;
   }
 
+  public int deleteRecordsByPeriod(@BillingPeriod String billingPeriod) {
+    int rowsDeleted = repository.deleteByBillingPeriod(billingPeriod);
+
+    if (rowsDeleted == 0) {
+      throw new BillingDataNotFoundException(
+          "Could not find billing data for period: " + billingPeriod);
+    }
+
+    return rowsDeleted;
+  }
+
   public Page<BillingRecord> getAllRecords(int page, int size) {
     Pageable pageable = PageRequest.of(page, size, Sort.by("department").descending());
 

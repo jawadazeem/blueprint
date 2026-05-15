@@ -127,6 +127,17 @@ public class BillingController {
     return service.getRecordsByPeriod(billingPeriod, page, size);
   }
 
+  @DeleteMapping("/records/period/{billingPeriod}")
+  public ResponseEntity<Void> deleteRecordsByPeriod(
+      @BillingPeriod @PathVariable String billingPeriod) {
+
+    log.info("DELETE /records/period/{} called to delete all records.", billingPeriod);
+    int rowsDeleted = service.deleteRecordsByPeriod(billingPeriod);
+    log.info("{} records DELETED from period: {}}", rowsDeleted, billingPeriod);
+
+    return ResponseEntity.noContent().build();
+  }
+
   @GetMapping("/summary/period/{billingPeriod}")
   public BillingSummary getSummaryByPeriod(@BillingPeriod @PathVariable String billingPeriod) {
     log.info("GET /summary/period/{} called.", billingPeriod);

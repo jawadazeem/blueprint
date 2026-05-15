@@ -43,4 +43,6 @@ public interface BillingRecordRepository extends JpaRepository<BillingRecordEnti
   Page<BillingRecordEntity> findByDepartmentIgnoreCase(String department, Pageable pageable);
 
   long count();
+
+  int deleteByBillingPeriod(String billingPeriod);
 }

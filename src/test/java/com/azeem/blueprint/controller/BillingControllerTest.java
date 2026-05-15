@@ -184,4 +184,15 @@ public class BillingControllerTest {
 
     verify(billingService, never()).generateSummaryForPeriod(anyString());
   }
+
+  @Test
+  public void shouldDeleteRecordsByPeriod() throws Exception {
+    // arrange
+    when(billingService.deleteRecordsByPeriod("2026-01")).thenReturn(5);
+
+    // act & assert
+    mockMvc.perform(delete("/records/period/2026-01")).andExpect(status().isNoContent());
+
+    verify(billingService).deleteRecordsByPeriod("2026-01");
+  }
 }
