@@ -85,9 +85,9 @@ public class BillingController {
   }
 
   @GetMapping("/summary")
-  public BillingSummary getSummary() {
+  public ResponseEntity<BillingSummary> getSummary() {
     log.info("GET /summary called to generate billing summary.");
-    return service.generateSummary();
+    return ResponseEntity.ok(service.generateSummary());
   }
 
   @GetMapping("/records/department/{department}")
