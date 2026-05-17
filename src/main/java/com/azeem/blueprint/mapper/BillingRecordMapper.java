@@ -6,7 +6,9 @@
 package com.azeem.blueprint.mapper;
 
 import com.azeem.blueprint.entity.BillingRecordEntity;
+import com.azeem.blueprint.entity.DatasetEntity;
 import com.azeem.blueprint.model.billing.BillingRecord;
+import com.azeem.blueprint.repository.DatasetRepository;
 import org.springframework.stereotype.Component;
 
 /**
@@ -15,11 +17,15 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class BillingRecordMapper {
+  private final DatasetRepository datasetRepository;
 
-  public BillingRecordMapper() {}
+  public BillingRecordMapper(DatasetRepository datasetRepository) {
+    this.datasetRepository = datasetRepository;
+  }
 
   public BillingRecordEntity mapToEntity(BillingRecord record) {
     BillingRecordEntity entity = new BillingRecordEntity();
+    entity.setDataset(getDatasetById(record));
     entity.setAccountName(record.accountName());
     entity.setEmployeeId(record.employeeId());
     entity.setDepartment(record.department());
@@ -34,6 +40,7 @@ public class BillingRecordMapper {
 
   public BillingRecord mapToDomain(BillingRecordEntity entity) {
     return new BillingRecord(
+        entity.getDataset().getId(),
         entity.getAccountName(),
         entity.getEmployeeId(),
         entity.getDepartment(),
@@ -43,5 +50,9 @@ public class BillingRecordMapper {
         entity.getDataGbUsed(),
         entity.getSmsCount(),
         entity.getTotalCharge());
+  }
+
+  private DatasetEntity getDatasetById(BillingRecord record) {
+    return datasetRepository.getReferenceById(record.datasetId());
   }
 }

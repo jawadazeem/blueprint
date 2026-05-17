@@ -5,6 +5,7 @@
 
 package com.azeem.blueprint.model.martin;
 
+/** Martin Response DTO */
 public class MartinResponse {
   public String answer;
   public String sql;

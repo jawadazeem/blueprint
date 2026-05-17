@@ -7,42 +7,64 @@ package com.azeem.blueprint.repository;
 
 import com.azeem.blueprint.entity.BillingRecordEntity;
 import java.util.List;
+import java.util.UUID;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 @Repository
 public interface BillingRecordRepository extends JpaRepository<BillingRecordEntity, Long> {
-
-  @Query("SELECT DISTINCT b.billingPeriod FROM BillingRecordEntity b ORDER BY b.billingPeriod")
-  Page<String> findAllBillingPeriods(Pageable pageable);
+  @Query(
+      """
+    SELECT DISTINCT b.billingPeriod
+    FROM BillingRecordEntity b
+    WHERE b.dataset.id = :datasetId
+    ORDER BY b.billingPeriod
+  """)
+  Page<String> findBillingPeriodByDatasetId(@Param("datasetId") UUID datasetId, Pageable pageable);
 
   // DB-level distinct departments
-  @Query("SELECT DISTINCT b.department FROM BillingRecordEntity b ORDER BY b.department")
-  List<String> findDistinctDepartments();
+  @Query(
+      """
+      SELECT DISTINCT b.department
+      FROM BillingRecordEntity b
+      WHERE b.dataset.id = :datasetId
+      ORDER BY b.department
+    """)
+  List<String> findDistinctDepartmentsByDatasetId(@Param("datasetId") UUID datasetId);
 
   // DB-level distinct billing periods (non-paged)
-  @Query("SELECT DISTINCT b.billingPeriod FROM BillingRecordEntity b ORDER BY b.billingPeriod")
-  List<String> findAllDistinctBillingPeriods();
+  List<String> findDistinctBillingPeriodByDatasetId(@Param("datasetId") UUID datasetId);
 
   @Query(
-      "SELECT CASE WHEN COUNT(b) > 0 THEN true ELSE false END FROM BillingRecordEntity b WHERE b.billingPeriod = :period")
-  boolean existsByBillingPeriod(@Param("period") String period);
+      """
+        SELECT CASE WHEN COUNT(b) > 0 THEN true ELSE false END
+        FROM BillingRecordEntity b
+        WHERE b.dataset.id = :datasetId AND b.billingPeriod = :period
+      """)
+  boolean existsByDatasetIdAndBillingPeriod(
+      @Param("datasetId") UUID datasetId, @Param("period") String period);
 
   @NotNull
-  Page<BillingRecordEntity> findAll(Pageable pageable);
+  Page<BillingRecordEntity> findByDatasetId(UUID datasetId, Pageable pageable);
 
-  Page<BillingRecordEntity> findByBillingPeriod(String billingPeriod, Pageable pageable);
+  Page<BillingRecordEntity> findByDatasetIdAndBillingPeriod(
+      UUID datasetId, String billingPeriod, Pageable pageable);
 
-  List<BillingRecordEntity> findByBillingPeriod(String billingPeriod);
+  List<BillingRecordEntity> findByDatasetIdAndBillingPeriod(UUID datasetId, String billingPeriod);
 
-  Page<BillingRecordEntity> findByDepartmentIgnoreCase(String department, Pageable pageable);
+  Page<BillingRecordEntity> findByDatasetIdAndDepartmentIgnoreCase(
+      UUID datasetId, String department, Pageable pageable);
 
-  long count();
+  long countByDatasetId(UUID datasetId);
 
-  int deleteByBillingPeriod(String billingPeriod);
+  @Modifying
+  @Transactional
+  int deleteByDatasetIdAndBillingPeriod(UUID datasetId, String billingPeriod);
 }

@@ -14,5 +14,10 @@ public enum Department {
   MARKETING,
   OPERATIONS,
   SALES,
-  SUPPORT
+  SUPPORT,
+  PROCUREMENT;
+
+  public static Department fromString(String value) {
+    return Department.valueOf(value.toUpperCase());
+  }
 }

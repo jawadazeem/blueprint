@@ -30,11 +30,11 @@ import org.springframework.data.domain.*;
 import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
-public class BillingServiceTest {
+public class BillingQueryServiceTest {
   @Mock private BillingRecordRepository repository;
   @Mock private BillingRecordMapper mapper;
 
-  @InjectMocks private BillingService service;
+  @InjectMocks private BillingQueryService service;
 
   private BillingRecordEntity entity1;
   private BillingRecordEntity entity2;
@@ -207,7 +207,7 @@ public class BillingServiceTest {
     // arrange
     Page<BillingRecordEntity> entityPage =
         new PageImpl<>(List.of(entity1), PageRequest.of(0, 5), 1);
-    when(repository.findByDepartmentIgnoreCase(any(String.class), any(Pageable.class)))
+    when(repository.findByDepartmentAndDatasetIdIgnoreCase(any(String.class), any(Pageable.class)))
         .thenReturn(entityPage);
 
     // act
@@ -217,7 +217,8 @@ public class BillingServiceTest {
     ArgumentCaptor<String> departmentCaptor = ArgumentCaptor.forClass(String.class);
     ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
     verify(repository)
-        .findByDepartmentIgnoreCase(departmentCaptor.capture(), pageableCaptor.capture());
+        .findByDepartmentAndDatasetIdIgnoreCase(
+            departmentCaptor.capture(), pageableCaptor.capture());
 
     String usedDepartment = departmentCaptor.getValue();
     assertThat(usedDepartment).isEqualTo("fInanCe");

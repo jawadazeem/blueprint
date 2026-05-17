@@ -5,8 +5,16 @@
 
 package com.azeem.blueprint.model.billing;
 
-/** Represents the detailed billing record for a single account. */
+import java.util.UUID;
+import org.jetbrains.annotations.NotNull;
+
+/**
+ * Billing Record DTO
+ *
+ * <p>Represents the detailed billing record for a single account.
+ */
 public record BillingRecord(
+    UUID datasetId,
     String accountName,
     String employeeId,
     String department,
@@ -17,9 +25,12 @@ public record BillingRecord(
     int smsCount,
     double totalCharge) {
 
+  @NotNull
   @Override
   public String toString() {
-    return accountName
+    return datasetId
+        + ", "
+        + accountName
         + ", "
         + employeeId
         + ", "

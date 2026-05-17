@@ -5,6 +5,11 @@
 
 package com.azeem.blueprint.model.martin;
 
+/**
+ * Martin's SQL Response DTO
+ *
+ * <p>SQL script and reasoning are including in {@link MartinResponse}
+ */
 public class SqlResponse {
   private String sql;
   private String reasoning;

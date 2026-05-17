@@ -8,6 +8,7 @@ package com.azeem.blueprint.etl;
 import com.azeem.blueprint.model.billing.BillingRecord;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -40,7 +41,7 @@ public class BillingRecordAssembler {
 
   public BillingRecordAssembler() {}
 
-  public List<BillingRecord> assembleRecords(List<String[]> entries) {
+  public List<BillingRecord> assembleRecords(List<String[]> entries, UUID datasetId) {
     List<BillingRecord> records = new ArrayList<>();
     for (String[] entry : entries) {
       // Expect the exact 9 fields BillingRecord uses
@@ -57,6 +58,7 @@ public class BillingRecordAssembler {
 
       BillingRecord record =
           new BillingRecord(
+              datasetId,
               accountName,
               employeeId,
               department,
@@ -73,7 +75,7 @@ public class BillingRecordAssembler {
     return records;
   }
 
-  public BillingRecord assembleRecord(String[] entry) {
+  public BillingRecord assembleRecord(String[] entry, UUID datasetId) {
     String accountName = entry[0];
     String employeeId = entry[1];
     String department = entry[2];
@@ -86,6 +88,7 @@ public class BillingRecordAssembler {
     double totalCharge = Double.parseDouble(entry[8]);
 
     return new BillingRecord(
+        datasetId,
         accountName,
         employeeId,
         department,

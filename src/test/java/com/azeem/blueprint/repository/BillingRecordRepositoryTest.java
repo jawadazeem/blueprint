@@ -92,7 +92,7 @@ class BillingRecordRepositoryTest {
   void testFindByDepartmentIgnoreCase() {
     // Act
     Page<BillingRecordEntity> result =
-        repository.findByDepartmentIgnoreCase("engineering", PageRequest.of(0, 5));
+        repository.findByDepartmentAndDatasetIdIgnoreCase("engineering", PageRequest.of(0, 5));
 
     // Assert
     assertThat(result.getContent()).hasSize(2);

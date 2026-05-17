@@ -42,25 +42,30 @@ public class AlarmService {
     this.alarmMapper = alarmMapper;
   }
 
+  // TODO: Fix. Alarm detection is chunked by 1000 records, but department totals and account totals
+  // are computed per chunk, not per full dataset-period. That can produce false negatives or
+  // duplicate-ish behavior once datasets exceed one page.
   /**
    * Detects alarms from billing records and persists only new ones for the given billing period.
    */
   @Transactional
-  public void detectAndPersistAlarms(String billingPeriod) {
+  public void detectAndPersistAlarmsForDataset(UUID datasetId, String billingPeriod) {
     int page = 0;
     int chunkSize = 1000;
     Page<BillingRecordEntity> chunk;
     Set<UUID> existingKeys =
-        new HashSet<>(alarmRepository.findBusinessKeysByBillingPeriod(billingPeriod));
+        new HashSet<>(
+            alarmRepository.findBusinessKeysByDatasetIdAndBillingPeriod(datasetId, billingPeriod));
 
     boolean hasMore = true;
     while (hasMore) {
       chunk =
-          billingRecordRepository.findByBillingPeriod(
-              billingPeriod, PageRequest.of(page++, chunkSize));
+          billingRecordRepository.findByDatasetIdAndBillingPeriod(
+              datasetId, billingPeriod, PageRequest.of(page++, chunkSize));
 
       List<BillingRecord> chunkList = chunk.stream().map(billingMapper::mapToDomain).toList();
-      List<Alarm> detectedAlarms = alarmDetectionService.detectAlarms(chunkList, billingPeriod);
+      List<Alarm> detectedAlarms =
+          alarmDetectionService.detectAlarms(datasetId, chunkList, billingPeriod);
 
       if (!detectedAlarms.isEmpty()) {
         List<AlarmEntity> entities = buildNewAlarmEntities(detectedAlarms, existingKeys);
@@ -73,7 +78,8 @@ public class AlarmService {
   }
 
   /**
-   * Builds AlarmEntity objects for alarms that do not already exist in the given billing period.
+   * Builds AlarmEntity objects for alarms that do not already exist in the given billing period for
+   * the dataset.
    */
   private List<AlarmEntity> buildNewAlarmEntities(
       List<Alarm> detectedAlarms, Set<UUID> existingKeys) {
@@ -84,34 +90,36 @@ public class AlarmService {
   }
 
   /** Retrieves all alarms for a given billing period. */
-  public List<Alarm> getAllAlarms(String billingPeriod) {
-    return alarmRepository.findByBillingPeriod(billingPeriod).stream()
+  public List<Alarm> getAllAlarmsInDataset(UUID datasetId, String billingPeriod) {
+    return alarmRepository.findByDatasetIdAndBillingPeriod(datasetId, billingPeriod).stream()
         .map(alarmMapper::mapToDomain)
         .toList();
   }
 
   /** Retrieves alarms scoped to departments for a billing period. */
-  public List<Alarm> getDepartmentAlarms(String billingPeriod) {
+  public List<Alarm> getDepartmentAlarmsInDataset(UUID datasetId, String billingPeriod) {
     return alarmRepository
-        .findByBillingPeriodAndAlarmScope(billingPeriod, AlarmScope.DEPARTMENT)
+        .findByDatasetIdAndBillingPeriodAndAlarmScope(
+            datasetId, billingPeriod, AlarmScope.DEPARTMENT)
         .stream()
         .map(alarmMapper::mapToDomain)
         .toList();
   }
 
   /** Retrieves alarms scoped to individual users for a billing period. */
-  public List<Alarm> getIndividualAlarms(String billingPeriod) {
+  public List<Alarm> getIndividualAlarmsInDataset(UUID datasetId, String billingPeriod) {
     return alarmRepository
-        .findByBillingPeriodAndAlarmScope(billingPeriod, AlarmScope.INDIVIDUAL)
+        .findByDatasetIdAndBillingPeriodAndAlarmScope(
+            datasetId, billingPeriod, AlarmScope.INDIVIDUAL)
         .stream()
         .map(alarmMapper::mapToDomain)
         .toList();
   }
 
   /** Retrieves account-level alarms for a billing period. */
-  public List<Alarm> getAccountAlarm(String billingPeriod) {
+  public List<Alarm> getAccountAlarm(UUID datasetId, String billingPeriod) {
     return alarmRepository
-        .findByBillingPeriodAndAlarmScope(billingPeriod, AlarmScope.ACCOUNT)
+        .findByDatasetIdAndBillingPeriodAndAlarmScope(datasetId, billingPeriod, AlarmScope.ACCOUNT)
         .stream()
         .map(alarmMapper::mapToDomain)
         .toList();

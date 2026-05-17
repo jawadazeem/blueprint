@@ -18,13 +18,19 @@ import java.util.UUID;
  * model and the application's domain model are handled by the AlarmMapper.
  */
 @Entity
-@Table(name = "alarms", uniqueConstraints = @UniqueConstraint(columnNames = "business_key"))
+@Table(
+    name = "alarms",
+    uniqueConstraints = @UniqueConstraint(columnNames = {"dataset_id", "business_key"}))
 public class AlarmEntity {
   @Id
   @GeneratedValue(strategy = GenerationType.UUID)
   private UUID id;
 
-  @Column(name = "business_key", nullable = false, unique = true)
+  @ManyToOne(fetch = FetchType.LAZY, optional = false)
+  @JoinColumn(name = "dataset_id")
+  private DatasetEntity dataset;
+
+  @Column(name = "business_key", nullable = false)
   private UUID businessKey;
 
   private @Enumerated(EnumType.STRING) AlarmScope alarmScope;
@@ -125,5 +131,13 @@ public class AlarmEntity {
 
   public void setBusinessKey(UUID businessKey) {
     this.businessKey = businessKey;
+  }
+
+  public DatasetEntity getDataset() {
+    return dataset;
+  }
+
+  public void setDataset(DatasetEntity dataset) {
+    this.dataset = dataset;
   }
 }

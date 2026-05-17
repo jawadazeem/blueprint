@@ -122,9 +122,13 @@ public class AlarmRepositoryTest {
   @Test
   void testFindByBillingPeriodAndAlarmScope() {
     // Act & Assert
-    assertThat(alarmRepository.findByBillingPeriodAndAlarmScope("2026-01", AlarmScope.INDIVIDUAL))
+    assertThat(
+            alarmRepository.findByDatasetIdAndBillingPeriodAndAlarmScope(
+                "2026-01", AlarmScope.INDIVIDUAL))
         .containsExactly(alarms.get(1));
-    assertThat(alarmRepository.findByBillingPeriodAndAlarmScope("2026-01", AlarmScope.ACCOUNT))
+    assertThat(
+            alarmRepository.findByDatasetIdAndBillingPeriodAndAlarmScope(
+                "2026-01", AlarmScope.ACCOUNT))
         .hasSize(1);
   }
 

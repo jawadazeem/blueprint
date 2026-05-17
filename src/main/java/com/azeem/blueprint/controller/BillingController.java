@@ -8,8 +8,8 @@ package com.azeem.blueprint.controller;
 import com.azeem.blueprint.demo.LoadDummyDataService;
 import com.azeem.blueprint.model.billing.BillingRecord;
 import com.azeem.blueprint.model.billing.BillingSummary;
+import com.azeem.blueprint.service.billing.BillingQueryService;
 import com.azeem.blueprint.service.billing.BillingS3Service;
-import com.azeem.blueprint.service.billing.BillingService;
 import com.azeem.blueprint.validation.BillingPeriod;
 import com.azeem.blueprint.validation.ValidCsvFile;
 import jakarta.validation.constraints.Max;
@@ -45,12 +45,14 @@ import org.springframework.web.multipart.MultipartFile;
 @Validated
 public class BillingController {
   private static final Logger log = LoggerFactory.getLogger(BillingController.class);
-  private final BillingService service;
+  private final BillingQueryService service;
   private final BillingS3Service s3Service;
   private final LoadDummyDataService dummyDataService;
 
   public BillingController(
-      BillingService service, BillingS3Service s3Service, LoadDummyDataService dummyDataService) {
+      BillingQueryService service,
+      BillingS3Service s3Service,
+      LoadDummyDataService dummyDataService) {
     this.service = service;
     this.s3Service = s3Service;
     this.dummyDataService = dummyDataService;
@@ -81,7 +83,7 @@ public class BillingController {
       @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size) {
     log.info(
         "GET /records called to retrieve all billing records, page: {}, size: {}.", page, size);
-    return service.getAllRecords(page, size);
+    return service.getAllRecordsInDataset(page, size);
   }
 
   @GetMapping("/summary")
@@ -96,26 +98,26 @@ public class BillingController {
       @RequestParam(defaultValue = "0") @Min(0) int page,
       @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size) {
     log.info("API Request: Fetching records for department: {}", department);
-    Page<BillingRecord> result = service.getRecordsByDepartment(department, page, size);
+    Page<BillingRecord> result = service.getRecordsByDepartmentInDataset(department, page, size);
     return ResponseEntity.ok(result);
   }
 
   @GetMapping("/top/{n}")
   public Page<BillingRecord> getTopN(@PathVariable @Min(1) @Max(100) int n) {
     log.info("GET /top/{} called to retrieve top N billing records by total charge.", n);
-    return service.getTopNRecords(n);
+    return service.getTopNRecordsInDataset(n);
   }
 
   @GetMapping("/departments")
   public List<String> getDepartments() {
     log.info("GET /departments called.");
-    return service.getDistinctDepartments();
+    return service.getDistinctDepartmentsInDataset();
   }
 
   @GetMapping("/periods")
   public List<String> getBillingPeriods() {
     log.info("GET /periods called.");
-    return service.getDistinctBillingPeriods();
+    return service.getDistinctBillingPeriodsById();
   }
 
   @GetMapping("/records/period/{billingPeriod}")
@@ -124,7 +126,7 @@ public class BillingController {
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "20") int size) {
     log.info("GET /records/period/{} called with page {}, size {}", billingPeriod, page, size);
-    return service.getRecordsByPeriod(billingPeriod, page, size);
+    return service.getDatasetRecordsByPeriod(billingPeriod, page, size);
   }
 
   @DeleteMapping("/records/period/{billingPeriod}")
@@ -132,7 +134,7 @@ public class BillingController {
       @BillingPeriod @PathVariable String billingPeriod) {
 
     log.info("DELETE /records/period/{} called to delete all records.", billingPeriod);
-    int rowsDeleted = service.deleteRecordsByPeriod(billingPeriod);
+    int rowsDeleted = service.deleteRecordsByPeriodInDataset(billingPeriod);
     log.info("{} records DELETED from period: {}}", rowsDeleted, billingPeriod);
 
     return ResponseEntity.noContent().build();
@@ -141,6 +143,6 @@ public class BillingController {
   @GetMapping("/summary/period/{billingPeriod}")
   public BillingSummary getSummaryByPeriod(@BillingPeriod @PathVariable String billingPeriod) {
     log.info("GET /summary/period/{} called.", billingPeriod);
-    return service.generateSummaryForPeriod(billingPeriod);
+    return service.generateSummaryForPeriodInDataset(billingPeriod);
   }
 }

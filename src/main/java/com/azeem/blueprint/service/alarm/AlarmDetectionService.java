@@ -5,15 +5,11 @@
 
 package com.azeem.blueprint.service.alarm;
 
-import static com.azeem.blueprint.model.alarm.AlarmSeverity.LOW;
-
 import com.azeem.blueprint.config.AlarmConfig;
 import com.azeem.blueprint.model.alarm.Alarm;
-import com.azeem.blueprint.model.alarm.AlarmScope;
 import com.azeem.blueprint.model.alarm.AlarmSeverity;
 import com.azeem.blueprint.model.billing.BillingRecord;
 import com.azeem.blueprint.model.billing.Department;
-import java.time.Instant;
 import java.util.*;
 import org.springframework.stereotype.Service;
 
@@ -34,50 +30,30 @@ public class AlarmDetectionService {
     this.alarmConfig = alarmConfig;
   }
 
-  public List<Alarm> detectAlarms(List<BillingRecord> records, String billingPeriod) {
-    List<Alarm> alarms = getDepartmentsOverLimit(records, billingPeriod);
-    alarms.addAll(getIndividualChargesOverLimit(records, billingPeriod));
-    alarms.addAll(getGrandTotalOverLimit(records, billingPeriod));
+  public List<Alarm> detectAlarms(
+      UUID datasetId, List<BillingRecord> records, String billingPeriod) {
+    List<Alarm> alarms = getDepartmentsOverLimit(datasetId, records, billingPeriod);
+    alarms.addAll(getIndividualChargesOverLimit(datasetId, records, billingPeriod));
+    Optional<Alarm> grandTotalAlarm = getGrandTotalOverLimit(datasetId, records, billingPeriod);
+    grandTotalAlarm.ifPresent(alarms::add);
     return alarms;
   }
 
-  private List<Alarm> getDepartmentsOverLimit(List<BillingRecord> records, String billingPeriod) {
+  private List<Alarm> getDepartmentsOverLimit(
+      UUID datasetId, List<BillingRecord> records, String billingPeriod) {
     List<Alarm> alarms = new ArrayList<>();
-
-    Map<String, Department> departments =
-        Map.of(
-            "Engineering", Department.ENGINEERING,
-            "Finance", Department.FINANCE,
-            "HR", Department.HR,
-            "IT", Department.IT,
-            "Legal", Department.LEGAL,
-            "Marketing", Department.MARKETING,
-            "Operations", Department.OPERATIONS,
-            "Sales", Department.SALES,
-            "Support", Department.SUPPORT);
-    Map<String, Double> totals = new HashMap<>();
+    Map<Department, Double> totals = new HashMap<>();
 
     for (BillingRecord r : records) {
-      totals.merge(r.department(), r.totalCharge(), Double::sum);
+      if (r.department() == null) continue;
+      totals.merge(Department.fromString(r.department()), r.totalCharge(), Double::sum);
     }
 
     double deptLimit = alarmConfig.getDepartment().getMonthlyLimit();
 
-    for (String d : departments.keySet()) {
+    for (Department d : totals.keySet()) {
       if (totals.getOrDefault(d, 0.0) > deptLimit) {
-        Alarm alarm =
-            new Alarm(
-                null, // DB generates ID
-                UUID.randomUUID(),
-                AlarmScope.DEPARTMENT,
-                billingPeriod,
-                "Department Charge Exceeded",
-                LOW,
-                d + " department Exceeds Charge Limit",
-                Instant.now(),
-                null,
-                null,
-                departments.get(d));
+        Alarm alarm = Alarm.department(datasetId, billingPeriod, d);
         alarms.add(alarm);
       }
     }
@@ -86,7 +62,7 @@ public class AlarmDetectionService {
   }
 
   private List<Alarm> getIndividualChargesOverLimit(
-      List<BillingRecord> records, String billingPeriod) {
+      UUID datasetId, List<BillingRecord> records, String billingPeriod) {
     List<Alarm> alarms = new ArrayList<>();
 
     double low = alarmConfig.getIndividual().getLow();
@@ -111,27 +87,17 @@ public class AlarmDetectionService {
         // No alarm
         continue;
       }
-
       Alarm alarm =
-          new Alarm(
-              null, // DB generates ID
-              UUID.randomUUID(),
-              AlarmScope.INDIVIDUAL,
-              billingPeriod,
-              "Individual Charge Limit Exceeded",
-              severity,
-              message,
-              Instant.now(),
-              r.employeeId(),
-              r.phoneNumber(),
-              null);
+          Alarm.individual(
+              datasetId, billingPeriod, severity, message, r.employeeId(), r.phoneNumber());
       alarms.add(alarm);
     }
 
     return alarms;
   }
 
-  private List<Alarm> getGrandTotalOverLimit(List<BillingRecord> records, String billingPeriod) {
+  private Optional<Alarm> getGrandTotalOverLimit(
+      UUID datasetId, List<BillingRecord> records, String billingPeriod) {
     double grandTotal = 0;
     double accountLow = alarmConfig.getAccount().getLow();
     double accountHigh = alarmConfig.getAccount().getHigh();
@@ -141,38 +107,10 @@ public class AlarmDetectionService {
     }
 
     if (grandTotal > accountLow && grandTotal < accountHigh) {
-      Alarm alarm =
-          new Alarm(
-              UUID.randomUUID(),
-              UUID.randomUUID(),
-              AlarmScope.ACCOUNT,
-              billingPeriod,
-              "Total Account Budget Exceeded: LOW",
-              AlarmSeverity.LOW,
-              "Your account's telecom bill has slightly exceeded its monthly budget.",
-              Instant.now(),
-              null,
-              null,
-              null);
-      List<Alarm> alarms = new ArrayList<>();
-      alarms.add(alarm);
-      return alarms;
+      return Optional.of(Alarm.accountLow(datasetId, billingPeriod));
     } else if (grandTotal >= accountLow) {
-      Alarm alarm =
-          new Alarm(
-              UUID.randomUUID(),
-              UUID.randomUUID(),
-              AlarmScope.ACCOUNT,
-              billingPeriod,
-              "Total Account Budget Exceeded: HIGH",
-              AlarmSeverity.HIGH,
-              "Your account's telecom bill has significantly exceeded its monthly budget.",
-              Instant.now(),
-              null,
-              null,
-              null);
-      return List.of(alarm);
+      return Optional.of(Alarm.accountHigh(datasetId, billingPeriod));
     }
-    return new ArrayList<>();
+    return Optional.empty();
   }
 }

@@ -9,6 +9,7 @@ import com.azeem.blueprint.config.BillingReaderConfig;
 import com.azeem.blueprint.entity.BillingRecordEntity;
 import com.azeem.blueprint.etl.BillingRecordAssembler;
 import com.azeem.blueprint.etl.CsvBillingReader;
+import com.azeem.blueprint.exception.S3SqsPipelineIngestionException;
 import com.azeem.blueprint.mapper.BillingRecordMapper;
 import com.azeem.blueprint.model.billing.BillingRecord;
 import com.azeem.blueprint.model.billing.IngestionResult;
@@ -18,9 +19,11 @@ import jakarta.validation.constraints.NotNull;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
 /**
@@ -60,7 +63,8 @@ public class BillingIngestionService {
     this.alarmService = alarmService;
   }
 
-  public IngestionResult ingestData(@NotNull InputStream inputStream) {
+  @Transactional
+  public IngestionResult ingestData(@NotNull UUID datasetId, @NotNull InputStream inputStream) {
     int successCount = 0;
     int failureCount = 0;
     StringBuilder errorBuffer = new StringBuilder();
@@ -75,7 +79,7 @@ public class BillingIngestionService {
 
       while ((row = reader.parseNextRow()) != null) {
         try {
-          BillingRecord domain = billingRecordAssembler.assembleRecord(row);
+          BillingRecord domain = billingRecordAssembler.assembleRecord(row, datasetId);
           batch.add(mapper.mapToEntity(domain));
 
           if (firstRow) {
@@ -112,7 +116,7 @@ public class BillingIngestionService {
         }
       }
 
-      alarmService.detectAndPersistAlarms(billingPeriod);
+      alarmService.detectAndPersistAlarmsForDataset(datasetId, billingPeriod);
       log.info(
           "Ingestion Complete for {}: {} Success, {} Failures",
           billingPeriod,
@@ -121,8 +125,10 @@ public class BillingIngestionService {
 
     } catch (Exception e) {
       log.error("System-Level Failure: The S3 stream or Reader encountered a fatal error.", e);
+      throw new S3SqsPipelineIngestionException("Fatal pipeline ingestion termination", e);
     }
 
-    return new IngestionResult(billingPeriod, successCount, failureCount, errorBuffer.toString());
+    return new IngestionResult(
+        datasetId, billingPeriod, successCount, failureCount, errorBuffer.toString());
   }
 }

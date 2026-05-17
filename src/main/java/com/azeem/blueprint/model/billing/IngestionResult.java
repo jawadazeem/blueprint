@@ -5,5 +5,7 @@
 
 package com.azeem.blueprint.model.billing;
 
+import java.util.UUID;
+
 public record IngestionResult(
-    String billingPeriod, int successCount, int failureCount, String errorLog) {}
+    UUID datasetId, String billingPeriod, int successCount, int failureCount, String errorLog) {}

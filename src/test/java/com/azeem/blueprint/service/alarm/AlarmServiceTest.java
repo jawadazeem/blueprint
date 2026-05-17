@@ -210,7 +210,8 @@ public class AlarmServiceTest {
 
   @Test
   void shouldReturnDepartmentAlarms() {
-    when(alarmRepository.findByBillingPeriodAndAlarmScope(anyString(), eq(AlarmScope.DEPARTMENT)))
+    when(alarmRepository.findByDatasetIdAndBillingPeriodAndAlarmScope(
+            anyString(), eq(AlarmScope.DEPARTMENT)))
         .thenReturn(List.of(new AlarmEntity()));
 
     when(alarmMapper.mapToDomain(any())).thenReturn(alarm(new UUID(0L, 1L)));
@@ -220,7 +221,8 @@ public class AlarmServiceTest {
 
   @Test
   void shouldReturnIndividualAlarms() {
-    when(alarmRepository.findByBillingPeriodAndAlarmScope(anyString(), eq(AlarmScope.INDIVIDUAL)))
+    when(alarmRepository.findByDatasetIdAndBillingPeriodAndAlarmScope(
+            anyString(), eq(AlarmScope.INDIVIDUAL)))
         .thenReturn(List.of(new AlarmEntity()));
 
     when(alarmMapper.mapToDomain(any())).thenReturn(alarm(new UUID(0L, 1L)));
@@ -230,7 +232,8 @@ public class AlarmServiceTest {
 
   @Test
   void shouldReturnAccountAlarms() {
-    when(alarmRepository.findByBillingPeriodAndAlarmScope(anyString(), eq(AlarmScope.ACCOUNT)))
+    when(alarmRepository.findByDatasetIdAndBillingPeriodAndAlarmScope(
+            anyString(), eq(AlarmScope.ACCOUNT)))
         .thenReturn(List.of(new AlarmEntity()));
 
     when(alarmMapper.mapToDomain(any())).thenReturn(alarm(new UUID(0L, 1L)));

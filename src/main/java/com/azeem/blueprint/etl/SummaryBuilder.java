@@ -72,7 +72,7 @@ public class SummaryBuilder {
       return null;
     }
 
-    BillingRecord currHighestChargeRecord = records.get(0);
+    BillingRecord currHighestChargeRecord = records.getFirst();
     for (BillingRecord record : records) {
       if (currHighestChargeRecord.totalCharge() < record.totalCharge()) {
         currHighestChargeRecord = record;
@@ -93,9 +93,9 @@ public class SummaryBuilder {
     Map<String, Double> totals = new HashMap<>();
 
     for (BillingRecord record : records) {
-      String state = record.department();
+      String department = record.department();
       double charge = record.totalCharge();
-      totals.put(state, totals.getOrDefault(state, 0.0) + charge);
+      totals.put(department, totals.getOrDefault(department, 0.0) + charge);
     }
 
     return totals;

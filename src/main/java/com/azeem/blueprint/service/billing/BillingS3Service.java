@@ -6,6 +6,7 @@
 package com.azeem.blueprint.service.billing;
 
 import com.azeem.blueprint.exception.BillingDataNotFoundException;
+import com.azeem.blueprint.model.dataset.Dataset;
 import io.awspring.cloud.s3.S3Operations;
 import io.awspring.cloud.s3.S3Resource;
 import io.awspring.cloud.s3.S3Template;
@@ -46,9 +47,9 @@ public class BillingS3Service {
     }
   }
 
-  public void uploadUserFile(String bucketName, MultipartFile file) {
+  public void uploadUserFile(String bucketName, Dataset dataset, MultipartFile file) {
     try {
-      String key = file.getOriginalFilename();
+      String key = buildS3KeyForFile(dataset, file);
 
       if (s3Operations.objectExists(bucketName, key)) {
         log.warn(
@@ -68,6 +69,10 @@ public class BillingS3Service {
       log.error("Failed to stream upload to S3", e);
       throw new RuntimeException("S3 Upload Failed");
     }
+  }
+
+  private String buildS3KeyForFile(Dataset dataset, MultipartFile file) {
+    return "%s/%s/%s".formatted(dataset.ownerUserId(), dataset.id(), file.getOriginalFilename());
   }
 
   public void uploadErrorLog(String bucketName, String billingPeriod, String errorLogContent) {

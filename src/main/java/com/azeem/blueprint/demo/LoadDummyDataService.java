@@ -9,6 +9,7 @@ import com.azeem.blueprint.repository.BillingRecordRepository;
 import com.azeem.blueprint.service.billing.BillingIngestionService;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
@@ -23,6 +24,7 @@ public class LoadDummyDataService {
   Logger log = LoggerFactory.getLogger(LoadDummyDataService.class);
   private final BillingIngestionService billingIngestionService;
   private final BillingRecordRepository billingRecordRepository;
+  private final UUID DUMMY_DATA_DATASET_ID = new UUID(0L, 0L);
 
   public LoadDummyDataService(
       BillingIngestionService billingIngestionService,
@@ -40,13 +42,14 @@ public class LoadDummyDataService {
     ClassPathResource resource = new ClassPathResource("dummy-data.csv");
     try (InputStream is = resource.getInputStream()) {
       log.info("Loading dummy data from: {}", resource.getFilename());
-      billingIngestionService.ingestData(is);
+      billingIngestionService.ingestData(DUMMY_DATA_DATASET_ID, is);
     } catch (IOException e) {
       log.error("Dummy data ingestion failed: {}", e.getMessage());
     }
   }
 
   private boolean isLoaded() {
-    return billingRecordRepository.existsByBillingPeriod("dummy-data");
+    return billingRecordRepository.existsByDatasetIdAndBillingPeriod(
+        DUMMY_DATA_DATASET_ID, "dummy-data");
   }
 }

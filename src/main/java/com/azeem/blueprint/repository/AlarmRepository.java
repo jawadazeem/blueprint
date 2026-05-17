@@ -16,12 +16,19 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface AlarmRepository extends JpaRepository<AlarmEntity, UUID> {
-  List<AlarmEntity> findByBillingPeriod(String billingPeriod);
+  List<AlarmEntity> findByDatasetIdAndBillingPeriod(UUID datasetId, String billingPeriod);
 
-  List<AlarmEntity> findByBillingPeriodAndAlarmScope(String billingPeriod, AlarmScope scope);
+  List<AlarmEntity> findByDatasetIdAndBillingPeriodAndAlarmScope(
+      UUID datasetId, String billingPeriod, AlarmScope scope);
 
-  boolean existsById(UUID id);
+  boolean existsByDatasetIdAndId(UUID datasetId, UUID id);
 
-  @Query("select a.businessKey from AlarmEntity a where a.billingPeriod = :billingPeriod")
-  List<UUID> findBusinessKeysByBillingPeriod(@Param("billingPeriod") String billingPeriod);
+  @Query(
+      """
+          SELECT a.businessKey
+          FROM AlarmEntity a
+          WHERE a.datasetId = :datasetId AND a.billingPeriod = :billingPeriod
+          """)
+  List<UUID> findBusinessKeysByDatasetIdAndBillingPeriod(
+      @Param("datasetId") UUID datasetId, @Param("billingPeriod") String billingPeriod);
 }

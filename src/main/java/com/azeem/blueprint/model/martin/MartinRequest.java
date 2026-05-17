@@ -5,6 +5,7 @@
 
 package com.azeem.blueprint.model.martin;
 
+/** Martin Request DTO */
 public class MartinRequest {
   private String prompt;
   private String period;

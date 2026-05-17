@@ -29,21 +29,21 @@ public class AlarmController {
   @GetMapping("/alarms/{billingPeriod}")
   public List<Alarm> getAllAlarmsByPeriod(@BillingPeriod @PathVariable String billingPeriod) {
     log.info("GET /alarms/{} called to retrieve all alarms for {}.", billingPeriod, billingPeriod);
-    return service.getAllAlarms(billingPeriod);
+    return service.getAllAlarmsInDataset(billingPeriod);
   }
 
   @GetMapping("/alarms/department/{billingPeriod}")
   public List<Alarm> getAllDepartmentAlarmsByPeriod(
       @BillingPeriod @PathVariable String billingPeriod) {
     log.info("GET /alarms/department/{} called to retrieve all department alarms.", billingPeriod);
-    return service.getDepartmentAlarms(billingPeriod);
+    return service.getDepartmentAlarmsInDataset(billingPeriod);
   }
 
   @GetMapping("/alarms/individual/{billingPeriod}")
   public List<Alarm> getAllIndividualAlarmsByPeriod(
       @BillingPeriod @PathVariable String billingPeriod) {
     log.info("GET /alarms/individual/{} called to retrieve all individual alarms.", billingPeriod);
-    return service.getIndividualAlarms(billingPeriod);
+    return service.getIndividualAlarmsInDataset(billingPeriod);
   }
 
   @GetMapping("/alarms/account/{billingPeriod}")

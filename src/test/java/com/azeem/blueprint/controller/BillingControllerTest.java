@@ -15,8 +15,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.azeem.blueprint.demo.LoadDummyDataService;
 import com.azeem.blueprint.model.billing.BillingRecord;
 import com.azeem.blueprint.model.billing.BillingSummary;
+import com.azeem.blueprint.service.billing.BillingQueryService;
 import com.azeem.blueprint.service.billing.BillingS3Service;
-import com.azeem.blueprint.service.billing.BillingService;
 import java.util.List;
 import java.util.Random;
 import org.junit.jupiter.api.Test;
@@ -33,7 +33,7 @@ import org.springframework.test.web.servlet.MockMvc;
 class BillingControllerTest {
   @Autowired private MockMvc mockMvc;
 
-  @MockitoBean private BillingService billingService;
+  @MockitoBean private BillingQueryService billingQueryService;
   @MockitoBean private BillingS3Service s3Service;
   @MockitoBean private LoadDummyDataService dummyDataService;
 
@@ -65,7 +65,7 @@ class BillingControllerTest {
     // arrange, act & assert
     mockMvc.perform(get("/records")).andExpect(status().isOk());
 
-    verify(billingService).getAllRecords(eq(0), eq(20));
+    verify(billingQueryService).getAllRecords(eq(0), eq(20));
   }
 
   @Test
@@ -75,7 +75,7 @@ class BillingControllerTest {
         .perform(get("/records").param("page", "1").param("size", "1"))
         .andExpect(status().isOk());
 
-    verify(billingService).getAllRecords(1, 1);
+    verify(billingQueryService).getAllRecords(1, 1);
   }
 
   @Test
@@ -83,7 +83,7 @@ class BillingControllerTest {
     // arrange, act & assert
     mockMvc.perform(get("/summary")).andExpect(status().isOk());
 
-    verify(billingService).generateSummary();
+    verify(billingQueryService).generateSummary();
   }
 
   @Test
@@ -93,7 +93,7 @@ class BillingControllerTest {
         .perform(get("/records/department/IT").param("page", "1").param("size", "20"))
         .andExpect(status().isOk());
 
-    verify(billingService).getRecordsByDepartment(anyString(), eq(1), eq(20));
+    verify(billingQueryService).getRecordsByDepartment(anyString(), eq(1), eq(20));
   }
 
   @Test
@@ -101,7 +101,7 @@ class BillingControllerTest {
     // arrange, act & assert
     mockMvc.perform(get("/records/department/IT")).andExpect(status().isOk());
 
-    verify(billingService).getRecordsByDepartment(eq("IT"), eq(0), eq(20));
+    verify(billingQueryService).getRecordsByDepartment(eq("IT"), eq(0), eq(20));
   }
 
   @Test
@@ -109,7 +109,7 @@ class BillingControllerTest {
     // arrange, act & assert
     mockMvc.perform(get("/top/5")).andExpect(status().isOk());
 
-    verify(billingService).getTopNRecords(eq(5));
+    verify(billingQueryService).getTopNRecords(eq(5));
   }
 
   // N cannot be greater than 100 (@Max(100) validation)
@@ -118,7 +118,7 @@ class BillingControllerTest {
     // arrange, act & assert
     mockMvc.perform(get("/top/101")).andExpect(status().isBadRequest());
 
-    verify(billingService, never()).getTopNRecords(anyInt());
+    verify(billingQueryService, never()).getTopNRecords(anyInt());
   }
 
   @Test
@@ -126,7 +126,7 @@ class BillingControllerTest {
     // arrange, act & assert
     mockMvc.perform(get("/departments")).andExpect(status().isOk());
 
-    verify(billingService).getDistinctDepartments();
+    verify(billingQueryService).getDistinctDepartments();
   }
 
   @Test
@@ -134,42 +134,42 @@ class BillingControllerTest {
     // arrange, act & assert
     mockMvc.perform(get("/periods")).andExpect(status().isOk());
 
-    verify(billingService).getDistinctBillingPeriods();
+    verify(billingQueryService).getDistinctBillingPeriods();
   }
 
   @Test
   void defaultPageAndSize_shouldReturnBillingRecordsByPeriod() throws Exception {
     // arrange
     Page<BillingRecord> page = new PageImpl<>(List.of(), PageRequest.of(0, 20), 1);
-    when(billingService.getRecordsByPeriod(anyString(), anyInt(), anyInt())).thenReturn(page);
+    when(billingQueryService.getRecordsByPeriod(anyString(), anyInt(), anyInt())).thenReturn(page);
 
     // act & assert
     mockMvc.perform(get("/records/period/2026-01")).andExpect(status().isOk());
-    verify(billingService).getRecordsByPeriod("2026-01", 0, 20);
+    verify(billingQueryService).getRecordsByPeriod("2026-01", 0, 20);
   }
 
   @Test
   void customPageAndSize_shouldReturnBillingRecordsByPeriod() throws Exception {
 
-    when(billingService.getRecordsByPeriod(anyString(), anyInt(), anyInt()))
+    when(billingQueryService.getRecordsByPeriod(anyString(), anyInt(), anyInt()))
         .thenReturn(Page.empty());
 
     mockMvc
         .perform(get("/records/period/2026-01").param("page", "1").param("size", "1"))
         .andExpect(status().isOk());
 
-    verify(billingService).getRecordsByPeriod("2026-01", 1, 1);
+    verify(billingQueryService).getRecordsByPeriod("2026-01", 1, 1);
   }
 
   @Test
   void shouldReturnGeneratedBillingSummaryByPeriod() throws Exception {
     // arrange
     BillingSummary summary = new BillingSummary();
-    when(billingService.generateSummaryForPeriod("2026-01")).thenReturn(summary);
+    when(billingQueryService.generateSummaryForPeriod("2026-01")).thenReturn(summary);
 
     // act & assert
     mockMvc.perform(get("/summary/period/2026-01")).andExpect(status().isOk());
-    verify(billingService).generateSummaryForPeriod("2026-01");
+    verify(billingQueryService).generateSummaryForPeriod("2026-01");
   }
 
   @Test
@@ -179,17 +179,17 @@ class BillingControllerTest {
 
     mockMvc.perform(get("/summary/period/70-2070")).andExpect(status().isBadRequest());
 
-    verify(billingService, never()).generateSummaryForPeriod(anyString());
+    verify(billingQueryService, never()).generateSummaryForPeriod(anyString());
   }
 
   @Test
   void shouldDeleteRecordsByPeriod() throws Exception {
     // arrange
-    when(billingService.deleteRecordsByPeriod("2026-01")).thenReturn(5);
+    when(billingQueryService.deleteRecordsByPeriod("2026-01")).thenReturn(5);
 
     // act & assert
     mockMvc.perform(delete("/records/period/2026-01")).andExpect(status().isNoContent());
 
-    verify(billingService).deleteRecordsByPeriod("2026-01");
+    verify(billingQueryService).deleteRecordsByPeriod("2026-01");
   }
 }

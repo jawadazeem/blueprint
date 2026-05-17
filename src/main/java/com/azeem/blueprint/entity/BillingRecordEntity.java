@@ -24,12 +24,17 @@ public class BillingRecordEntity {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private long id; // Auto-generated primary key by DB
 
-  private String department;
+  @ManyToOne(fetch = FetchType.LAZY, optional = false)
+  @JoinColumn(name = "dataset_id")
+  private DatasetEntity dataset;
+
+  @Column(nullable = false)
+  private String billingPeriod;
 
   private String accountName;
+  private String department;
   private String employeeId;
   private String phoneNumber;
-  private String billingPeriod;
   private int minutesUsed;
   private double dataGbUsed;
   private int smsCount;
@@ -43,14 +48,6 @@ public class BillingRecordEntity {
 
   public void setId(long id) {
     this.id = id;
-  }
-
-  public String getAccountName() {
-    return accountName;
-  }
-
-  public void setAccountName(String accountName) {
-    this.accountName = accountName;
   }
 
   public String getEmployeeId() {
@@ -115,5 +112,21 @@ public class BillingRecordEntity {
 
   public void setTotalCharge(double totalCharge) {
     this.totalCharge = totalCharge;
+  }
+
+  public DatasetEntity getDataset() {
+    return dataset;
+  }
+
+  public void setDataset(DatasetEntity dataset) {
+    this.dataset = dataset;
+  }
+
+  public String getAccountName() {
+    return accountName;
+  }
+
+  public void setAccountName(String accountName) {
+    this.accountName = accountName;
   }
 }

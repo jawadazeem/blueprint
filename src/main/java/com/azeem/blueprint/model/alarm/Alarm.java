@@ -5,18 +5,23 @@
 
 package com.azeem.blueprint.model.alarm;
 
+import static com.azeem.blueprint.model.alarm.AlarmSeverity.LOW;
+
 import com.azeem.blueprint.model.billing.Department;
+import jakarta.annotation.Nullable;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
-import java.util.Objects;
 import java.util.UUID;
 
 /**
- * Represents an Alarm.
+ * Alarm DTO
  *
- * <p>An Alarm object either be for the entire account, a department or an individual
+ * <p>An Alarm object that represents an alarm for either the entire account, a department or an
+ * individual
  */
 public record Alarm(
     UUID id,
+    UUID datasetId,
     UUID businessKey,
     AlarmScope alarmScope,
     String billingPeriod,
@@ -24,22 +29,116 @@ public record Alarm(
     AlarmSeverity alarmSeverity,
     String explanation,
     Instant timestamp,
-    String employeeId, // nullable
-    String phoneNumber, // nullable
-    Department department // nullable
-    ) {
+    @Nullable String employeeId,
+    @Nullable String phoneNumber,
+    @Nullable Department department) {
 
-  @Override
-  public int hashCode() {
-    return Objects.hash(
-        businessKey,
-        alarmScope,
+  public static Alarm individual(
+      UUID datasetId,
+      String billingPeriod,
+      AlarmSeverity severity,
+      String message,
+      String employeeId,
+      String phoneNumber) {
+    return new Alarm(
+        null, // DB generates ID
+        datasetId,
+        generateBusinessKey(
+            datasetId,
+            billingPeriod,
+            AlarmScope.DEPARTMENT.toString(),
+            severity.toString(),
+            employeeId,
+            ""),
+        AlarmScope.INDIVIDUAL,
         billingPeriod,
-        alarmType,
-        alarmSeverity,
-        explanation,
+        "Individual Charge Limit Exceeded",
+        severity,
+        message,
+        Instant.now(),
         employeeId,
         phoneNumber,
+        null);
+  }
+
+  public static Alarm department(UUID datasetId, String billingPeriod, Department department) {
+    return new Alarm(
+        null, // DB generates ID
+        datasetId,
+        generateBusinessKey(
+            datasetId,
+            billingPeriod,
+            AlarmScope.DEPARTMENT.toString(),
+            AlarmSeverity.LOW.toString(),
+            "",
+            department.toString()),
+        AlarmScope.DEPARTMENT,
+        billingPeriod,
+        "Department Charge Exceeded",
+        LOW,
+        department + " department Exceeds Charge Limit",
+        Instant.now(),
+        null,
+        null,
         department);
+  }
+
+  public static Alarm accountLow(UUID datasetId, String billingPeriod) {
+    return new Alarm(
+        null, // DB generates PK ID
+        datasetId,
+        generateBusinessKey(
+            datasetId,
+            billingPeriod,
+            AlarmScope.ACCOUNT.toString(),
+            AlarmSeverity.LOW.toString(),
+            "",
+            ""),
+        AlarmScope.ACCOUNT,
+        billingPeriod,
+        "Total Account Budget Exceeded: LOW",
+        AlarmSeverity.LOW,
+        "Your account's telecom bill has slightly exceeded its monthly budget.",
+        Instant.now(),
+        null,
+        null,
+        null);
+  }
+
+  public static Alarm accountHigh(UUID datasetId, String billingPeriod) {
+    return new Alarm(
+        null, // DB generates ID
+        datasetId,
+        generateBusinessKey(
+            datasetId,
+            billingPeriod,
+            AlarmScope.ACCOUNT.toString(),
+            AlarmSeverity.HIGH.toString(),
+            "",
+            ""),
+        AlarmScope.ACCOUNT,
+        billingPeriod,
+        "Total Account Budget Exceeded: HIGH",
+        AlarmSeverity.HIGH,
+        "Your account's telecom bill has significantly exceeded its monthly budget.",
+        Instant.now(),
+        null,
+        null,
+        null);
+  }
+
+  /** Generates a deterministic business key for deduplication */
+  private static UUID generateBusinessKey(
+      UUID datasetId,
+      String billingPeriod,
+      String alarmScope,
+      String alarmSeverity,
+      String employeeId,
+      String department) {
+
+    String fingerprint =
+        datasetId + billingPeriod + alarmScope + alarmSeverity + employeeId + department;
+
+    return UUID.nameUUIDFromBytes(fingerprint.getBytes(StandardCharsets.UTF_8));
   }
 }

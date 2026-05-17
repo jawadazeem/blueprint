@@ -25,6 +25,8 @@ spring:
           options:
             model: "gemini-2.5-flash"
             temperature: 0.1
+  liquibase:
+    change-log: classpath:/db/changelog/db.changelog-master.xml
 server:
   port: 8080
   error:

@@ -18,6 +18,7 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -29,12 +30,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
-/** Stateless service providing read-only billing operations. */
+/** Stateless service providing billing operations. */
 @Service
 @Transactional(readOnly = true)
 @Validated
-public class BillingService {
-  private static final Logger log = LoggerFactory.getLogger(BillingService.class);
+public class BillingQueryService {
+  private static final Logger log = LoggerFactory.getLogger(BillingQueryService.class);
 
   @Value("${billing.charges.max-top-n:100}")
   private int maxTopNLimit;
@@ -42,27 +43,29 @@ public class BillingService {
   private final BillingRecordRepository repository;
   private final BillingRecordMapper mapper;
 
-  public BillingService(BillingRecordRepository repository, BillingRecordMapper mapper) {
+  public BillingQueryService(BillingRecordRepository repository, BillingRecordMapper mapper) {
     this.repository = repository;
     this.mapper = mapper;
   }
 
-  public Page<String> getAvailableBillingPeriods(int page, int size) {
+  public Page<String> getAvailableBillingPeriods(UUID datasetId, int page, int size) {
     Pageable periodsRequest = PageRequest.of(page, size, Sort.by("billingPeriod").descending());
-    return repository.findAllBillingPeriods(periodsRequest);
+    return repository.findBillingPeriodByDatasetId(datasetId, periodsRequest);
   }
 
-  // DB-backed distinct billing periods (small result set expected)
-  public List<String> getDistinctBillingPeriods() {
-    return repository.findAllDistinctBillingPeriods();
+  // DB-backed distinct billing periods for a given dataset (small result set expected)
+  public List<String> getDistinctBillingPeriodsById(UUID datasetId) {
+    return repository.findDistinctBillingPeriodByDatasetId(datasetId);
   }
 
-  public Page<BillingRecord> getRecordsByPeriod(
-      @BillingPeriod String billingPeriod, int page, int size) {
+  public Page<BillingRecord> getDatasetRecordsByPeriod(
+      UUID datasetId, @BillingPeriod String billingPeriod, int page, int size) {
     Pageable periodRequest = PageRequest.of(page, size);
 
     Page<BillingRecord> records =
-        repository.findByBillingPeriod(billingPeriod, periodRequest).map(mapper::mapToDomain);
+        repository
+            .findByDatasetIdAndBillingPeriod(datasetId, billingPeriod, periodRequest)
+            .map(mapper::mapToDomain);
 
     if (records.isEmpty()) {
       throw new BillingDataNotFoundException(
@@ -72,8 +75,12 @@ public class BillingService {
     return records;
   }
 
-  public int deleteRecordsByPeriod(@BillingPeriod String billingPeriod) {
-    int rowsDeleted = repository.deleteByBillingPeriod(billingPeriod);
+  /**
+   * Purges all billing records associated with a specific billing period strictly within the
+   * boundaries of the given dataset.
+   */
+  public int deleteRecordsByPeriodInDataset(UUID datasetId, @BillingPeriod String billingPeriod) {
+    int rowsDeleted = repository.deleteByDatasetIdAndBillingPeriod(datasetId, billingPeriod);
 
     if (rowsDeleted == 0) {
       throw new BillingDataNotFoundException(
@@ -83,31 +90,32 @@ public class BillingService {
     return rowsDeleted;
   }
 
-  public Page<BillingRecord> getAllRecords(int page, int size) {
+  public Page<BillingRecord> getAllRecordsInDataset(UUID dataset, int page, int size) {
     Pageable pageable = PageRequest.of(page, size, Sort.by("department").descending());
 
-    Page<BillingRecord> records = repository.findAll(pageable).map(mapper::mapToDomain);
+    Page<BillingRecord> records =
+        repository.findByDatasetId(dataset, pageable).map(mapper::mapToDomain);
 
     log.info("Retrieved billing records page {} with size {}.", page, size);
     return records;
   }
 
-  public Page<BillingRecord> getRecordsByDepartment(
-      @NotBlank String department, int page, int size) {
+  public Page<BillingRecord> getRecordsByDepartmentInDataset(
+      UUID datasetId, @NotBlank String department, int page, int size) {
     Pageable pageRequest = PageRequest.of(page, size, Sort.by("totalCharge").descending());
     Page<BillingRecordEntity> entityPage =
-        repository.findByDepartmentIgnoreCase(department, pageRequest);
+        repository.findByDatasetIdAndDepartmentIgnoreCase(datasetId, department, pageRequest);
     log.info("Found {} records in DB for dept: {}", entityPage.getTotalElements(), department);
 
     return entityPage.map(mapper::mapToDomain);
   }
 
   // DB-backed distinct departments
-  public List<String> getDistinctDepartments() {
-    return repository.findDistinctDepartments();
+  public List<String> getDistinctDepartmentsInDataset(UUID datasetId) {
+    return repository.findDistinctDepartmentsByDatasetId(datasetId);
   }
 
-  public Page<BillingRecord> getTopNRecords(@Min(1) int n) {
+  public Page<BillingRecord> getTopNRecordsInDataset(UUID datasetId, @Min(1) int n) {
     if (n > maxTopNLimit) {
       throw new QueryLimitExceededException(
           "Requested record count exceeds the maximum allowed limit of " + maxTopNLimit);
@@ -118,15 +126,19 @@ public class BillingService {
     }
 
     Pageable topNRequest = PageRequest.of(0, n, Sort.by("totalCharge").descending());
-    Page<BillingRecord> records = repository.findAll(topNRequest).map(mapper::mapToDomain);
+    Page<BillingRecord> records =
+        repository.findByDatasetId(datasetId, topNRequest).map(mapper::mapToDomain);
     log.info("Retrieved top {} records, count: {}.", n, records.getTotalElements());
 
     return records;
   }
 
-  public BillingSummary generateSummaryForPeriod(@BillingPeriod String billingPeriod) {
+  public BillingSummary generateSummaryForPeriodInDataset(
+      UUID datasetId, @BillingPeriod String billingPeriod) {
     List<BillingRecord> records =
-        repository.findByBillingPeriod(billingPeriod).stream().map(mapper::mapToDomain).toList();
+        repository.findByDatasetIdAndBillingPeriod(datasetId, billingPeriod).stream()
+            .map(mapper::mapToDomain)
+            .toList();
 
     if (records.isEmpty()) {
       throw new BillingDataNotFoundException(
@@ -136,7 +148,7 @@ public class BillingService {
     return new SummaryBuilder(records).build();
   }
 
-  public BillingSummary generateSummary() {
+  public BillingSummary generateSummary(UUID datasetId) {
 
     int page = 0;
     int size = 1000;
@@ -145,7 +157,7 @@ public class BillingService {
 
     while (true) {
 
-      Page<BillingRecord> recordsPage = getAllRecords(page, size);
+      Page<BillingRecord> recordsPage = getAllRecordsInDataset(datasetId, page, size);
 
       if (recordsPage.isEmpty()) {
         break;

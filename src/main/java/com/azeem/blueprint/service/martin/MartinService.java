@@ -12,6 +12,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.messages.SystemMessage;
@@ -43,9 +44,9 @@ public class MartinService {
     this.objectMapper = objectMapper;
   }
 
-  public MartinResponse ask(String promptText, String currentPeriod) {
+  public MartinResponse ask(String promptText, UUID datasetId, String currentPeriod) {
 
-    SqlResponse sqlResponse = generateResponse(promptText, currentPeriod);
+    SqlResponse sqlResponse = generateResponse(promptText, datasetId, currentPeriod);
 
     if (!sqlValidationService.isValidSql(sqlResponse)) {
       throw new MartinResponseInvalidException("Unsafe SQL detected");
@@ -71,8 +72,8 @@ public class MartinService {
    * @param promptText The prompt the user submits to Martin
    * @return SqlResponse object
    */
-  private SqlResponse generateResponse(String promptText, String currentPeriod) {
-    Prompt prompt = createPrompt(promptText, currentPeriod);
+  private SqlResponse generateResponse(String promptText, UUID datasetId, String currentPeriod) {
+    Prompt prompt = createPrompt(promptText, datasetId, currentPeriod);
 
     ChatResponse response = chatModel.call(prompt);
     String json = response.getResult().getOutput().getText();
@@ -94,31 +95,24 @@ public class MartinService {
     return sqlResponse;
   }
 
-  private Prompt createPrompt(String promptText, String currentPeriod) {
+  private Prompt createPrompt(String promptText, UUID datasetId, String currentPeriod) {
     String schema = schemaService.getSchema();
 
     return new Prompt(
         List.of(
             new SystemMessage(
                 """
-                    You are a PostgreSQL query generator.
-                    Return valid PostgreSQL 16 syntax.
-                    Read-only access only.
-
-                    Return ONLY valid JSON.
-                    Format:
-                    {
-                      "sql": "<PostgreSQL query>",
-                      "reasoning": "<short explanation>"
-                    }
-                    Do not include markdown, comments, or extra text.
-
-                    All queries MUST include WHERE billing_period =
-                    """
-                    + currentPeriod
-                    + "Schema:\n"
-                    + schema
-                    + " dummy-data is a valid billing_period, it is for demo purposes."),
+                You are a PostgreSQL 16 query generator. Read-only access only.
+                Return ONLY valid JSON format: {"sql": "<query>", "reasoning": "<short explanation>"}
+                Do not include markdown markdown formatting, comments, or extra text.
+    
+                All queries MUST include: WHERE dataset_id = '%s' AND billing_period = '%s'
+    
+                Schema:
+                %s
+                (Note: 'dummy-data' is a valid billing_period for demo purposes.)
+                """
+                    .formatted(datasetId.toString(), currentPeriod, schema)),
             new UserMessage(promptText)));
   }
 }
