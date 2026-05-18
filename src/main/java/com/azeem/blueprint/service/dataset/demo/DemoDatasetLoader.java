@@ -13,43 +13,44 @@ import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 /**
- * Class used for loading dummy data for demonstration purposes. Used by those who may not have a
+ * Class used for loading demo data for demonstration purposes. Used by those who may not have a
  * properly formatted CSV file to run analytics on
  */
-@Service
-public class LoadDummyDataService {
-  Logger log = LoggerFactory.getLogger(LoadDummyDataService.class);
+@Component
+public class DemoDatasetLoader {
+  Logger log = LoggerFactory.getLogger(DemoDatasetLoader.class);
   private final BillingIngestionService billingIngestionService;
   private final BillingRecordRepository billingRecordRepository;
   private final UUID DUMMY_DATA_DATASET_ID = new UUID(0L, 0L);
 
-  public LoadDummyDataService(
+  public DemoDatasetLoader(
       BillingIngestionService billingIngestionService,
       BillingRecordRepository billingRecordRepository) {
     this.billingIngestionService = billingIngestionService;
     this.billingRecordRepository = billingRecordRepository;
   }
 
-  public void loadDummyData() {
+  public void loadDemoData() {
     if (isLoaded()) {
-      log.info("Dummy data already loaded, cannot load again.");
+      log.info("Demo data already loaded, cannot load again.");
       return;
     }
 
-    ClassPathResource resource = new ClassPathResource("dummy-data.csv");
+    ClassPathResource resource = new ClassPathResource("demo-data.csv");
     try (InputStream is = resource.getInputStream()) {
-      log.info("Loading dummy data from: {}", resource.getFilename());
+      log.info("Loading demo data from: {}", resource.getFilename());
       billingIngestionService.ingestData(DUMMY_DATA_DATASET_ID, is);
     } catch (IOException e) {
-      log.error("Dummy data ingestion failed: {}", e.getMessage());
+      log.error("Demo data ingestion failed: {}", e.getMessage());
     }
   }
 
   private boolean isLoaded() {
     return billingRecordRepository.existsByDatasetIdAndBillingPeriod(
-        DUMMY_DATA_DATASET_ID, "dummy-data");
+        DUMMY_DATA_DATASET_ID, "demo-data");
   }
 }
