@@ -5,7 +5,7 @@
 
 package com.azeem.blueprint.listener;
 
-import com.azeem.blueprint.exception.S3SqsPipelineIngestionException;
+import com.azeem.blueprint.exception.infra.S3SqsPipelineIngestionException;
 import com.azeem.blueprint.model.billing.IngestionResult;
 import com.azeem.blueprint.service.alarm.AlarmService;
 import com.azeem.blueprint.service.billing.BillingIngestionService;

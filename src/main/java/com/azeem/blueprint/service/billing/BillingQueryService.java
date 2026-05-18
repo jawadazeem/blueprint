@@ -7,8 +7,8 @@ package com.azeem.blueprint.service.billing;
 
 import com.azeem.blueprint.entity.BillingRecordEntity;
 import com.azeem.blueprint.etl.SummaryBuilder;
-import com.azeem.blueprint.exception.BillingDataNotFoundException;
-import com.azeem.blueprint.exception.QueryLimitExceededException;
+import com.azeem.blueprint.exception.core.BillingDataNotFoundException;
+import com.azeem.blueprint.exception.web.QueryLimitExceededException;
 import com.azeem.blueprint.mapper.BillingRecordMapper;
 import com.azeem.blueprint.model.billing.BillingRecord;
 import com.azeem.blueprint.model.billing.BillingSummary;

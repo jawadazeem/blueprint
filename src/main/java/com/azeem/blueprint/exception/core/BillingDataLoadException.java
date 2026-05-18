@@ -3,7 +3,7 @@
  * Apache 2.0 License
  */
 
-package com.azeem.blueprint.exception;
+package com.azeem.blueprint.exception.core;
 
 /** Exception thrown when there is a general error loading billing data. */
 public class BillingDataLoadException extends RuntimeException {

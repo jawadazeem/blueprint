@@ -11,11 +11,12 @@ import com.azeem.blueprint.service.martin.MartinService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.UUID;
 
 @RestController
+@RequestMapping("/datasets/{datasetId}")
 public class MartinController {
   private static final Logger log = LoggerFactory.getLogger(MartinController.class);
   private final MartinService martinService;
@@ -25,8 +26,9 @@ public class MartinController {
   }
 
   @PostMapping("/martin")
-  public ResponseEntity<MartinResponse> chat(@RequestBody MartinRequest request) {
-    MartinResponse response = martinService.ask(request.getPrompt(), request.getPeriod());
+  public ResponseEntity<MartinResponse> chat(@PathVariable String datasetId,
+          @RequestBody MartinRequest request) {
+    MartinResponse response = martinService.ask(request.getPrompt(), UUID.fromString(datasetId), request.getPeriod());
     return ResponseEntity.ok(response);
   }
 }

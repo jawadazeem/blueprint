@@ -67,17 +67,6 @@ public class BillingController {
     return ResponseEntity.ok("File received. Processing has started in the background.");
   }
 
-  /**
-   * Trigger ingestion of the built-in demonstration dataset. This allows users to test the ETL
-   * pipeline and analytics without providing their own CSV.
-   */
-  @PostMapping("/demo-load")
-  public ResponseEntity<String> loadDemoData() {
-    log.info("POST /demo-load called. Triggering dummy data ingestion.");
-    dummyDataService.loadDummyData();
-    return ResponseEntity.ok("Demo data loaded. You can now use the analytics endpoints.");
-  }
-
   @GetMapping("/records")
   public Page<BillingRecord> getAllRecords(
       @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size) {

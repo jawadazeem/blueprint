@@ -5,7 +5,7 @@
 
 package com.azeem.blueprint.service.billing;
 
-import com.azeem.blueprint.exception.BillingDataNotFoundException;
+import com.azeem.blueprint.exception.core.BillingDataNotFoundException;
 import com.azeem.blueprint.model.dataset.Dataset;
 import io.awspring.cloud.s3.S3Operations;
 import io.awspring.cloud.s3.S3Resource;

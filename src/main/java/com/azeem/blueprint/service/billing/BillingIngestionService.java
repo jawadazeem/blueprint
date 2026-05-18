@@ -9,7 +9,7 @@ import com.azeem.blueprint.config.BillingReaderConfig;
 import com.azeem.blueprint.entity.BillingRecordEntity;
 import com.azeem.blueprint.etl.BillingRecordAssembler;
 import com.azeem.blueprint.etl.CsvBillingReader;
-import com.azeem.blueprint.exception.S3SqsPipelineIngestionException;
+import com.azeem.blueprint.exception.infra.S3SqsPipelineIngestionException;
 import com.azeem.blueprint.mapper.BillingRecordMapper;
 import com.azeem.blueprint.model.billing.BillingRecord;
 import com.azeem.blueprint.model.billing.IngestionResult;

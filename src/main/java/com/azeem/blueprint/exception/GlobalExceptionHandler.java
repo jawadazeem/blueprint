@@ -5,6 +5,8 @@
 
 package com.azeem.blueprint.exception;
 
+import com.azeem.blueprint.exception.core.*;
+import com.azeem.blueprint.exception.web.ApiException;
 import jakarta.validation.ConstraintViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

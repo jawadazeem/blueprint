@@ -3,7 +3,7 @@
  * Apache 2.0 License
  */
 
-package com.azeem.blueprint.exception;
+package com.azeem.blueprint.exception.core;
 
 /**
  * Exception thrown when there is an error loading billing data such that the data was not found.

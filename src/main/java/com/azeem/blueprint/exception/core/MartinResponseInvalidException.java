@@ -3,7 +3,7 @@
  * Apache 2.0 License
  */
 
-package com.azeem.blueprint.exception;
+package com.azeem.blueprint.exception.core;
 
 public class MartinResponseInvalidException extends RuntimeException {
   public MartinResponseInvalidException(String message) {

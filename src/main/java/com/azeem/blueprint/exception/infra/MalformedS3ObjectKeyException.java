@@ -3,7 +3,7 @@
  * Apache 2.0 License
  */
 
-package com.azeem.blueprint.exception;
+package com.azeem.blueprint.exception.infra;
 
 public class MalformedS3ObjectKeyException extends RuntimeException {
   public MalformedS3ObjectKeyException(String message) {

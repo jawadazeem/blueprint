@@ -6,7 +6,7 @@
 package com.azeem.blueprint.service.dataset;
 
 import com.azeem.blueprint.entity.DatasetEntity;
-import com.azeem.blueprint.exception.DatasetNotFoundException;
+import com.azeem.blueprint.exception.infra.DatasetNotFoundException;
 import com.azeem.blueprint.mapper.DatasetMapper;
 import com.azeem.blueprint.model.dataset.Dataset;
 import com.azeem.blueprint.repository.BillingRecordRepository;

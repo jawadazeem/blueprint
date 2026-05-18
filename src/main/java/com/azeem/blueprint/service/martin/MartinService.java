@@ -5,7 +5,7 @@
 
 package com.azeem.blueprint.service.martin;
 
-import com.azeem.blueprint.exception.MartinResponseInvalidException;
+import com.azeem.blueprint.exception.core.MartinResponseInvalidException;
 import com.azeem.blueprint.model.martin.MartinResponse;
 import com.azeem.blueprint.model.martin.SqlResponse;
 import com.fasterxml.jackson.core.JsonProcessingException;
