@@ -9,15 +9,15 @@ import com.azeem.blueprint.model.alarm.Alarm;
 import com.azeem.blueprint.service.alarm.AlarmService;
 import com.azeem.blueprint.validation.BillingPeriod;
 import java.util.List;
+import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @Validated
 @RestController
+@RequestMapping("/datasets/{datasetId}")
 public class AlarmController {
   private static final Logger log = LoggerFactory.getLogger(AlarmController.class);
   private final AlarmService service;
@@ -27,30 +27,30 @@ public class AlarmController {
   }
 
   @GetMapping("/alarms/{billingPeriod}")
-  public List<Alarm> getAllAlarmsByPeriod(@BillingPeriod @PathVariable String billingPeriod) {
-    log.info("GET /alarms/{} called to retrieve all alarms for {}.", billingPeriod, billingPeriod);
-    return service.getAllAlarmsInDataset(billingPeriod);
+  public List<Alarm> getAllAlarms(
+      @PathVariable UUID datasetId, @BillingPeriod @PathVariable String billingPeriod) {
+    log.info("GET /datasets/{}/alarms/{} called.", datasetId, billingPeriod);
+    return service.getAllAlarmsInDataset(datasetId, billingPeriod);
   }
 
-  @GetMapping("/alarms/department/{billingPeriod}")
-  public List<Alarm> getAllDepartmentAlarmsByPeriod(
-      @BillingPeriod @PathVariable String billingPeriod) {
-    log.info("GET /alarms/department/{} called to retrieve all department alarms.", billingPeriod);
-    return service.getDepartmentAlarmsInDataset(billingPeriod);
+  @GetMapping("/alarms/{billingPeriod}/department")
+  public List<Alarm> getDepartmentAlarms(
+      @PathVariable UUID datasetId, @BillingPeriod @PathVariable String billingPeriod) {
+    log.info("GET /datasets/{}/alarms/{}/department called.", datasetId, billingPeriod);
+    return service.getDepartmentAlarmsInDataset(datasetId, billingPeriod);
   }
 
-  @GetMapping("/alarms/individual/{billingPeriod}")
-  public List<Alarm> getAllIndividualAlarmsByPeriod(
-      @BillingPeriod @PathVariable String billingPeriod) {
-    log.info("GET /alarms/individual/{} called to retrieve all individual alarms.", billingPeriod);
-    return service.getIndividualAlarmsInDataset(billingPeriod);
+  @GetMapping("/alarms/{billingPeriod}/individual")
+  public List<Alarm> getIndividualAlarms(
+      @PathVariable UUID datasetId, @BillingPeriod @PathVariable String billingPeriod) {
+    log.info("GET /datasets/{}/alarms/{}/individual called.", datasetId, billingPeriod);
+    return service.getIndividualAlarmsInDataset(datasetId, billingPeriod);
   }
 
-  @GetMapping("/alarms/account/{billingPeriod}")
-  public List<Alarm> getAccountBudgetAlarm(@BillingPeriod @PathVariable String billingPeriod) {
-    log.info(
-        "GET /alarms/account/{} called to retrieve if the account has exceeded its total budget.",
-        billingPeriod);
-    return service.getAccountAlarm(billingPeriod);
+  @GetMapping("/alarms/{billingPeriod}/account")
+  public List<Alarm> getAccountAlarm(
+      @PathVariable UUID datasetId, @BillingPeriod @PathVariable String billingPeriod) {
+    log.info("GET /datasets/{}/alarms/{}/account called.", datasetId, billingPeriod);
+    return service.getAccountAlarm(datasetId, billingPeriod);
   }
 }

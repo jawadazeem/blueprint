@@ -5,133 +5,90 @@
 
 package com.azeem.blueprint.controller;
 
-import com.azeem.blueprint.demo.LoadDummyDataService;
 import com.azeem.blueprint.model.billing.BillingRecord;
 import com.azeem.blueprint.model.billing.BillingSummary;
 import com.azeem.blueprint.service.billing.BillingQueryService;
-import com.azeem.blueprint.service.billing.BillingS3Service;
 import com.azeem.blueprint.validation.BillingPeriod;
-import com.azeem.blueprint.validation.ValidCsvFile;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import java.util.List;
+import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
-/**
- * REST controller exposing endpoints for billing data retrieval and summary generation.
- *
- * <p>Endpoints:
- *
- * <ul>
- *   <li>POST /upload - Upload a csv file that contains billing records to the application
- *   <li>GET /records - Retrieve all billing records.
- *   <li>GET /summary - Get aggregated billing summary.
- *   <li>GET /records/department/{department} - Get billing records filtered by department.
- *   <li>GET /top/{n} - Get top N billing records by total charge.
- *   <li>GET /departments - List all unique departments.
- *   <li>GET /periods - List all available billing periods.
- *   <li>GET /records/period/{billingPeriod} - Get billing records for specified billing period.
- *   <li>GET /summary/period/{billingPeriod} - Get billing summary for specified billing period.
- * </ul>
- */
 @RestController
 @Validated
+@RequestMapping("/datasets/{datasetId}")
 public class BillingController {
   private static final Logger log = LoggerFactory.getLogger(BillingController.class);
   private final BillingQueryService service;
-  private final BillingS3Service s3Service;
-  private final LoadDummyDataService dummyDataService;
 
-  public BillingController(
-      BillingQueryService service,
-      BillingS3Service s3Service,
-      LoadDummyDataService dummyDataService) {
+  public BillingController(BillingQueryService service) {
     this.service = service;
-    this.s3Service = s3Service;
-    this.dummyDataService = dummyDataService;
-  }
-
-  @PostMapping("/upload")
-  public ResponseEntity<String> handleFileUpload(
-      @ValidCsvFile @RequestParam("file") MultipartFile file) {
-
-    s3Service.uploadUserFile("telecom-billing", file);
-
-    return ResponseEntity.ok("File received. Processing has started in the background.");
   }
 
   @GetMapping("/records")
-  public Page<BillingRecord> getAllRecords(
-      @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size) {
-    log.info(
-        "GET /records called to retrieve all billing records, page: {}, size: {}.", page, size);
-    return service.getAllRecordsInDataset(page, size);
+  public ResponseEntity<Page<BillingRecord>> getRecords(
+      @PathVariable UUID datasetId,
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "20") int size) {
+    log.info("GET /datasets/{}/records called, page: {}, size: {}.", datasetId, page, size);
+    return ResponseEntity.ok(service.getAllRecordsInDataset(datasetId, page, size));
   }
 
-  @GetMapping("/summary")
-  public ResponseEntity<BillingSummary> getSummary() {
-    log.info("GET /summary called to generate billing summary.");
-    return ResponseEntity.ok(service.generateSummary());
+  @GetMapping("/records/periods")
+  public ResponseEntity<List<String>> getBillingPeriods(@PathVariable UUID datasetId) {
+    log.info("GET /datasets/{}/records/periods called.", datasetId);
+    return ResponseEntity.ok(service.getDistinctBillingPeriodsById(datasetId));
   }
 
-  @GetMapping("/records/department/{department}")
-  public ResponseEntity<Page<BillingRecord>> getRecordsByDepartment(
-      @PathVariable @NotBlank String department,
-      @RequestParam(defaultValue = "0") @Min(0) int page,
-      @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size) {
-    log.info("API Request: Fetching records for department: {}", department);
-    Page<BillingRecord> result = service.getRecordsByDepartmentInDataset(department, page, size);
-    return ResponseEntity.ok(result);
-  }
-
-  @GetMapping("/top/{n}")
-  public Page<BillingRecord> getTopN(@PathVariable @Min(1) @Max(100) int n) {
-    log.info("GET /top/{} called to retrieve top N billing records by total charge.", n);
-    return service.getTopNRecordsInDataset(n);
-  }
-
-  @GetMapping("/departments")
-  public List<String> getDepartments() {
-    log.info("GET /departments called.");
-    return service.getDistinctDepartmentsInDataset();
-  }
-
-  @GetMapping("/periods")
-  public List<String> getBillingPeriods() {
-    log.info("GET /periods called.");
-    return service.getDistinctBillingPeriodsById();
-  }
-
-  @GetMapping("/records/period/{billingPeriod}")
-  public Page<BillingRecord> getRecordsByPeriod(
+  @GetMapping("/records/periods/{billingPeriod}")
+  public ResponseEntity<Page<BillingRecord>> getRecordsByPeriod(
+      @PathVariable UUID datasetId,
       @BillingPeriod @PathVariable String billingPeriod,
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "20") int size) {
-    log.info("GET /records/period/{} called with page {}, size {}", billingPeriod, page, size);
-    return service.getDatasetRecordsByPeriod(billingPeriod, page, size);
+    log.info(
+        "GET /datasets/{}/records/periods/{} called, page: {}, size: {}.",
+        datasetId,
+        billingPeriod,
+        page,
+        size);
+    return ResponseEntity.ok(service.getDatasetRecordsByPeriod(datasetId, billingPeriod, page, size));
   }
 
-  @DeleteMapping("/records/period/{billingPeriod}")
-  public ResponseEntity<Void> deleteRecordsByPeriod(
-      @BillingPeriod @PathVariable String billingPeriod) {
-
-    log.info("DELETE /records/period/{} called to delete all records.", billingPeriod);
-    int rowsDeleted = service.deleteRecordsByPeriodInDataset(billingPeriod);
-    log.info("{} records DELETED from period: {}}", rowsDeleted, billingPeriod);
-
-    return ResponseEntity.noContent().build();
+  @GetMapping("/records/departments/{department}")
+  public ResponseEntity<Page<BillingRecord>> getRecordsByDepartment(
+      @PathVariable UUID datasetId,
+      @PathVariable @NotBlank String department,
+      @RequestParam(defaultValue = "0") @Min(0) int page,
+      @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size) {
+    log.info("GET /datasets/{}/records/departments/{} called.", datasetId, department);
+    return ResponseEntity.ok(service.getRecordsByDepartmentInDataset(datasetId, department, page, size));
   }
 
-  @GetMapping("/summary/period/{billingPeriod}")
-  public BillingSummary getSummaryByPeriod(@BillingPeriod @PathVariable String billingPeriod) {
-    log.info("GET /summary/period/{} called.", billingPeriod);
-    return service.generateSummaryForPeriodInDataset(billingPeriod);
+  @GetMapping("/summary")
+  public ResponseEntity<BillingSummary> getSummary(@PathVariable UUID datasetId) {
+    log.info("GET /datasets/{}/summary called.", datasetId);
+    return ResponseEntity.ok(service.generateSummary(datasetId));
+  }
+
+  @GetMapping("/summary/periods/{billingPeriod}")
+  public ResponseEntity<BillingSummary> getSummaryByPeriod(
+      @PathVariable UUID datasetId, @BillingPeriod @PathVariable String billingPeriod) {
+    log.info("GET /datasets/{}/summary/periods/{} called.", datasetId, billingPeriod);
+    return ResponseEntity.ok(service.generateSummaryForPeriodInDataset(datasetId, billingPeriod));
+  }
+
+  @GetMapping("/top/{n}")
+  public ResponseEntity<Page<BillingRecord>> getTopN(
+      @PathVariable UUID datasetId, @PathVariable @Min(1) @Max(100) int n) {
+    log.info("GET /datasets/{}/top/{} called.", datasetId, n);
+    return ResponseEntity.ok(service.getTopNRecordsInDataset(datasetId, n));
   }
 }

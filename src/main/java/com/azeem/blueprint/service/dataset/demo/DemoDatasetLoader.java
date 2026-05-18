@@ -3,7 +3,7 @@
  * Apache 2.0 License
  */
 
-package com.azeem.blueprint.demo;
+package com.azeem.blueprint.service.dataset.demo;
 
 import com.azeem.blueprint.repository.BillingRecordRepository;
 import com.azeem.blueprint.service.billing.BillingIngestionService;

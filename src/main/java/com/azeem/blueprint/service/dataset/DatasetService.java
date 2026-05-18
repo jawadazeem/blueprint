@@ -13,6 +13,7 @@ import com.azeem.blueprint.repository.BillingRecordRepository;
 import com.azeem.blueprint.repository.DatasetRepository;
 import com.azeem.blueprint.service.billing.BillingS3Service;
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,6 +68,20 @@ public class DatasetService {
 
     log.info("Dataset tracking initialized successfully. UUID: {}", savedEntity.getId());
     return datasetMapper.mapToDomain(savedEntity);
+  }
+
+  public List<Dataset> listDatasets(UUID ownerUserId) {
+    return datasetRepository.findByOwnerUserId(ownerUserId).stream()
+        .map(datasetMapper::mapToDomain)
+        .toList();
+  }
+
+  public Dataset getDataset(UUID datasetId) {
+    DatasetEntity entity =
+        datasetRepository
+            .findById(datasetId)
+            .orElseThrow(() -> new DatasetNotFoundException(datasetId.toString()));
+    return datasetMapper.mapToDomain(entity);
   }
 
   /** Cleans out targeted tracking elements securely under a dataset boundary. */

@@ -5,7 +5,7 @@
 
 package com.azeem.blueprint.controller;
 
-import com.azeem.blueprint.demo.DemoDatasetLoader;
+import com.azeem.blueprint.service.dataset.demo.DemoDatasetLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
@@ -14,21 +14,17 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class DemoController {
-  private static final Logger log = LoggerFactory.getLogger(BillingController.class);
-  DemoDatasetLoader datasetService;
+  private static final Logger log = LoggerFactory.getLogger(DemoController.class);
+  private final DemoDatasetLoader demoDatasetLoader;
 
-  public DemoController(DemoDatasetLoader datasetService) {
-    this.datasetService = datasetService;
+  public DemoController(DemoDatasetLoader demoDatasetLoader) {
+    this.demoDatasetLoader = demoDatasetLoader;
   }
 
-  /**
-   * Trigger ingestion of the built-in demonstration dataset. This allows users to test the ETL
-   * pipeline and analytics without providing their own CSV.
-   */
-  @PostMapping("/demo-load")
+  @PostMapping("/demo-dataset")
   public ResponseEntity<String> loadDemoData() {
-    log.info("POST /demo-load called. Triggering dummy data ingestion.");
-    datasetService.loadDemoData();
+    log.info("POST /demo-dataset called. Triggering demo data ingestion.");
+    demoDatasetLoader.loadDemoData();
     return ResponseEntity.ok("Demo data loaded. You can now use the analytics endpoints.");
   }
 }

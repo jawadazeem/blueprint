@@ -7,16 +7,19 @@ package com.azeem.blueprint.controller;
 
 import com.azeem.blueprint.model.dataset.Dataset;
 import com.azeem.blueprint.service.dataset.DatasetService;
+import com.azeem.blueprint.validation.ValidCsvFile;
+import java.util.List;
+import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import java.util.List;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/datasets")
 public class DatasetController {
-  private static final Logger log = LoggerFactory.getLogger(BillingController.class);
+  private static final Logger log = LoggerFactory.getLogger(DatasetController.class);
 
   private final DatasetService datasetService;
 
@@ -25,23 +28,23 @@ public class DatasetController {
   }
 
   @PostMapping
-  public ResponseEntity<?> createDataset(@RequestBody Dataset dataset) { }
+  public ResponseEntity<Dataset> createDataset(
+      @RequestHeader("X-User-Id") String userId,
+      @ValidCsvFile @RequestParam("file") MultipartFile file) {
+    log.info("POST /datasets called by user: {}", userId);
+    Dataset dataset = datasetService.initializeAndUploadDataset(userId, file);
+    return ResponseEntity.ok(dataset);
+  }
 
   @GetMapping
-  public ResponseEntity<List<Dataset>> listDatasets() {
-
+  public ResponseEntity<List<Dataset>> listDatasets(@RequestHeader("X-User-Id") UUID userId) {
+    log.info("GET /datasets called by user: {}", userId);
+    return ResponseEntity.ok(datasetService.listDatasets(userId));
   }
 
   @GetMapping("/{datasetId}")
-  public ResponseEntity<?> getDataset(@PathVariable String datasetId) { }
-
-  @GetMapping("/{datasetId}/records")
-  public ResponseEntity<?> getRecords(@PathVariable String datasetId) { }
-
-  @GetMapping("/{datasetId}/summary")
-  public ResponseEntity<?> getSummary(@PathVariable String datasetId) { }
-
-  @GetMapping("/{datasetId}/top/{n}")
-  public ResponseEntity<?> getTop(@PathVariable String datasetId,
-                                  @PathVariable int n) { }
+  public ResponseEntity<Dataset> getDataset(@PathVariable UUID datasetId) {
+    log.info("GET /datasets/{} called.", datasetId);
+    return ResponseEntity.ok(datasetService.getDataset(datasetId));
+  }
 }
