@@ -9,187 +9,140 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.azeem.blueprint.demo.LoadDummyDataService;
 import com.azeem.blueprint.model.billing.BillingRecord;
 import com.azeem.blueprint.model.billing.BillingSummary;
 import com.azeem.blueprint.service.billing.BillingQueryService;
-import com.azeem.blueprint.service.billing.BillingS3Service;
 import java.util.List;
-import java.util.Random;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(BillingController.class)
+@WithMockUser
 class BillingControllerTest {
+  private static final String DATASET_ID = "00000000-0000-0000-0000-000000000001";
+  private static final String BASE = "/datasets/" + DATASET_ID;
+
   @Autowired private MockMvc mockMvc;
 
   @MockitoBean private BillingQueryService billingQueryService;
-  @MockitoBean private BillingS3Service s3Service;
-  @MockitoBean private LoadDummyDataService dummyDataService;
 
   @Test
-  void shouldAcceptMultipartFile() throws Exception {
-    // arrange
-    byte[] bytes = new byte[16];
-    new Random().nextBytes(bytes);
+  void defaultPageAndSize_shouldReturnAllRecords() throws Exception {
+    mockMvc.perform(get(BASE + "/records")).andExpect(status().isOk());
 
-    MockMultipartFile file = new MockMultipartFile("file", "2026-01.csv", "text/csv", bytes);
-
-    // act & assert
-    mockMvc.perform(multipart("/upload").file(file)).andExpect(status().isOk());
-
-    verify(s3Service)
-        .uploadUserFile(anyString(), argThat(f -> f.getOriginalFilename().equals("2026-01.csv")));
+    verify(billingQueryService).getAllRecordsInDataset(any(UUID.class), eq(0), eq(20));
   }
 
   @Test
-  void shouldLoadDemoData() throws Exception {
-    // arrange, act & assert
-    mockMvc.perform(post("/demo-load")).andExpect(status().isOk());
-
-    verify(dummyDataService).loadDummyData();
-  }
-
-  @Test
-  void defaultPageAndSize_shouldReturnAllRecordsInDefaultSizedPage() throws Exception {
-    // arrange, act & assert
-    mockMvc.perform(get("/records")).andExpect(status().isOk());
-
-    verify(billingQueryService).getAllRecords(eq(0), eq(20));
-  }
-
-  @Test
-  void customPageAndSize_shouldReturnAllRecordsInCustomSizedPage() throws Exception {
-    // arrange, act & assert
+  void customPageAndSize_shouldReturnAllRecords() throws Exception {
     mockMvc
-        .perform(get("/records").param("page", "1").param("size", "1"))
+        .perform(get(BASE + "/records").param("page", "1").param("size", "5"))
         .andExpect(status().isOk());
 
-    verify(billingQueryService).getAllRecords(1, 1);
+    verify(billingQueryService).getAllRecordsInDataset(any(UUID.class), eq(1), eq(5));
   }
 
   @Test
-  void shouldReturnGeneratedBillingSummary() throws Exception {
-    // arrange, act & assert
-    mockMvc.perform(get("/summary")).andExpect(status().isOk());
+  void shouldReturnBillingPeriods() throws Exception {
+    mockMvc.perform(get(BASE + "/records/periods")).andExpect(status().isOk());
 
-    verify(billingQueryService).generateSummary();
+    verify(billingQueryService).getDistinctBillingPeriodsById(any(UUID.class));
   }
 
   @Test
-  void customPageAndSize_shouldReturnRecordsByDepartment() throws Exception {
-    // arrange, act & assert
+  void defaultPageAndSize_shouldReturnRecordsByPeriod() throws Exception {
+    Page<BillingRecord> page = new PageImpl<>(List.of(), PageRequest.of(0, 20), 0);
+    when(billingQueryService.getDatasetRecordsByPeriod(any(), anyString(), anyInt(), anyInt()))
+        .thenReturn(page);
+
+    mockMvc.perform(get(BASE + "/records/periods/2026-01")).andExpect(status().isOk());
+
+    verify(billingQueryService)
+        .getDatasetRecordsByPeriod(any(UUID.class), eq("2026-01"), eq(0), eq(20));
+  }
+
+  @Test
+  void customPageAndSize_shouldReturnRecordsByPeriod() throws Exception {
+    when(billingQueryService.getDatasetRecordsByPeriod(any(), anyString(), anyInt(), anyInt()))
+        .thenReturn(Page.empty());
+
     mockMvc
-        .perform(get("/records/department/IT").param("page", "1").param("size", "20"))
+        .perform(
+            get(BASE + "/records/periods/2026-01").param("page", "1").param("size", "10"))
         .andExpect(status().isOk());
 
-    verify(billingQueryService).getRecordsByDepartment(anyString(), eq(1), eq(20));
+    verify(billingQueryService)
+        .getDatasetRecordsByPeriod(any(UUID.class), eq("2026-01"), eq(1), eq(10));
+  }
+
+  @Test
+  void shouldRejectInvalidBillingPeriodFormat() throws Exception {
+    mockMvc.perform(get(BASE + "/records/periods/70-2070")).andExpect(status().isBadRequest());
+
+    verify(billingQueryService, never())
+        .getDatasetRecordsByPeriod(any(), anyString(), anyInt(), anyInt());
   }
 
   @Test
   void defaultPageAndSize_shouldReturnRecordsByDepartment() throws Exception {
-    // arrange, act & assert
-    mockMvc.perform(get("/records/department/IT")).andExpect(status().isOk());
+    mockMvc.perform(get(BASE + "/records/departments/IT")).andExpect(status().isOk());
 
-    verify(billingQueryService).getRecordsByDepartment(eq("IT"), eq(0), eq(20));
+    verify(billingQueryService)
+        .getRecordsByDepartmentInDataset(any(UUID.class), eq("IT"), eq(0), eq(20));
   }
 
   @Test
-  void shouldReturnTopNBillingRecordsBySpend() throws Exception {
-    // arrange, act & assert
-    mockMvc.perform(get("/top/5")).andExpect(status().isOk());
-
-    verify(billingQueryService).getTopNRecords(eq(5));
-  }
-
-  // N cannot be greater than 100 (@Max(100) validation)
-  @Test
-  void shouldGracefullyHandleTooHighN_TopNBillingRecordsBySpend() throws Exception {
-    // arrange, act & assert
-    mockMvc.perform(get("/top/101")).andExpect(status().isBadRequest());
-
-    verify(billingQueryService, never()).getTopNRecords(anyInt());
-  }
-
-  @Test
-  void shouldReturnAllDepartments() throws Exception {
-    // arrange, act & assert
-    mockMvc.perform(get("/departments")).andExpect(status().isOk());
-
-    verify(billingQueryService).getDistinctDepartments();
-  }
-
-  @Test
-  void shouldReturnAllPeriods() throws Exception {
-    // arrange, act & assert
-    mockMvc.perform(get("/periods")).andExpect(status().isOk());
-
-    verify(billingQueryService).getDistinctBillingPeriods();
-  }
-
-  @Test
-  void defaultPageAndSize_shouldReturnBillingRecordsByPeriod() throws Exception {
-    // arrange
-    Page<BillingRecord> page = new PageImpl<>(List.of(), PageRequest.of(0, 20), 1);
-    when(billingQueryService.getRecordsByPeriod(anyString(), anyInt(), anyInt())).thenReturn(page);
-
-    // act & assert
-    mockMvc.perform(get("/records/period/2026-01")).andExpect(status().isOk());
-    verify(billingQueryService).getRecordsByPeriod("2026-01", 0, 20);
-  }
-
-  @Test
-  void customPageAndSize_shouldReturnBillingRecordsByPeriod() throws Exception {
-
-    when(billingQueryService.getRecordsByPeriod(anyString(), anyInt(), anyInt()))
-        .thenReturn(Page.empty());
-
+  void customPageAndSize_shouldReturnRecordsByDepartment() throws Exception {
     mockMvc
-        .perform(get("/records/period/2026-01").param("page", "1").param("size", "1"))
+        .perform(
+            get(BASE + "/records/departments/IT").param("page", "1").param("size", "20"))
         .andExpect(status().isOk());
 
-    verify(billingQueryService).getRecordsByPeriod("2026-01", 1, 1);
+    verify(billingQueryService)
+        .getRecordsByDepartmentInDataset(any(UUID.class), eq("IT"), eq(1), eq(20));
   }
 
   @Test
-  void shouldReturnGeneratedBillingSummaryByPeriod() throws Exception {
-    // arrange
+  void shouldReturnBillingSummary() throws Exception {
+    mockMvc.perform(get(BASE + "/summary")).andExpect(status().isOk());
+
+    verify(billingQueryService).generateSummary(any(UUID.class));
+  }
+
+  @Test
+  void shouldReturnBillingSummaryByPeriod() throws Exception {
     BillingSummary summary = new BillingSummary();
-    when(billingQueryService.generateSummaryForPeriod("2026-01")).thenReturn(summary);
+    when(billingQueryService.generateSummaryForPeriodInDataset(any(), eq("2026-01")))
+        .thenReturn(summary);
 
-    // act & assert
-    mockMvc.perform(get("/summary/period/2026-01")).andExpect(status().isOk());
-    verify(billingQueryService).generateSummaryForPeriod("2026-01");
+    mockMvc.perform(get(BASE + "/summary/periods/2026-01")).andExpect(status().isOk());
+
+    verify(billingQueryService)
+        .generateSummaryForPeriodInDataset(any(UUID.class), eq("2026-01"));
   }
 
   @Test
-  void handleInvalidBillingPeriodFormat() throws Exception {
+  void shouldReturnTopNRecords() throws Exception {
+    mockMvc.perform(get(BASE + "/top/5")).andExpect(status().isOk());
 
-    BillingSummary summary = new BillingSummary();
-
-    mockMvc.perform(get("/summary/period/70-2070")).andExpect(status().isBadRequest());
-
-    verify(billingQueryService, never()).generateSummaryForPeriod(anyString());
+    verify(billingQueryService).getTopNRecordsInDataset(any(UUID.class), eq(5));
   }
 
   @Test
-  void shouldDeleteRecordsByPeriod() throws Exception {
-    // arrange
-    when(billingQueryService.deleteRecordsByPeriod("2026-01")).thenReturn(5);
+  void shouldRejectTopNAboveMaximum() throws Exception {
+    mockMvc.perform(get(BASE + "/top/101")).andExpect(status().isBadRequest());
 
-    // act & assert
-    mockMvc.perform(delete("/records/period/2026-01")).andExpect(status().isNoContent());
-
-    verify(billingQueryService).deleteRecordsByPeriod("2026-01");
+    verify(billingQueryService, never()).getTopNRecordsInDataset(any(), anyInt());
   }
 }

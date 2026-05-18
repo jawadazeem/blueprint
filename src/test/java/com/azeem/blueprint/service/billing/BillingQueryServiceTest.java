@@ -8,17 +8,19 @@ package com.azeem.blueprint.service.billing;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 import com.azeem.blueprint.entity.BillingRecordEntity;
-import com.azeem.blueprint.exception.BillingDataNotFoundException;
-import com.azeem.blueprint.exception.QueryLimitExceededException;
+import com.azeem.blueprint.exception.core.BillingDataNotFoundException;
+import com.azeem.blueprint.exception.web.QueryLimitExceededException;
 import com.azeem.blueprint.mapper.BillingRecordMapper;
 import com.azeem.blueprint.model.billing.BillingRecord;
 import com.azeem.blueprint.model.billing.BillingSummary;
 import com.azeem.blueprint.model.billing.Department;
 import com.azeem.blueprint.repository.BillingRecordRepository;
 import java.util.List;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -30,7 +32,10 @@ import org.springframework.data.domain.*;
 import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
-public class BillingQueryServiceTest {
+class BillingQueryServiceTest {
+
+  private static final UUID DATASET_ID = UUID.fromString("00000000-0000-0000-0000-000000000001");
+
   @Mock private BillingRecordRepository repository;
   @Mock private BillingRecordMapper mapper;
 
@@ -43,11 +48,9 @@ public class BillingQueryServiceTest {
 
   @BeforeEach
   void setUp() {
-    // set max top n limit for data retrieval
     ReflectionTestUtils.setField(service, "maxTopNLimit", 100);
 
-    // Build complete entities & respective (mapped) domains for tests
-    BillingRecordEntity entity1 = new BillingRecordEntity();
+    entity1 = new BillingRecordEntity();
     entity1.setId(1L);
     entity1.setDepartment(Department.IT.name());
     entity1.setAccountName("Mark Wojick");
@@ -58,10 +61,10 @@ public class BillingQueryServiceTest {
     entity1.setDataGbUsed(20);
     entity1.setSmsCount(100);
     entity1.setTotalCharge(70.00);
-    this.entity1 = entity1;
 
     domain1 =
         new BillingRecord(
+            DATASET_ID,
             entity1.getAccountName(),
             entity1.getEmployeeId(),
             entity1.getDepartment(),
@@ -72,7 +75,7 @@ public class BillingQueryServiceTest {
             entity1.getSmsCount(),
             entity1.getTotalCharge());
 
-    BillingRecordEntity entity2 = new BillingRecordEntity();
+    entity2 = new BillingRecordEntity();
     entity2.setId(2L);
     entity2.setDepartment(Department.OPERATIONS.name());
     entity2.setAccountName("Seth Alberts");
@@ -83,10 +86,10 @@ public class BillingQueryServiceTest {
     entity2.setDataGbUsed(15);
     entity2.setSmsCount(70);
     entity2.setTotalCharge(80.00);
-    this.entity2 = entity2;
 
     domain2 =
         new BillingRecord(
+            DATASET_ID,
             entity2.getAccountName(),
             entity2.getEmployeeId(),
             entity2.getDepartment(),
@@ -100,225 +103,134 @@ public class BillingQueryServiceTest {
 
   @Test
   void shouldReturnPagedBillingRecordsForValidPageAndSize() {
-    // arrange
     Page<BillingRecordEntity> entityPage =
         new PageImpl<>(List.of(entity1), PageRequest.of(0, 5), 1);
-
-    when(repository.findAll(any(Pageable.class))).thenReturn(entityPage);
+    when(repository.findByDatasetId(eq(DATASET_ID), any(Pageable.class))).thenReturn(entityPage);
     when(mapper.mapToDomain(entity1)).thenReturn(domain1);
 
-    // act
-    Page<BillingRecord> result = service.getAllRecords(0, 5);
+    Page<BillingRecord> result = service.getAllRecordsInDataset(DATASET_ID, 0, 5);
 
-    // assert - content
     assertThat(result.getContent()).containsExactly(domain1);
-
-    // assert - pagination metadata
     assertThat(result.getNumber()).isEqualTo(0);
     assertThat(result.getSize()).isEqualTo(5);
     assertThat(result.getTotalElements()).isEqualTo(1);
 
-    // verify repository call
     ArgumentCaptor<Pageable> captor = ArgumentCaptor.forClass(Pageable.class);
-    verify(repository).findAll(captor.capture());
-
-    Pageable usedPageable = captor.getValue();
-    assertThat(usedPageable.getPageNumber()).isEqualTo(0);
-    assertThat(usedPageable.getPageSize()).isEqualTo(5);
-    assertThat(usedPageable.getSort()).isEqualTo(Sort.by("department").descending());
-
-    // verify mapper called
+    verify(repository).findByDatasetId(eq(DATASET_ID), captor.capture());
+    assertThat(captor.getValue().getSort()).isEqualTo(Sort.by("department").descending());
     verify(mapper).mapToDomain(entity1);
   }
 
   @Test
-  void shouldMapEntitiesToDomainModelsCorrectly() {}
+  void shouldReturnEmptyPageWhenNoDataExists() {
+    when(repository.findByDatasetId(eq(DATASET_ID), any(Pageable.class))).thenReturn(Page.empty());
 
-  @Test
-  void shouldReturnEmptyPageWhenRepositoryReturnsNoData() {
-    // arrange
-    Page<BillingRecordEntity> emptyPage = Page.empty();
+    Page<BillingRecord> result = service.getAllRecordsInDataset(DATASET_ID, 0, 5);
 
-    when(repository.findAll(any(Pageable.class))).thenReturn(emptyPage);
-
-    // act
-    Page<BillingRecord> result = service.getAllRecords(0, 5);
-
-    // assert - content
     assertThat(result.getContent()).isEmpty();
-
-    // assert - pagination metadata
-    assertThat(result.getNumber()).isEqualTo(0);
-    assertThat(result.getSize()).isEqualTo(0);
-    assertThat(result.getTotalElements()).isEqualTo(0);
-
-    // verify repository call
-    ArgumentCaptor<Pageable> captor = ArgumentCaptor.forClass(Pageable.class);
-    verify(repository).findAll(captor.capture());
-
-    Pageable usedPageable = captor.getValue();
-    assertThat(usedPageable.getPageNumber()).isEqualTo(0);
-    assertThat(usedPageable.getPageSize()).isEqualTo(5);
-    assertThat(usedPageable.getSort()).isEqualTo(Sort.by("department").descending());
-
-    // verify mapper was NOT called
-    verify(mapper, never()).mapToDomain(entity1);
+    verify(mapper, never()).mapToDomain(any());
   }
 
   @Test
   void shouldReturnRecordsForGivenBillingPeriod() {
-    // arrange
     Page<BillingRecordEntity> entityPage =
         new PageImpl<>(List.of(entity1), PageRequest.of(0, 5), 1);
-    when(repository.findByBillingPeriod(eq("2026-01"), any(Pageable.class))).thenReturn(entityPage);
+    when(repository.findByDatasetIdAndBillingPeriod(eq(DATASET_ID), eq("2026-01"), any(Pageable.class)))
+        .thenReturn(entityPage);
 
-    // act
-    Page<BillingRecord> result = service.getRecordsByPeriod("2026-01", 0, 5);
+    service.getDatasetRecordsByPeriod(DATASET_ID, "2026-01", 0, 5);
 
-    // assert
-    ArgumentCaptor<String> periodCaptor = ArgumentCaptor.forClass(String.class);
     ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
-    verify(repository).findByBillingPeriod(periodCaptor.capture(), pageableCaptor.capture());
-
-    String usedPeriod = periodCaptor.getValue();
-    assertThat(usedPeriod).isEqualTo("2026-01");
-
-    Pageable usedPageable = pageableCaptor.getValue();
-    assertThat(usedPageable.getPageNumber()).isEqualTo(0);
-    assertThat(usedPageable.getPageSize()).isEqualTo(5);
-
-    // verify mapper called
+    verify(repository)
+        .findByDatasetIdAndBillingPeriod(eq(DATASET_ID), eq("2026-01"), pageableCaptor.capture());
+    assertThat(pageableCaptor.getValue().getPageNumber()).isEqualTo(0);
+    assertThat(pageableCaptor.getValue().getPageSize()).isEqualTo(5);
     verify(mapper).mapToDomain(entity1);
   }
 
   @Test
-  void shouldThrowExceptionWhenBillingPeriodFormatIsInvalid() {
-    // arrange
-    when(repository.findByBillingPeriod(any(String.class), any(Pageable.class)))
+  void shouldThrowWhenNoDataExistsForBillingPeriod() {
+    when(repository.findByDatasetIdAndBillingPeriod(eq(DATASET_ID), anyString(), any(Pageable.class)))
         .thenReturn(Page.empty());
 
-    // act & assert
-    assertThatThrownBy(() -> service.getRecordsByPeriod("01-2026", 0, 5))
+    assertThatThrownBy(() -> service.getDatasetRecordsByPeriod(DATASET_ID, "2026-01", 0, 5))
         .isInstanceOf(BillingDataNotFoundException.class);
   }
 
   @Test
-  void shouldReturnRecordsForDepartmentCaseInsensitive() {
-    // arrange
+  void shouldReturnRecordsByDepartmentCaseInsensitive() {
     Page<BillingRecordEntity> entityPage =
         new PageImpl<>(List.of(entity1), PageRequest.of(0, 5), 1);
-    when(repository.findByDepartmentAndDatasetIdIgnoreCase(any(String.class), any(Pageable.class)))
+    when(repository.findByDatasetIdAndDepartmentIgnoreCase(eq(DATASET_ID), any(String.class), any(Pageable.class)))
         .thenReturn(entityPage);
 
-    // act
-    Page<BillingRecord> result = service.getRecordsByDepartment("fInanCe", 0, 5);
+    service.getRecordsByDepartmentInDataset(DATASET_ID, "fInanCe", 0, 5);
 
-    // assert
-    ArgumentCaptor<String> departmentCaptor = ArgumentCaptor.forClass(String.class);
-    ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
+    ArgumentCaptor<String> deptCaptor = ArgumentCaptor.forClass(String.class);
     verify(repository)
-        .findByDepartmentAndDatasetIdIgnoreCase(
-            departmentCaptor.capture(), pageableCaptor.capture());
-
-    String usedDepartment = departmentCaptor.getValue();
-    assertThat(usedDepartment).isEqualTo("fInanCe");
-
-    Pageable usedPageable = pageableCaptor.getValue();
-    assertThat(usedPageable.getPageNumber()).isEqualTo(0);
-    assertThat(usedPageable.getPageSize()).isEqualTo(5);
-
-    // verify mapper called
+        .findByDatasetIdAndDepartmentIgnoreCase(eq(DATASET_ID), deptCaptor.capture(), any());
+    assertThat(deptCaptor.getValue()).isEqualTo("fInanCe");
     verify(mapper).mapToDomain(entity1);
   }
 
   @Test
   void shouldReturnTopNRecordsSortedByTotalChargeDescending() {
-    // arrange
     Page<BillingRecordEntity> entityPage =
-        new PageImpl<>(List.of(entity1), PageRequest.of(0, 5), 1);
-    when(repository.findAll(any(Pageable.class))).thenReturn(entityPage);
+        new PageImpl<>(List.of(entity1), PageRequest.of(0, 1), 1);
+    when(repository.findByDatasetId(eq(DATASET_ID), any(Pageable.class))).thenReturn(entityPage);
     when(repository.count()).thenReturn(1L);
 
-    // act
-    Page<BillingRecord> result = service.getTopNRecords(1);
+    service.getTopNRecordsInDataset(DATASET_ID, 1);
 
-    // assert
     ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
-    verify(repository).findAll(pageableCaptor.capture());
-
-    Pageable usedPageable = pageableCaptor.getValue();
-    assertThat(usedPageable.getPageNumber()).isEqualTo(0);
-    assertThat(usedPageable.getPageSize()).isEqualTo(1);
-
-    // verify mapper called
+    verify(repository).findByDatasetId(eq(DATASET_ID), pageableCaptor.capture());
+    assertThat(pageableCaptor.getValue().getPageSize()).isEqualTo(1);
     verify(mapper).mapToDomain(entity1);
   }
 
   @Test
-  void shouldRespectLimitNInTopNQuery() {
-    // arrange
+  void shouldThrowWhenTopNExceedsTotalRecordCount() {
     when(repository.count()).thenReturn(1L);
 
-    // act & assert
-    assertThatThrownBy(() -> service.getTopNRecords(2))
+    assertThatThrownBy(() -> service.getTopNRecordsInDataset(DATASET_ID, 2))
         .isInstanceOf(QueryLimitExceededException.class);
   }
 
   @Test
-  void shouldGenerateSummaryForValidBillingPeriod() {
-    // arrange
+  void shouldGenerateSummaryForDataset() {
     Page<BillingRecordEntity> entityPage =
-        new PageImpl<>(List.of(entity1), PageRequest.of(0, 5), 1);
-    when(repository.findAll(any(Pageable.class))).thenReturn(entityPage);
+        new PageImpl<>(List.of(entity1), PageRequest.of(0, 1000), 1);
+    when(repository.findByDatasetId(eq(DATASET_ID), any(Pageable.class))).thenReturn(entityPage);
     when(mapper.mapToDomain(entity1)).thenReturn(domain1);
 
-    BillingSummary summary = service.generateSummary();
+    BillingSummary summary = service.generateSummary(DATASET_ID);
 
-    // assert
     assertThat(summary.getTotalRecords()).isEqualTo(1);
   }
 
   @Test
-  void shouldThrowExceptionWhenNoDataExistsForBillingPeriod() {
-    // arrange
-    Page<BillingRecordEntity> emptyPage = Page.empty();
-    when(repository.findByBillingPeriod(eq("2026-01"), any(Pageable.class))).thenReturn(emptyPage);
+  void shouldThrowWhenNoBillingDataExistsForSummary() {
+    when(repository.findByDatasetId(eq(DATASET_ID), any(Pageable.class))).thenReturn(Page.empty());
 
-    // act & assert
-    assertThatThrownBy(() -> service.getRecordsByPeriod("2026-01", 0, 5))
+    assertThatThrownBy(() -> service.generateSummary(DATASET_ID))
         .isInstanceOf(BillingDataNotFoundException.class);
   }
 
   @Test
-  void shouldGenerateSummaryAcrossMultiplePagesAndStopAtLastPage() {
-    // arrange
-
-    Page<BillingRecordEntity> firstPage = new PageImpl<>(List.of(entity1), PageRequest.of(0, 1), 2);
-
+  void shouldGenerateSummaryAcrossMultiplePages() {
+    Page<BillingRecordEntity> firstPage = new PageImpl<>(List.of(entity1), PageRequest.of(0, 1000), 2);
     Page<BillingRecordEntity> secondPage =
-        new PageImpl<>(List.of(entity2), PageRequest.of(1, 1), 2);
+        new PageImpl<>(List.of(entity2), PageRequest.of(1, 1000), 2);
 
-    when(repository.findAll(any(Pageable.class))).thenReturn(firstPage).thenReturn(secondPage);
-
+    when(repository.findByDatasetId(eq(DATASET_ID), any(Pageable.class)))
+        .thenReturn(firstPage)
+        .thenReturn(secondPage);
     when(mapper.mapToDomain(entity1)).thenReturn(domain1);
-
     when(mapper.mapToDomain(entity2)).thenReturn(domain2);
 
-    // act
-    BillingSummary summary = service.generateSummary();
+    BillingSummary summary = service.generateSummary(DATASET_ID);
 
-    // assert
     assertThat(summary.getTotalRecords()).isEqualTo(2);
     assertThat(summary.getTotalCharges()).isEqualTo(150.00);
-  }
-
-  @Test
-  void shouldThrowExceptionWhenNoBillingDataExistsForSummary() {
-    // arrange
-    when(repository.findAll(any(Pageable.class))).thenReturn(Page.empty());
-
-    // act & assert
-    assertThatThrownBy(() -> service.generateSummary())
-        .isInstanceOf(BillingDataNotFoundException.class);
   }
 }

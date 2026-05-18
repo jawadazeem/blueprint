@@ -27,7 +27,7 @@ public interface AlarmRepository extends JpaRepository<AlarmEntity, UUID> {
       """
           SELECT a.businessKey
           FROM AlarmEntity a
-          WHERE a.datasetId = :datasetId AND a.billingPeriod = :billingPeriod
+          WHERE a.dataset.id = :datasetId AND a.billingPeriod = :billingPeriod
           """)
   List<UUID> findBusinessKeysByDatasetIdAndBillingPeriod(
       @Param("datasetId") UUID datasetId, @Param("billingPeriod") String billingPeriod);

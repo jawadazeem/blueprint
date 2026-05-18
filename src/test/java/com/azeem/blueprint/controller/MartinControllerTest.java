@@ -5,6 +5,7 @@
 
 package com.azeem.blueprint.controller;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -15,35 +16,39 @@ import com.azeem.blueprint.model.martin.MartinRequest;
 import com.azeem.blueprint.model.martin.MartinResponse;
 import com.azeem.blueprint.service.martin.MartinService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(MartinController.class)
-public class MartinControllerTest {
-  @Autowired private MockMvc mockMvc;
+@WithMockUser
+class MartinControllerTest {
+  private static final String DATASET_ID = "00000000-0000-0000-0000-000000000001";
 
+  @Autowired private MockMvc mockMvc;
   @Autowired private ObjectMapper mapper;
 
   @MockitoBean private MartinService martinService;
 
   @Test
   void shouldReturnChatResponse() throws Exception {
-    // arrange
-    when(martinService.ask("testing", "2026-01"))
-        .thenReturn(new MartinResponse("test response", "test SQL", "test reasoning"));
     MartinRequest request = new MartinRequest("testing", "2026-01");
-    String jsonString = mapper.writeValueAsString(request);
 
-    // act
+    when(martinService.ask(eq("testing"), any(UUID.class), eq("2026-01")))
+        .thenReturn(new MartinResponse("test response", "test SQL", "test reasoning"));
+
     mockMvc
-        .perform(post("/martin").contentType(MediaType.APPLICATION_JSON).content(jsonString))
+        .perform(
+            post("/datasets/{datasetId}/martin", DATASET_ID)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(request)))
         .andExpect(status().isOk());
 
-    // assert
-    verify(martinService).ask(eq(request.getPrompt()), eq(request.getPeriod()));
+    verify(martinService).ask(eq(request.getPrompt()), any(UUID.class), eq(request.getPeriod()));
   }
 }

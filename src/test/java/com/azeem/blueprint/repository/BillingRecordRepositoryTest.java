@@ -8,7 +8,10 @@ package com.azeem.blueprint.repository;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.azeem.blueprint.entity.BillingRecordEntity;
+import com.azeem.blueprint.entity.DatasetEntity;
+import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -25,12 +28,18 @@ import org.springframework.data.domain.Sort;
 class BillingRecordRepositoryTest {
 
   @Autowired private BillingRecordRepository repository;
-
   @Autowired private TestEntityManager entityManager;
+
+  private DatasetEntity dataset;
 
   @BeforeEach
   void setUp() {
-    // Build and persist complete records using all fields
+    dataset = new DatasetEntity();
+    dataset.setStatus("PENDING_INGESTION");
+    dataset.setSourceFilename("test.csv");
+    dataset.setUploadedAt(Instant.now());
+    entityManager.persist(dataset);
+
     persistRecord(
         "Engineering", "Sherwood Williams", "EMP001", "7035550123", "2026-01", 120, 5.5, 45, 75.50);
     persistRecord(
@@ -52,6 +61,7 @@ class BillingRecordRepositoryTest {
       int sms,
       double charge) {
     BillingRecordEntity record = new BillingRecordEntity();
+    record.setDataset(dataset);
     record.setDepartment(dept);
     record.setAccountName(name);
     record.setEmployeeId(empId);
@@ -65,52 +75,53 @@ class BillingRecordRepositoryTest {
   }
 
   @Test
-  @DisplayName("Should return distinct billing periods with pagination")
-  void testFindAllBillingPeriodsPaged() {
-    // Arrange
+  @DisplayName("Should return distinct billing periods for a dataset")
+  void testFindBillingPeriodByDatasetId() {
+    UUID datasetId = dataset.getId();
     Pageable pageable = PageRequest.of(0, 10, Sort.by("billingPeriod"));
 
-    // Act
-    Page<String> periods = repository.findAllBillingPeriods(pageable);
+    Page<String> periods = repository.findBillingPeriodByDatasetId(datasetId, pageable);
 
-    // Assert
     assertThat(periods).isNotNull();
     assertThat(periods.getContent()).hasSize(2);
     assertThat(periods.getContent()).containsExactly("2026-01", "2026-02");
   }
 
   @Test
-  @DisplayName("Should return true when billing period exists")
-  void testExistsByBillingPeriod() {
-    // Act & Assert
-    assertThat(repository.existsByBillingPeriod("2026-01")).isTrue();
-    assertThat(repository.existsByBillingPeriod("1999-12")).isFalse();
+  @DisplayName("Should return true when billing period exists for a dataset")
+  void testExistsByDatasetIdAndBillingPeriod() {
+    UUID datasetId = dataset.getId();
+
+    assertThat(repository.existsByDatasetIdAndBillingPeriod(datasetId, "2026-01")).isTrue();
+    assertThat(repository.existsByDatasetIdAndBillingPeriod(datasetId, "1999-12")).isFalse();
   }
 
   @Test
   @DisplayName("Should find departments ignoring case sensitivity")
-  void testFindByDepartmentIgnoreCase() {
-    // Act
-    Page<BillingRecordEntity> result =
-        repository.findByDepartmentAndDatasetIdIgnoreCase("engineering", PageRequest.of(0, 5));
+  void testFindByDatasetIdAndDepartmentIgnoreCase() {
+    UUID datasetId = dataset.getId();
 
-    // Assert
+    Page<BillingRecordEntity> result =
+        repository.findByDatasetIdAndDepartmentIgnoreCase(
+            datasetId, "engineering", PageRequest.of(0, 5));
+
     assertThat(result.getContent()).hasSize(2);
     assertThat(result.getContent().getFirst().getDepartment()).isEqualTo("Engineering");
   }
 
   @Test
-  @DisplayName("Should verify DB-level distinct logic for departments")
-  void testFindDistinctDepartments() {
+  @DisplayName("Should return distinct departments for a dataset")
+  void testFindDistinctDepartmentsByDatasetId() {
+    UUID datasetId = dataset.getId();
+
     // Add a duplicate department record
     persistRecord(
         "Engineering", "Sherwood Williams", "EMP001", "7035550123", "2026-01", 120, 5.5, 45, 75.50);
+    entityManager.flush();
 
-    // Act
-    List<String> departments = repository.findDistinctDepartments();
+    List<String> departments = repository.findDistinctDepartmentsByDatasetId(datasetId);
 
-    // Assert
-    assertThat(departments).hasSize(2); // Only Engineering and Operations
+    assertThat(departments).hasSize(2);
     assertThat(departments).containsExactly("Engineering", "Operations");
   }
 }
