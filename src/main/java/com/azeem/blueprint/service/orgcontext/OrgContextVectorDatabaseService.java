@@ -24,6 +24,10 @@ public class OrgContextVectorDatabaseService {
     this.vectorStore = vectorStore;
   }
 
+  /*
+   * This method currently lacks chunking, leading the embedder to embed
+   * the entire document as one vector. This is a gap in need of fixing.
+   */
   public void ingestDocument(OrgContextDocument doc, String content) {
     Map<String, Object> metadata =
         Map.of(
