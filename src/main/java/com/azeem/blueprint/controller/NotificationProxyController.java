@@ -28,7 +28,7 @@ public class NotificationProxyController {
   @Operation(summary = "Get recent notification delivery history")
   @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<String> getNotifications(@RequestParam(defaultValue = "50") int limit) {
-    String json = notificationClient.fetchNotifications(Math.min(Math.max(limit, 1), 100));
+    String json = notificationClient.fetchNotifications(Math.clamp(1, limit, 100));
     return ResponseEntity.ok(json);
   }
 }
