@@ -6,6 +6,7 @@
 package com.azeem.blueprint.service.appuser;
 
 import com.azeem.blueprint.entity.AppUserEntity;
+import com.azeem.blueprint.exception.web.UserDoesNotExistException;
 import com.azeem.blueprint.mapper.AppUserMapper;
 import com.azeem.blueprint.model.user.AppUser;
 import com.azeem.blueprint.repository.AppUserRepository;
@@ -24,7 +25,13 @@ public class AppUserService {
   }
 
   public AppUser getAppUserById(UUID userId) {
-    return appUserMapper.mapToDomain(appUserRepository.getReferenceById(userId));
+    AppUserEntity entity =
+        appUserRepository
+            .findById(userId)
+            .orElseThrow(
+                () -> new UserDoesNotExistException("User by ID: " + userId + " doesn't exist"));
+
+    return appUserMapper.mapToDomain(entity);
   }
 
   public AppUserEntity getAppUserEntityById(UUID userId) {

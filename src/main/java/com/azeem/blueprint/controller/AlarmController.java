@@ -8,6 +8,7 @@ package com.azeem.blueprint.controller;
 import com.azeem.blueprint.etl.CsvExportService;
 import com.azeem.blueprint.model.alarm.Alarm;
 import com.azeem.blueprint.service.alarm.AlarmService;
+import com.azeem.blueprint.service.appuser.AppUserService;
 import com.azeem.blueprint.validation.BillingPeriod;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -17,6 +18,8 @@ import java.util.List;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,18 +31,26 @@ public class AlarmController {
   private static final Logger log = LoggerFactory.getLogger(AlarmController.class);
   private final AlarmService service;
   private final CsvExportService csvExportService;
+  private final AppUserService appUserService;
 
-  public AlarmController(AlarmService service, CsvExportService csvExportService) {
+  public AlarmController(
+      AlarmService service, AppUserService appUserService, CsvExportService csvExportService) {
     this.service = service;
+    this.appUserService = appUserService;
     this.csvExportService = csvExportService;
   }
 
   @Operation(summary = "Get all alarms for a billing period")
   @GetMapping("/alarms/{billingPeriod}")
   public List<Alarm> getAllAlarms(
-      @PathVariable UUID datasetId, @BillingPeriod @PathVariable String billingPeriod) {
+      @AuthenticationPrincipal Jwt jwt,
+      @PathVariable UUID datasetId,
+      @BillingPeriod @PathVariable String billingPeriod) {
+
+    appUserService.getAppUserById(UUID.fromString(jwt.getSubject()));
     log.info("GET /datasets/{}/alarms/{} called.", datasetId, billingPeriod);
     return service.getAllAlarmsInDataset(datasetId, billingPeriod);
+    // do a return service.getAllAlarmsInDataset(appUserId, datasetId, billingPeriod);
   }
 
   @Operation(summary = "Get provider-scoped alarms")

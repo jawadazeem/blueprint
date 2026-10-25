@@ -2,6 +2,8 @@ include:
   - comp/multicloud-data-generator-service/docker-compose.yml
   
 services:
+  # TODO: Consolidate both RAG and relational Postgres databases into one instance.
+  # Application database instance
   postgres:
     image: postgres:16
     container_name: billing-postgres
@@ -19,6 +21,7 @@ services:
       retries: 5
       start_period: 10s
 
+  # RAG database instance (Postgres + PGVector extension)
   pgvector:
     image: pgvector/pgvector:pg17
     container_name: blueprint-org-context
@@ -29,6 +32,26 @@ services:
     volumes:
       - pgvector-data:/var/lib/postgresql/data
     restart: unless-stopped
+
+  # Keycloak IDP database instance
+  postgres-keycloak:
+    networks:
+      - keycloak-net
+    image: postgres:16
+    container_name: postgres-keycloak
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: keycloak_db
+      POSTGRES_USER: ${KC_DB_USER}
+      POSTGRES_PASSWORD: ${KC_DB_PASSWORD}
+    volumes:
+      - postgres_keycloak:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${KC_DB_USER} -d keycloak_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
   # This represents the WHOLE AWS stack (S3, EventBridge, SQS, Lambda, etc.)
   localstack:
@@ -79,6 +102,32 @@ services:
       - SPRING_AI_GOOGLE_GENAI_EMBEDDING_PROJECT_ID=${GOOGLE_PROJECT_ID}
     extra_hosts:
       - "host.docker.internal:host-gateway"
+
+  keycloak:
+    networks:
+      - keycloak-net
+    image: quay.io/keycloak/keycloak:latest
+    container_name: keycloak_dev
+    command: start-dev
+    environment:
+      - KC_DB=postgres
+      - KC_DB_URL=jdbc:postgresql://postgres-keycloak:5432/keycloak_db
+      - KC_DB_USERNAME=${KC_DB_USER}
+      - KC_DB_PASSWORD=${KC_DB_PASSWORD}
+      - KC_USERNAME=${KC_USERNAME}
+      - KC_PASSWORD=${KC_PASSWORD}
+      - KC_BOOTSTRAP_ADMIN_USERNAME=admin
+      - KC_BOOTSTRAP_ADMIN_PASSWORD=admin
+      - KC_PROXY_HEADERS=xforwarded
+      # NOTE: this is only for development, real instances have HTTPS even behind the firewall
+      # (Need to docker exec into the container to use without SSL)
+      - KC_HTTP_ENABLED=true
+      - KC_HOSTNAME_STRICT=false
+    ports:
+      - "8081:8080"
+    depends_on:
+      postgres-keycloak:
+        condition: service_healthy
 
   # Ephemeral: Only for setup in DEV environment
   aws-cli-setup:
@@ -175,4 +224,9 @@ services:
 volumes:
   postgres_data:
   pgvector-data:
+  postgres_keycloak:
   ollama-data:
+
+networks:
+  keycloak-net:
+    driver: bridge

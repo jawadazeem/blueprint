@@ -46,13 +46,13 @@ public class DemoDatasetLoader {
   private final Map<UUID, String> DUMMY_DATA_DATASET_IDS =
       Map.of(
           new UUID(0L, 0L),
-          "2026-04",
+          "2026-07",
           UUID.fromString("00000000-0000-0000-0000-000000000001"),
-          "2026-05",
+          "2026-08",
           UUID.fromString("00000000-0000-0000-0000-000000000002"),
-          "2026-06",
+          "2026-09",
           UUID.fromString("00000000-0000-0000-0000-000000000003"),
-          "2026-07");
+          "2026-10");
   private static final UUID GUEST_USER_ID = UUID.fromString("00000000-0000-0000-0000-000000000001");
 
   public DemoDatasetLoader(
